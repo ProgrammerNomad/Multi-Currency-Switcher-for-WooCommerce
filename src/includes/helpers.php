@@ -1,3 +1,8 @@
+<?php
+// filepath: c:\xampp\htdocs\Multi-Currency-Switcher-for-WooCommerce\src\includes\helpers.php
+
+defined('ABSPATH') || exit;
+
 function get_available_currencies() {
     return [
         'USD' => 'United States Dollar',
@@ -32,4 +37,17 @@ function get_currency_symbol($currency) {
         'NZD' => 'NZ$',
     ];
     return $symbols[$currency] ?? '';
+}
+
+function multi_currency_switcher_get_exchange_rate($currency) {
+    // Example API integration for exchange rates
+    $api_url = "https://api.exchangerate-api.com/v4/latest/USD";
+    $response = wp_remote_get($api_url);
+
+    if (is_wp_error($response)) {
+        return false;
+    }
+
+    $data = json_decode(wp_remote_retrieve_body($response), true);
+    return $data['rates'][$currency] ?? false;
 }

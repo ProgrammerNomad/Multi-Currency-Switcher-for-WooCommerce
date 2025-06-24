@@ -14,12 +14,14 @@ class Multi_Currency_Switcher_Admin_Settings {
     }
 
     public function add_settings_page() {
-        add_options_page(
-            'Multi Currency Switcher Settings',
+        add_menu_page(
             'Multi Currency Switcher',
+            'Currency Switcher',
             'manage_options',
             'multi-currency-switcher',
-            array( $this, 'create_settings_page' )
+            array( $this, 'create_settings_page' ),
+            'dashicons-money-alt',
+            100
         );
     }
 
@@ -29,37 +31,18 @@ class Multi_Currency_Switcher_Admin_Settings {
             <h1>Multi Currency Switcher Settings</h1>
             <form method="post" action="options.php">
                 <?php
-                settings_fields( 'multi_currency_switcher_group' );
-                do_settings_sections( 'multi_currency_switcher_group' );
+                settings_fields( 'multi_currency_switcher_settings' );
+                do_settings_sections( 'multi_currency_switcher' );
+                submit_button();
                 ?>
-                <table class="form-table">
-                    <tr valign="top">
-                        <th scope="row">Default Currency</th>
-                        <td>
-                            <select name="default_currency">
-                                <option value="USD" <?php selected( get_option('default_currency'), 'USD' ); ?>>USD</option>
-                                <option value="EUR" <?php selected( get_option('default_currency'), 'EUR' ); ?>>EUR</option>
-                                <option value="GBP" <?php selected( get_option('default_currency'), 'GBP' ); ?>>GBP</option>
-                                <!-- Add more currencies as needed -->
-                            </select>
-                        </td>
-                    </tr>
-                    <tr valign="top">
-                        <th scope="row">Enable Currency Switcher</th>
-                        <td>
-                            <input type="checkbox" name="enable_currency_switcher" value="1" <?php checked( get_option('enable_currency_switcher'), 1 ); ?> />
-                        </td>
-                    </tr>
-                </table>
-                <?php submit_button(); ?>
             </form>
         </div>
         <?php
     }
 
     public function register_settings() {
-        register_setting( 'multi_currency_switcher_group', 'default_currency' );
-        register_setting( 'multi_currency_switcher_group', 'enable_currency_switcher' );
+        register_setting( 'multi_currency_switcher_settings', 'default_currency' );
+        register_setting( 'multi_currency_switcher_settings', 'enable_currency_switcher' );
     }
 }
 

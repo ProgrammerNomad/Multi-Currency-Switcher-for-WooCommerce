@@ -24,4 +24,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Error during currency switch:', error);
             });
     }
+
+    const currencySelector = document.getElementById('currency-selector');
+    currencySelector.addEventListener('change', function () {
+        alert('Currency switched to: ' + this.value);
+    });
 });

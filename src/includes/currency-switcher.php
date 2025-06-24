@@ -50,4 +50,16 @@ class CurrencySwitcher {
 }
 
 new CurrencySwitcher();
+
+function multi_currency_switcher_display() {
+    // Logic to display currency switcher
+    echo '<div class="currency-switcher">';
+    echo '<select id="currency-selector">';
+    echo '<option value="USD">USD</option>';
+    echo '<option value="EUR">EUR</option>';
+    echo '<option value="GBP">GBP</option>';
+    echo '</select>';
+    echo '</div>';
+}
+add_shortcode('multi_currency_switcher', 'multi_currency_switcher_display');
 ?>

@@ -179,3 +179,26 @@ function multi_currency_switcher_update_all_exchange_rates() {
     
     return false;
 }
+
+/**
+ * Get all available currencies from the JSON file
+ */
+function get_all_available_currencies() {
+    $json_file = plugin_dir_path(dirname(__FILE__)) . 'data/currencies.json';
+    
+    if (file_exists($json_file)) {
+        $json_data = file_get_contents($json_file);
+        $currencies = json_decode($json_data, true);
+        
+        if (json_last_error() === JSON_ERROR_NONE) {
+            return $currencies;
+        }
+    }
+    
+    // Fallback to a minimal set of currencies if JSON file not found or invalid
+    return array(
+        'USD' => array('name' => 'US Dollar', 'symbol' => '$'),
+        'EUR' => array('name' => 'Euro', 'symbol' => '€'),
+        'GBP' => array('name' => 'British Pound', 'symbol' => '£')
+    );
+}

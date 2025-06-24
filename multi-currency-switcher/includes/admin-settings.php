@@ -188,21 +188,34 @@ class Multi_Currency_Switcher_Admin_Settings {
         }
 
         $enabled_currencies = array();
-        $exchange_rates = array();
+        $exchange_rates = get_option( 'multi_currency_switcher_exchange_rates', array() );
         $currency_settings = array();
 
-        // Always include USD as the base currency
-        $enabled_currencies[] = 'USD';
-        $exchange_rates['USD'] = 1;
+        // Get WooCommerce base currency
+        $base_currency = get_option( 'woocommerce_currency', 'USD' );
+
+        // Always include base currency
+        $enabled_currencies[] = $base_currency;
+        $exchange_rates[$base_currency] = 1;
+
+        // Get previously enabled currencies to check for newly enabled ones
+        $previous_currencies = get_option( 'multi_currency_switcher_enabled_currencies', array( $base_currency ) );
 
         foreach ( $_POST['currencies'] as $code => $data ) {
             if ( isset( $data['enabled'] ) ) {
                 $enabled_currencies[] = $code;
+                
+                // Check if this is a newly enabled currency
+                if ( !in_array( $code, $previous_currencies ) && $code !== $base_currency ) {
+                    // This is a newly enabled currency, fetch its rate from API
+                    $exchange_rates[$code] = $this->fetch_exchange_rate_for_currency( $code, $base_currency );
+                } else {
+                    // This is an existing currency, use the manual rate if provided
+                    $exchange_rates[$code] = floatval( $data['rate'] );
+                }
             }
 
-            $exchange_rates[ $code ] = floatval( $data['rate'] );
-
-            $currency_settings[ $code ] = array(
+            $currency_settings[$code] = array(
                 'position' => sanitize_text_field( $data['position'] ),
                 'decimals' => intval( $data['decimals'] ),
                 'thousand_sep' => sanitize_text_field( $data['thousand_sep'] ),
@@ -210,9 +223,19 @@ class Multi_Currency_Switcher_Admin_Settings {
             );
         }
 
+        // Remove any currencies that were disabled
+        foreach ( $previous_currencies as $code ) {
+            if ( !in_array( $code, $enabled_currencies ) && isset( $exchange_rates[$code] ) ) {
+                // Keep the exchange rate in case they re-enable it later
+                // But you could also unset it if you prefer
+                // unset( $exchange_rates[$code] );
+            }
+        }
+
         update_option( 'multi_currency_switcher_enabled_currencies', array_unique( $enabled_currencies ) );
         update_option( 'multi_currency_switcher_exchange_rates', $exchange_rates );
         update_option( 'multi_currency_switcher_currency_settings', $currency_settings );
+        update_option( 'multi_currency_switcher_rates_last_updated', current_time( 'timestamp' ) );
 
         add_settings_error(
             'multi_currency_switcher_messages',
@@ -220,6 +243,26 @@ class Multi_Currency_Switcher_Admin_Settings {
             'Currencies have been updated successfully.',
             'updated'
         );
+    }
+
+    /**
+     * Fetch exchange rate for a newly added currency
+     */
+    private function fetch_exchange_rate_for_currency( $currency, $base_currency ) {
+        // Use the API to fetch the exchange rate
+        $api_url = "https://api.exchangerate-api.com/v4/latest/{$base_currency}";
+        $response = wp_remote_get( $api_url );
+
+        if ( !is_wp_error( $response ) ) {
+            $data = json_decode( wp_remote_retrieve_body( $response ), true );
+            
+            if ( isset( $data['rates'][$currency] ) ) {
+                return $data['rates'][$currency];
+            }
+        }
+        
+        // Default to 1 if API fetch fails
+        return 1;
     }
 
     public function register_settings() {
@@ -276,168 +319,7 @@ class Multi_Currency_Switcher_Admin_Settings {
     }
 
     private function get_all_available_currencies() {
-        return array(
-            'USD' => array( 'name' => 'US Dollar', 'symbol' => '$' ),
-            'EUR' => array( 'name' => 'Euro', 'symbol' => '€' ),
-            'GBP' => array( 'name' => 'British Pound', 'symbol' => '£' ),
-            'JPY' => array( 'name' => 'Japanese Yen', 'symbol' => '¥' ),
-            'AUD' => array( 'name' => 'Australian Dollar', 'symbol' => 'A$' ),
-            'CAD' => array( 'name' => 'Canadian Dollar', 'symbol' => 'C$' ),
-            'CHF' => array( 'name' => 'Swiss Franc', 'symbol' => 'CHF' ),
-            'CNY' => array( 'name' => 'Chinese Yuan', 'symbol' => '¥' ),
-            'SEK' => array( 'name' => 'Swedish Krona', 'symbol' => 'kr' ),
-            'NZD' => array( 'name' => 'New Zealand Dollar', 'symbol' => 'NZ$' ),
-            'MXN' => array( 'name' => 'Mexican Peso', 'symbol' => '$' ),
-            'SGD' => array( 'name' => 'Singapore Dollar', 'symbol' => 'S$' ),
-            'HKD' => array( 'name' => 'Hong Kong Dollar', 'symbol' => 'HK$' ),
-            'NOK' => array( 'name' => 'Norwegian Krone', 'symbol' => 'kr' ),
-            'KRW' => array( 'name' => 'South Korean Won', 'symbol' => '₩' ),
-            'TRY' => array( 'name' => 'Turkish Lira', 'symbol' => '₺' ),
-            'RUB' => array( 'name' => 'Russian Ruble', 'symbol' => '₽' ),
-            'INR' => array( 'name' => 'Indian Rupee', 'symbol' => '₹' ),
-            'BRL' => array( 'name' => 'Brazilian Real', 'symbol' => 'R$' ),
-            'ZAR' => array( 'name' => 'South African Rand', 'symbol' => 'R' ),
-            'AED' => array( 'name' => 'United Arab Emirates Dirham', 'symbol' => 'د.إ' ),
-            'AFN' => array( 'name' => 'Afghan Afghani', 'symbol' => '؋' ),
-            'ALL' => array( 'name' => 'Albanian Lek', 'symbol' => 'L' ),
-            'AMD' => array( 'name' => 'Armenian Dram', 'symbol' => '֏' ),
-            'ANG' => array( 'name' => 'Netherlands Antillean Guilder', 'symbol' => 'ƒ' ),
-            'AOA' => array( 'name' => 'Angolan Kwanza', 'symbol' => 'Kz' ),
-            'ARS' => array( 'name' => 'Argentine Peso', 'symbol' => '$' ),
-            'AWG' => array( 'name' => 'Aruban Florin', 'symbol' => 'ƒ' ),
-            'AZN' => array( 'name' => 'Azerbaijani Manat', 'symbol' => '₼' ),
-            'BAM' => array( 'name' => 'Bosnia-Herzegovina Convertible Mark', 'symbol' => 'KM' ),
-            'BBD' => array( 'name' => 'Barbadian Dollar', 'symbol' => '$' ),
-            'BDT' => array( 'name' => 'Bangladeshi Taka', 'symbol' => '৳' ),
-            'BGN' => array( 'name' => 'Bulgarian Lev', 'symbol' => 'лв' ),
-            'BHD' => array( 'name' => 'Bahraini Dinar', 'symbol' => '.د.ب' ),
-            'BIF' => array( 'name' => 'Burundian Franc', 'symbol' => 'FBu' ),
-            'BMD' => array( 'name' => 'Bermudan Dollar', 'symbol' => '$' ),
-            'BND' => array( 'name' => 'Brunei Dollar', 'symbol' => '$' ),
-            'BOB' => array( 'name' => 'Bolivian Boliviano', 'symbol' => 'Bs.' ),
-            'BSD' => array( 'name' => 'Bahamian Dollar', 'symbol' => '$' ),
-            'BTN' => array( 'name' => 'Bhutanese Ngultrum', 'symbol' => 'Nu.' ),
-            'BWP' => array( 'name' => 'Botswanan Pula', 'symbol' => 'P' ),
-            'BYN' => array( 'name' => 'Belarusian Ruble', 'symbol' => 'Br' ),
-            'BZD' => array( 'name' => 'Belize Dollar', 'symbol' => 'BZ$' ),
-            'CDF' => array( 'name' => 'Congolese Franc', 'symbol' => 'FC' ),
-            'CLP' => array( 'name' => 'Chilean Peso', 'symbol' => '$' ),
-            'COP' => array( 'name' => 'Colombian Peso', 'symbol' => '$' ),
-            'CRC' => array( 'name' => 'Costa Rican Colón', 'symbol' => '₡' ),
-            'CUC' => array( 'name' => 'Cuban Convertible Peso', 'symbol' => '$' ),
-            'CUP' => array( 'name' => 'Cuban Peso', 'symbol' => '₱' ),
-            'CVE' => array( 'name' => 'Cape Verdean Escudo', 'symbol' => '$' ),
-            'CZK' => array( 'name' => 'Czech Republic Koruna', 'symbol' => 'Kč' ),
-            'DJF' => array( 'name' => 'Djiboutian Franc', 'symbol' => 'Fdj' ),
-            'DKK' => array( 'name' => 'Danish Krone', 'symbol' => 'kr' ),
-            'DOP' => array( 'name' => 'Dominican Peso', 'symbol' => 'RD$' ),
-            'DZD' => array( 'name' => 'Algerian Dinar', 'symbol' => 'دج' ),
-            'EGP' => array( 'name' => 'Egyptian Pound', 'symbol' => 'E£' ),
-            'ERN' => array( 'name' => 'Eritrean Nakfa', 'symbol' => 'Nfk' ),
-            'ETB' => array( 'name' => 'Ethiopian Birr', 'symbol' => 'Br' ),
-            'FJD' => array( 'name' => 'Fijian Dollar', 'symbol' => '$' ),
-            'FKP' => array( 'name' => 'Falkland Islands Pound', 'symbol' => '£' ),
-            'GEL' => array( 'name' => 'Georgian Lari', 'symbol' => '₾' ),
-            'GGP' => array( 'name' => 'Guernsey Pound', 'symbol' => '£' ),
-            'GHS' => array( 'name' => 'Ghanaian Cedi', 'symbol' => '₵' ),
-            'GIP' => array( 'name' => 'Gibraltar Pound', 'symbol' => '£' ),
-            'GMD' => array( 'name' => 'Gambian Dalasi', 'symbol' => 'D' ),
-            'GNF' => array( 'name' => 'Guinean Franc', 'symbol' => 'FG' ),
-            'GTQ' => array( 'name' => 'Guatemalan Quetzal', 'symbol' => 'Q' ),
-            'GYD' => array( 'name' => 'Guyanaese Dollar', 'symbol' => '$' ),
-            'HNL' => array( 'name' => 'Honduran Lempira', 'symbol' => 'L' ),
-            'HRK' => array( 'name' => 'Croatian Kuna', 'symbol' => 'kn' ),
-            'HTG' => array( 'name' => 'Haitian Gourde', 'symbol' => 'G' ),
-            'HUF' => array( 'name' => 'Hungarian Forint', 'symbol' => 'Ft' ),
-            'IDR' => array( 'name' => 'Indonesian Rupiah', 'symbol' => 'Rp' ),
-            'ILS' => array( 'name' => 'Israeli New Shekel', 'symbol' => '₪' ),
-            'IMP' => array( 'name' => 'Manx pound', 'symbol' => '£' ),
-            'IQD' => array( 'name' => 'Iraqi Dinar', 'symbol' => 'ع.د' ),
-            'IRR' => array( 'name' => 'Iranian Rial', 'symbol' => '﷼' ),
-            'ISK' => array( 'name' => 'Icelandic Króna', 'symbol' => 'kr' ),
-            'JEP' => array( 'name' => 'Jersey Pound', 'symbol' => '£' ),
-            'JMD' => array( 'name' => 'Jamaican Dollar', 'symbol' => 'J$' ),
-            'JOD' => array( 'name' => 'Jordanian Dinar', 'symbol' => 'د.ا' ),
-            'KES' => array( 'name' => 'Kenyan Shilling', 'symbol' => 'KSh' ),
-            'KGS' => array( 'name' => 'Kyrgystani Som', 'symbol' => 'с' ),
-            'KHR' => array( 'name' => 'Cambodian Riel', 'symbol' => '៛' ),
-            'KMF' => array( 'name' => 'Comorian Franc', 'symbol' => 'CF' ),
-            'KPW' => array( 'name' => 'North Korean Won', 'symbol' => '₩' ),
-            'KWD' => array( 'name' => 'Kuwaiti Dinar', 'symbol' => 'د.ك' ),
-            'KYD' => array( 'name' => 'Cayman Islands Dollar', 'symbol' => '$' ),
-            'KZT' => array( 'name' => 'Kazakhstani Tenge', 'symbol' => '₸' ),
-            'LAK' => array( 'name' => 'Laotian Kip', 'symbol' => '₭' ),
-            'LBP' => array( 'name' => 'Lebanese Pound', 'symbol' => 'ل.ل' ),
-            'LKR' => array( 'name' => 'Sri Lankan Rupee', 'symbol' => '₨' ),
-            'LRD' => array( 'name' => 'Liberian Dollar', 'symbol' => '$' ),
-            'LSL' => array( 'name' => 'Lesotho Loti', 'symbol' => 'L' ),
-            'LYD' => array( 'name' => 'Libyan Dinar', 'symbol' => 'ل.د' ),
-            'MAD' => array( 'name' => 'Moroccan Dirham', 'symbol' => 'د.م.' ),
-            'MDL' => array( 'name' => 'Moldovan Leu', 'symbol' => 'L' ),
-            'MGA' => array( 'name' => 'Malagasy Ariary', 'symbol' => 'Ar' ),
-            'MKD' => array( 'name' => 'Macedonian Denar', 'symbol' => 'ден' ),
-            'MMK' => array( 'name' => 'Myanma Kyat', 'symbol' => 'Ks' ),
-            'MNT' => array( 'name' => 'Mongolian Tugrik', 'symbol' => '₮' ),
-            'MOP' => array( 'name' => 'Macanese Pataca', 'symbol' => 'MOP$' ),
-            'MRU' => array( 'name' => 'Mauritanian Ouguiya', 'symbol' => 'UM' ),
-            'MUR' => array( 'name' => 'Mauritian Rupee', 'symbol' => '₨' ),
-            'MVR' => array( 'name' => 'Maldivian Rufiyaa', 'symbol' => 'Rf' ),
-            'MWK' => array( 'name' => 'Malawian Kwacha', 'symbol' => 'MK' ),
-            'MYR' => array( 'name' => 'Malaysian Ringgit', 'symbol' => 'RM' ),
-            'MZN' => array( 'name' => 'Mozambican Metical', 'symbol' => 'MT' ),
-            'NAD' => array( 'name' => 'Namibian Dollar', 'symbol' => '$' ),
-            'NGN' => array( 'name' => 'Nigerian Naira', 'symbol' => '₦' ),
-            'NIO' => array( 'name' => 'Nicaraguan Córdoba', 'symbol' => 'C$' ),
-            'NPR' => array( 'name' => 'Nepalese Rupee', 'symbol' => '₨' ),
-            'OMR' => array( 'name' => 'Omani Rial', 'symbol' => 'ر.ع.' ),
-            'PAB' => array( 'name' => 'Panamanian Balboa', 'symbol' => 'B/.' ),
-            'PEN' => array( 'name' => 'Peruvian Nuevo Sol', 'symbol' => 'S/' ),
-            'PGK' => array( 'name' => 'Papua New Guinean Kina', 'symbol' => 'K' ),
-            'PHP' => array( 'name' => 'Philippine Peso', 'symbol' => '₱' ),
-            'PKR' => array( 'name' => 'Pakistani Rupee', 'symbol' => '₨' ),
-            'PLN' => array( 'name' => 'Polish Zloty', 'symbol' => 'zł' ),
-            'PYG' => array( 'name' => 'Paraguayan Guarani', 'symbol' => '₲' ),
-            'QAR' => array( 'name' => 'Qatari Rial', 'symbol' => 'ر.ق' ),
-            'RON' => array( 'name' => 'Romanian Leu', 'symbol' => 'lei' ),
-            'RSD' => array( 'name' => 'Serbian Dinar', 'symbol' => 'дин.' ),
-            'RWF' => array( 'name' => 'Rwandan Franc', 'symbol' => 'FRw' ),
-            'SAR' => array( 'name' => 'Saudi Riyal', 'symbol' => 'ر.س' ),
-            'SBD' => array( 'name' => 'Solomon Islands Dollar', 'symbol' => '$' ),
-            'SCR' => array( 'name' => 'Seychellois Rupee', 'symbol' => '₨' ),
-            'SDG' => array( 'name' => 'Sudanese Pound', 'symbol' => 'ج.س.' ),
-            'SHP' => array( 'name' => 'Saint Helena Pound', 'symbol' => '£' ),
-            'SLL' => array( 'name' => 'Sierra Leonean Leone', 'symbol' => 'Le' ),
-            'SOS' => array( 'name' => 'Somali Shilling', 'symbol' => 'Sh' ),
-            'SRD' => array( 'name' => 'Surinamese Dollar', 'symbol' => '$' ),
-            'SSP' => array( 'name' => 'South Sudanese Pound', 'symbol' => '£' ),
-            'STN' => array( 'name' => 'São Tomé and Príncipe Dobra', 'symbol' => 'Db' ),
-            'SVC' => array( 'name' => 'Salvadoran Colón', 'symbol' => '₡' ),
-            'SYP' => array( 'name' => 'Syrian Pound', 'symbol' => '£' ),
-            'SZL' => array( 'name' => 'Swazi Lilangeni', 'symbol' => 'L' ),
-            'THB' => array( 'name' => 'Thai Baht', 'symbol' => '฿' ),
-            'TJS' => array( 'name' => 'Tajikistani Somoni', 'symbol' => 'ЅМ' ),
-            'TMT' => array( 'name' => 'Turkmenistani Manat', 'symbol' => 'm' ),
-            'TND' => array( 'name' => 'Tunisian Dinar', 'symbol' => 'د.ت' ),
-            'TOP' => array( 'name' => 'Tongan Pa\'anga', 'symbol' => 'T$' ),
-            'TTD' => array( 'name' => 'Trinidad and Tobago Dollar', 'symbol' => 'TT$' ),
-            'TWD' => array( 'name' => 'New Taiwan Dollar', 'symbol' => 'NT$' ),
-            'TZS' => array( 'name' => 'Tanzanian Shilling', 'symbol' => 'TSh' ),
-            'UAH' => array( 'name' => 'Ukrainian Hryvnia', 'symbol' => '₴' ),
-            'UGX' => array( 'name' => 'Ugandan Shilling', 'symbol' => 'USh' ),
-            'UYU' => array( 'name' => 'Uruguayan Peso', 'symbol' => '$U' ),
-            'UZS' => array( 'name' => 'Uzbekistan Som', 'symbol' => 'лв' ),
-            'VES' => array( 'name' => 'Venezuelan Bolívar Soberano', 'symbol' => 'Bs.' ),
-            'VND' => array( 'name' => 'Vietnamese Dong', 'symbol' => '₫' ),
-            'VUV' => array( 'name' => 'Vanuatu Vatu', 'symbol' => 'VT' ),
-            'WST' => array( 'name' => 'Samoan Tala', 'symbol' => 'WS$' ),
-            'XAF' => array( 'name' => 'CFA Franc BEAC', 'symbol' => 'FCFA' ),
-            'XCD' => array( 'name' => 'East Caribbean Dollar', 'symbol' => '$' ),
-            'XOF' => array( 'name' => 'CFA Franc BCEAO', 'symbol' => 'CFA' ),
-            'XPF' => array( 'name' => 'CFP Franc', 'symbol' => '₣' ),
-            'YER' => array( 'name' => 'Yemeni Rial', 'symbol' => '﷼' ),
-            'ZMW' => array( 'name' => 'Zambian Kwacha', 'symbol' => 'ZK' ),
-            'ZWL' => array( 'name' => 'Zimbabwean Dollar', 'symbol' => '$' ),
-        );
+        return get_all_available_currencies();
     }
 }
 

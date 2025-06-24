@@ -8,25 +8,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 function get_available_currencies() {
-    $enabled_currencies = get_option('multi_currency_switcher_enabled_currencies', array('USD'));
-    $all_currencies = array(
-        'USD' => 'US Dollar',
-        'EUR' => 'Euro',
-        'GBP' => 'British Pound',
-        'JPY' => 'Japanese Yen',
-        'AUD' => 'Australian Dollar',
-        'CAD' => 'Canadian Dollar',
-        'CHF' => 'Swiss Franc',
-        'CNY' => 'Chinese Yuan',
-        'SEK' => 'Swedish Krona',
-        'NZD' => 'New Zealand Dollar',
-        // Add more currencies as needed
-    );
+    $enabled_currency_codes = get_option('multi_currency_switcher_enabled_currencies', array('USD'));
+    $all_currencies = get_all_available_currencies();
     
     $result = array();
-    foreach ($enabled_currencies as $code) {
+    foreach ($enabled_currency_codes as $code) {
         if (isset($all_currencies[$code])) {
-            $result[$code] = $all_currencies[$code];
+            $result[$code] = $all_currencies[$code]['name'];
         }
     }
     

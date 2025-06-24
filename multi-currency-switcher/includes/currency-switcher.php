@@ -95,24 +95,38 @@ function multi_currency_switcher_filter_payment_gateways($available_gateways) {
 add_filter('woocommerce_available_payment_gateways', 'multi_currency_switcher_filter_payment_gateways', 20); // Ensure it runs after WooCommerce initialization
 
 function multi_currency_switcher_display_sticky_widget() {
+    $currencies = get_available_currencies();
+    $current_currency = (function_exists('WC') && WC() && WC()->session) ? 
+        WC()->session->get('chosen_currency', 'USD') : 'USD';
+    
     echo '<div class="sticky-currency-switcher">';
     echo '<label for="sticky-currency-selector">Currency:</label>';
     echo '<select id="sticky-currency-selector">';
-    foreach (get_available_currencies() as $code => $name) {
-        echo sprintf('<option value="%s">%s</option>', esc_attr($code), esc_html($name));
+    
+    foreach ($currencies as $code => $name) {
+        $selected = ($code === $current_currency) ? 'selected' : '';
+        echo sprintf('<option value="%s" %s>%s</option>', esc_attr($code), $selected, esc_html($name));
     }
+    
     echo '</select>';
     echo '</div>';
 }
 add_action('wp_footer', 'multi_currency_switcher_display_sticky_widget');
 
 function multi_currency_switcher_display_on_product_page() {
+    $currencies = get_available_currencies();
+    $current_currency = (function_exists('WC') && WC() && WC()->session) ? 
+        WC()->session->get('chosen_currency', 'USD') : 'USD';
+    
     echo '<div class="product-currency-switcher">';
     echo '<label for="product-currency-selector">Currency:</label>';
     echo '<select id="product-currency-selector">';
-    foreach (get_available_currencies() as $code => $name) {
-        echo sprintf('<option value="%s">%s</option>', esc_attr($code), esc_html($name));
+    
+    foreach ($currencies as $code => $name) {
+        $selected = ($code === $current_currency) ? 'selected' : '';
+        echo sprintf('<option value="%s" %s>%s</option>', esc_attr($code), $selected, esc_html($name));
     }
+    
     echo '</select>';
     echo '</div>';
 }

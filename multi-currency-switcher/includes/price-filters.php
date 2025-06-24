@@ -42,7 +42,7 @@ function multi_currency_switcher_apply_price_filters() {
     
     // Cart, checkout, and order prices
     add_filter('woocommerce_cart_product_subtotal', 'multi_currency_switcher_cart_product_subtotal', 10, 4);
-    add_filter('woocommerce_cart_subtotal', 'multi_currency_switcher_price_html', 10);
+    add_filter('woocommerce_cart_subtotal', 'multi_currency_switcher_cart_subtotal', 10, 3);
     add_filter('woocommerce_cart_total', 'multi_currency_switcher_price_html', 10);
     add_filter('woocommerce_calculated_total', 'multi_currency_switcher_calculated_total', 10, 2);
     
@@ -58,13 +58,12 @@ function multi_currency_switcher_apply_price_filters() {
     // Product variations cache
     add_filter('woocommerce_get_variation_prices_hash', 'multi_currency_switcher_variation_prices_hash', 10, 3);
 
-    // Add these new filters
+    // Mini cart handling
     add_filter('woocommerce_cart_contents_total', 'multi_currency_switcher_cart_contents_total', 10, 1);
-    add_filter('woocommerce_cart_subtotal', 'multi_currency_switcher_cart_subtotal', 10, 3);
     
     // This is critical for mini cart display
-    add_filter('woocommerce_before_mini_cart', 'multi_currency_switcher_before_mini_cart');
-    add_filter('woocommerce_after_mini_cart', 'multi_currency_switcher_after_mini_cart');
+    add_action('woocommerce_before_mini_cart', 'multi_currency_switcher_before_mini_cart');
+    add_action('woocommerce_after_mini_cart', 'multi_currency_switcher_after_mini_cart');
     
     // For updating mini cart totals
     add_filter('woocommerce_cart_item_subtotal', 'multi_currency_switcher_cart_item_subtotal', 10, 3);
@@ -338,4 +337,18 @@ function multi_currency_switcher_cart_contents_total($total) {
 function multi_currency_switcher_cart_item_subtotal($subtotal, $cart_item, $cart_item_key) {
     // Subtotal already converted, just return it
     return $subtotal;
+}
+
+/**
+ * Filter the cart subtotal display
+ * 
+ * @param string $cart_subtotal The cart subtotal HTML
+ * @param bool $compound Whether the subtotal includes compound taxes
+ * @param WC_Cart $cart The cart object
+ * @return string The filtered cart subtotal
+ */
+function multi_currency_switcher_cart_subtotal($cart_subtotal, $compound = false, $cart = null) {
+    // The cart subtotal is already converted by WooCommerce core
+    // We just need to make sure it's displayed correctly
+    return $cart_subtotal;
 }

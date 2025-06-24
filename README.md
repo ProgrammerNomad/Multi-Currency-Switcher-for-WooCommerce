@@ -3,47 +3,67 @@
 A WooCommerce plugin for multi-currency switching, designed to maximize international sales by allowing customers to view and pay in their local currency.
 
 ## Features
-- Add and manage unlimited currencies.
-- Automatic exchange rate updates via API (e.g., European Central Bank).
-- Manual exchange rate input for full control.
-- Geolocation-based currency display.
-- Customizable currency format (symbol position, separators, decimals).
-- Disable specific payment methods for certain currencies.
-- Sticky currency converter widget.
-- Shortcodes, Gutenberg blocks, and Elementor widgets for currency switcher placement.
-- Product page currency switcher.
-- Manual price setting for products in different currencies.
-- Multi-currency options for shipping costs and coupons.
+- Add and manage unlimited currencies with a clean, intuitive interface
+- Automatic exchange rate updates via API (e.g., European Central Bank)
+- Manual exchange rate input for full control
+- Geolocation-based currency detection for automatic currency switching
+- Customizable currency format (symbol position, separators, decimals)
+- Payment gateway restrictions for specific currencies
+- Sticky currency converter widget with customizable position
+- Consistent admin interface with intuitive navigation tabs
+- Shortcodes for flexible currency switcher placement
+- Product-specific pricing in different currencies
+- Memory-optimized cart calculations for better performance
+- Responsive design that works on all devices
 
 ## Installation
-1. Download the plugin.
-2. Upload it to your WordPress site via the Plugins menu.
-3. Activate the plugin.
-4. Configure settings in the "Currency Switcher" menu in the WordPress admin dashboard.
+1. Download the plugin
+2. Upload it to your WordPress site via the Plugins menu
+3. Activate the plugin
+4. Configure settings in the "Currency Switcher" menu in the WordPress admin dashboard
 
 ## Usage
 
-### **Currency Switcher**
-- Use the shortcode `[multi_currency_switcher]` to display the currency switcher anywhere on your site.
-- A sticky widget is automatically displayed on the right side of the screen for easy access.
+### **Basic Configuration**
+1. Navigate to Currency Switcher > General Settings to configure default options
+2. Go to Currency Switcher > Currencies to enable currencies and set exchange rates
+3. Use Currency Switcher > Style Settings to customize the appearance
+
+### **Currency Management**
+- Enable/disable currencies from the Currencies tab
+- Set exchange rates manually or update automatically
+- Configure decimal places, thousand separators, and symbol positions
 
 ### **Geolocation**
-- The plugin automatically detects the user's location and displays prices in their local currency.
+- Enable automatic currency detection based on visitor location
+- Set fallback currency for when geolocation fails
 
 ### **Payment Gateway Restrictions**
-- Configure payment restrictions for specific currencies in the admin settings.
+- Control which payment methods are available for each currency
+- Disable specific gateways for certain currencies to avoid processing fees
 
-### **Product Page Currency Switcher**
-- A currency switcher is displayed on product pages, allowing users to view prices in different currencies.
+### **Style Customization**
+- Customize colors for currency switcher elements
+- Configure sticky widget position (left, right, top, bottom)
+- Set text colors, background colors, and border styles
 
-### **Manual Price Setting**
-- Set product prices manually for each currency in the WooCommerce product edit page.
+### **Product-Specific Pricing**
+- Set product prices manually for each currency in the product edit page
+- Override automatic currency conversion for specific products
 
-### **Shipping Costs**
-- Shipping costs are dynamically adjusted based on the selected currency.
+### **Shortcode Usage**
+- Use `[multi_currency_switcher]` to display the currency switcher anywhere on your site
+- Additional parameters available for customization: `[multi_currency_switcher style="buttons" title="Select Currency"]`
 
-### **Coupons**
-- Set coupon values for each currency in the WooCommerce coupon settings.
+## Performance Considerations
+- The plugin includes memory optimization for cart calculations
+- Caching is implemented for exchange rates to improve performance
+- Product prices are cached to minimize database queries
+
+## Troubleshooting
+- If you encounter memory issues, increase your PHP memory limit to at least 256MB
+- For issues with currency display, clear your WooCommerce cache
+- Check the debug log for detailed error messages if you encounter problems
 
 ## Author
 Created by [ProgrammerNomad](https://github.com/ProgrammerNomad).

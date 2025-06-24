@@ -159,16 +159,23 @@ function multi_currency_switcher_filter_displayed_price($price, $product) {
         return $price;
     }
     
+    // Get the raw price value for conversion (it might be HTML at this point)
+    $raw_price = $product->get_price();
+    
+    if (!is_numeric($raw_price)) {
+        return $price; // If not a number, return the original price
+    }
+    
     // Check for a custom price for this product in this currency
     $custom_price = get_post_meta($product->get_id(), '_price_' . $currency, true);
     
-    if (!empty($custom_price)) {
+    if (!empty($custom_price) && is_numeric($custom_price)) {
         // Format the price with WooCommerce's wc_price function
         return wc_price($custom_price, array('currency' => $currency));
     } else {
         // No custom price, so convert using exchange rate
         $exchange_rate = multi_currency_switcher_get_exchange_rate($currency);
-        $converted_price = $price * $exchange_rate;
+        $converted_price = floatval($raw_price) * floatval($exchange_rate);
         
         // Format the converted price
         return wc_price($converted_price, array('currency' => $currency));

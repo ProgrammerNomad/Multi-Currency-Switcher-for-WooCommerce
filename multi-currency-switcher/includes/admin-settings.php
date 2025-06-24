@@ -804,7 +804,5 @@ class Multi_Currency_Switcher_Admin_Settings {
     }
 }
 
-
-
 // Initialize the settings class
 new Multi_Currency_Switcher_Admin_Settings();

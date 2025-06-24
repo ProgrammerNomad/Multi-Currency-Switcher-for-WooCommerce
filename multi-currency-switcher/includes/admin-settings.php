@@ -632,6 +632,45 @@ class Multi_Currency_Switcher_Admin_Settings {
     }
 
     /**
+     * Register plugin settings with WordPress
+     */
+    public function register_settings() {
+        // Register general settings
+        register_setting(
+            'multi_currency_switcher_general_settings',
+            'multi_currency_switcher_general_settings'
+        );
+        
+        // Register currency settings
+        register_setting(
+            'multi_currency_switcher_enabled_currencies',
+            'multi_currency_switcher_enabled_currencies'
+        );
+        
+        register_setting(
+            'multi_currency_switcher_exchange_rates',
+            'multi_currency_switcher_exchange_rates'
+        );
+        
+        register_setting(
+            'multi_currency_switcher_currency_settings',
+            'multi_currency_switcher_currency_settings'
+        );
+        
+        // Register style settings
+        register_setting(
+            'multi_currency_switcher_style_settings',
+            'multi_currency_switcher_style_settings'
+        );
+        
+        // Register payment restrictions
+        register_setting(
+            'multi_currency_switcher_payment_restrictions',
+            'multi_currency_switcher_payment_restrictions'
+        );
+    }
+
+    /**
      * Save the general settings
      */
     public function save_general_settings() {

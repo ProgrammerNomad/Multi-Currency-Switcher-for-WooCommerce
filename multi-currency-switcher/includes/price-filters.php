@@ -484,10 +484,10 @@ function multi_currency_switcher_order_currency($currency) {
         }
     }
     
+    // Always return a value, which was missing before
     return $currency;
 }
-
-// Apply this filter specifically for order pages with a high priority
+// Add this filter to ensure the function is used
 add_filter('woocommerce_currency', 'multi_currency_switcher_order_currency', 999);
 
 /**

@@ -804,40 +804,7 @@ class Multi_Currency_Switcher_Admin_Settings {
     }
 }
 
-/**
- * Helper function to get all available currencies
- * 
- * NOTE: This is now commented out to avoid the duplicate function declaration.
- * The function is already defined in helpers.php which is loaded first.
- */
-/*
-function get_all_available_currencies() {
-    // This function should return an array of all available currencies
-    // For simplicity, we're defining a static array here. You can modify this to fetch from a database or an API.
-    return array(
-        'USD' => array('name' => 'US Dollar', 'symbol' => '$'),
-        'EUR' => array('name' => 'Euro', 'symbol' => '€'),
-        'GBP' => array('name' => 'British Pound', 'symbol' => '£'),
-        'JPY' => array('name' => 'Japanese Yen', 'symbol' => '¥'),
-        'AUD' => array('name' => 'Australian Dollar', 'symbol' => 'A$'),
-        'CAD' => array('name' => 'Canadian Dollar', 'symbol' => 'C$'),
-        'CHF' => array('name' => 'Swiss Franc', 'symbol' => 'CHF'),
-        'CNY' => array('name' => 'Chinese Yuan', 'symbol' => '¥'),
-        'SEK' => array('name' => 'Swedish Krona', 'symbol' => 'kr'),
-        'NZD' => array('name' => 'New Zealand Dollar', 'symbol' => 'NZ$'),
-        // Add more currencies as needed
-    );
-}
-*/
 
-/**
- * Helper function to update all exchange rates
- */
-function multi_currency_switcher_update_all_exchange_rates() {
-    // This function should contain the logic to update exchange rates from an external source
-    // For simplicity, we're just returning true here. You can modify this to perform the actual update.
-    return true;
-}
 
 // Initialize the settings class
 new Multi_Currency_Switcher_Admin_Settings();

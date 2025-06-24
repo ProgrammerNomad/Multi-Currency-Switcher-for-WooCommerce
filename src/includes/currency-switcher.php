@@ -32,10 +32,12 @@ class CurrencySwitcher {
     }
 
     public function switch_currency() {
-        if ( isset( $_POST['currency'] ) && array_key_exists( $_POST['currency'], $this->currencies ) ) {
-            $selected_currency = sanitize_text_field( $_POST['currency'] );
-            // Logic to switch currency and update prices accordingly.
-            // This would typically involve updating session or transient data.
+        $country = get_user_country();
+        $currency = get_currency_by_country($country);
+
+        if ($currency && array_key_exists($currency, $this->currencies)) {
+            // Set the currency based on geolocation
+            WC()->session->set('chosen_currency', $currency);
         }
     }
 
@@ -62,4 +64,42 @@ function multi_currency_switcher_display() {
     echo '</div>';
 }
 add_shortcode('multi_currency_switcher', 'multi_currency_switcher_display');
+
+function multi_currency_switcher_filter_payment_gateways($available_gateways) {
+    $currency = WC()->session->get('chosen_currency', 'USD'); // Default to USD
+    $restrictions = get_option('multi_currency_switcher_payment_restrictions', []);
+
+    if (isset($restrictions[$currency])) {
+        foreach ($restrictions[$currency] as $gateway_id) {
+            unset($available_gateways[$gateway_id]);
+        }
+    }
+
+    return $available_gateways;
+}
+add_filter('woocommerce_available_payment_gateways', 'multi_currency_switcher_filter_payment_gateways');
+
+function multi_currency_switcher_display_sticky_widget() {
+    echo '<div class="sticky-currency-switcher">';
+    echo '<label for="sticky-currency-selector">Currency:</label>';
+    echo '<select id="sticky-currency-selector">';
+    foreach (get_available_currencies() as $code => $name) {
+        echo sprintf('<option value="%s">%s</option>', esc_attr($code), esc_html($name));
+    }
+    echo '</select>';
+    echo '</div>';
+}
+add_action('wp_footer', 'multi_currency_switcher_display_sticky_widget');
+
+function multi_currency_switcher_display_on_product_page() {
+    echo '<div class="product-currency-switcher">';
+    echo '<label for="product-currency-selector">Currency:</label>';
+    echo '<select id="product-currency-selector">';
+    foreach (get_available_currencies() as $code => $name) {
+        echo sprintf('<option value="%s">%s</option>', esc_attr($code), esc_html($name));
+    }
+    echo '</select>';
+    echo '</div>';
+}
+add_action('woocommerce_single_product_summary', 'multi_currency_switcher_display_on_product_page', 25);
 ?>

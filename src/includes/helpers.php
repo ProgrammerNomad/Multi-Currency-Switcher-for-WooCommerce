@@ -51,3 +51,28 @@ function multi_currency_switcher_get_exchange_rate($currency) {
     $data = json_decode(wp_remote_retrieve_body($response), true);
     return $data['rates'][$currency] ?? false;
 }
+
+function get_user_country() {
+    if (class_exists('WC_Geolocation')) {
+        $geolocation = new WC_Geolocation();
+        $user_ip = $geolocation->get_ip_address();
+        $location = $geolocation->geolocate_ip($user_ip);
+        return $location['country'] ?? null;
+    }
+    return null;
+}
+
+function get_currency_by_country($country) {
+    $country_currency_map = [
+        'US' => 'USD',
+        'GB' => 'GBP',
+        'EU' => 'EUR',
+        'JP' => 'JPY',
+        'AU' => 'AUD',
+        'CA' => 'CAD',
+        'CN' => 'CNY',
+        'SE' => 'SEK',
+        'NZ' => 'NZD',
+    ];
+    return $country_currency_map[$country] ?? 'USD'; // Default to USD if no match
+}

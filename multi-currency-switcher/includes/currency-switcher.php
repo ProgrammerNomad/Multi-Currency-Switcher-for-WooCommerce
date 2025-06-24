@@ -131,4 +131,22 @@ function multi_currency_switcher_display_on_product_page() {
     echo '</div>';
 }
 add_action('woocommerce_single_product_summary', 'multi_currency_switcher_display_on_product_page', 25);
+
+function multi_currency_switcher_read_cookie() {
+    if (!function_exists('WC') || !WC() || !WC()->session) {
+        return;
+    }
+    
+    // Check if the currency cookie exists
+    if (isset($_COOKIE['chosen_currency'])) {
+        $currency = sanitize_text_field($_COOKIE['chosen_currency']);
+        $available_currencies = get_available_currencies();
+        
+        // Ensure the currency is valid
+        if (array_key_exists($currency, $available_currencies)) {
+            WC()->session->set('chosen_currency', $currency);
+        }
+    }
+}
+add_action('init', 'multi_currency_switcher_read_cookie', 20);
 ?>

@@ -9,11 +9,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Multi_Currency_Switcher_Admin_Settings {
 
     public function __construct() {
-        add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
-        add_action( 'admin_init', array( $this, 'register_settings' ) );
-        add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
-        add_action( 'add_meta_boxes', array( $this, 'add_product_currency_meta_boxes' ) );
-        add_action( 'save_post_product', array( $this, 'save_product_currency_prices' ) );
+        // Increase time limit for admin pages
+        if (is_admin()) {
+            $current_limit = ini_get('max_execution_time');
+            if ($current_limit < 120) {
+                @set_time_limit(120); // Increase to 120 seconds for admin pages
+            }
+        }
+        
+        add_action('admin_menu', array($this, 'add_admin_menu'));
+        add_action('admin_init', array($this, 'register_settings'));
+        add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
+        add_action('add_meta_boxes', array($this, 'add_product_currency_meta_boxes'));
+        add_action('save_post_product', array($this, 'save_product_currency_prices'));
     }
 
     public function add_admin_menu() {
@@ -840,6 +848,15 @@ class Multi_Currency_Switcher_Admin_Settings {
         }
         
         update_post_meta($post_id, '_currency_prices', $currency_prices);
+    }
+
+    /**
+     * Get all available currencies for admin use
+     * This is just a wrapper for the global function
+     */
+    public function get_all_available_currencies() {
+        // Call the global function from helpers.php
+        return get_all_available_currencies();
     }
 }
 

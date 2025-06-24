@@ -12,6 +12,8 @@ class Multi_Currency_Switcher_Admin_Settings {
         add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
         add_action( 'admin_init', array( $this, 'register_settings' ) );
         add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
+        add_action( 'add_meta_boxes', array( $this, 'add_product_currency_meta_boxes' ) );
+        add_action( 'save_post_product', array( $this, 'save_product_currency_prices' ) );
     }
 
     public function add_admin_menu() {
@@ -535,6 +537,126 @@ class Multi_Currency_Switcher_Admin_Settings {
 
     private function get_all_available_currencies() {
         return get_all_available_currencies();
+    }
+
+    public function add_product_currency_meta_boxes() {
+        add_meta_box(
+            'multi-currency-prices',
+            'Currency-Specific Prices',
+            array($this, 'render_product_currency_prices'),
+            'product',
+            'normal',
+            'high'
+        );
+    }
+
+    public function render_product_currency_prices($post) {
+        $product = wc_get_product($post->ID);
+        $enabled_currencies = get_option('multi_currency_switcher_enabled_currencies', array('USD'));
+        $base_currency = get_option('woocommerce_currency', 'USD');
+        $all_currencies = $this->get_all_available_currencies();
+        
+        // Remove base currency from list
+        $currencies = array_diff($enabled_currencies, array($base_currency));
+        
+        echo '<p>Set specific prices for each currency. Leave empty to use automatic conversion based on exchange rates.</p>';
+        echo '<table class="form-table">';
+        echo '<tr>';
+        echo '<th>Currency</th>';
+        echo '<th>Regular Price</th>';
+        echo '<th>Sale Price</th>';
+        echo '</tr>';
+        
+        // Base currency (read-only)
+        echo '<tr>';
+        echo '<td><strong>' . $base_currency . ' (' . $all_currencies[$base_currency]['name'] . ') - Base Currency</strong></td>';
+        echo '<td>' . $product->get_regular_price() . '</td>';
+        echo '<td>' . $product->get_sale_price() . '</td>';
+        echo '</tr>';
+        
+        // Other currencies
+        foreach ($currencies as $currency) {
+            if (!isset($all_currencies[$currency])) {
+                continue;
+            }
+            
+            $regular_price = get_post_meta($post->ID, '_regular_price_' . $currency, true);
+            $sale_price = get_post_meta($post->ID, '_sale_price_' . $currency, true);
+            
+            echo '<tr>';
+            echo '<td><strong>' . $currency . ' (' . $all_currencies[$currency]['name'] . ')</strong></td>';
+            echo '<td><input type="text" name="multi_currency_regular_price[' . $currency . ']" value="' . esc_attr($regular_price) . '" placeholder="Auto"></td>';
+            echo '<td><input type="text" name="multi_currency_sale_price[' . $currency . ']" value="' . esc_attr($sale_price) . '" placeholder="Auto"></td>';
+            echo '</tr>';
+        }
+        
+        echo '</table>';
+        
+        wp_nonce_field('multi_currency_switcher_save_product_prices', 'multi_currency_switcher_product_nonce');
+    }
+
+    public function save_product_currency_prices($post_id) {
+        // Check if our nonce is set and verify it
+        if (!isset($_POST['multi_currency_switcher_product_nonce']) || 
+            !wp_verify_nonce($_POST['multi_currency_switcher_product_nonce'], 'multi_currency_switcher_save_product_prices')) {
+            return;
+        }
+        
+        // Check if not autosave
+        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+            return;
+        }
+        
+        // Check permissions
+        if (!current_user_can('edit_post', $post_id)) {
+            return;
+        }
+        
+        // Save regular prices
+        if (isset($_POST['multi_currency_regular_price']) && is_array($_POST['multi_currency_regular_price'])) {
+            foreach ($_POST['multi_currency_regular_price'] as $currency => $price) {
+                if (!empty($price)) {
+                    update_post_meta($post_id, '_regular_price_' . $currency, wc_format_decimal($price));
+                    
+                    // If no sale price, use regular price as the _price
+                    $sale_price = isset($_POST['multi_currency_sale_price'][$currency]) ? 
+                                  $_POST['multi_currency_sale_price'][$currency] : '';
+                                  
+                    if (empty($sale_price)) {
+                        update_post_meta($post_id, '_price_' . $currency, wc_format_decimal($price));
+                    }
+                } else {
+                    delete_post_meta($post_id, '_regular_price_' . $currency);
+                    
+                    // If no regular price and no sale price, remove the _price too
+                    if (empty($_POST['multi_currency_sale_price'][$currency])) {
+                        delete_post_meta($post_id, '_price_' . $currency);
+                    }
+                }
+            }
+        }
+        
+        // Save sale prices
+        if (isset($_POST['multi_currency_sale_price']) && is_array($_POST['multi_currency_sale_price'])) {
+            foreach ($_POST['multi_currency_sale_price'] as $currency => $price) {
+                if (!empty($price)) {
+                    update_post_meta($post_id, '_sale_price_' . $currency, wc_format_decimal($price));
+                    update_post_meta($post_id, '_price_' . $currency, wc_format_decimal($price));
+                } else {
+                    delete_post_meta($post_id, '_sale_price_' . $currency);
+                    
+                    // If no sale price but there is a regular price, set _price to regular price
+                    $regular_price = isset($_POST['multi_currency_regular_price'][$currency]) ? 
+                                    $_POST['multi_currency_regular_price'][$currency] : '';
+                                    
+                    if (!empty($regular_price)) {
+                        update_post_meta($post_id, '_price_' . $currency, wc_format_decimal($regular_price));
+                    } else {
+                        delete_post_meta($post_id, '_price_' . $currency);
+                    }
+                }
+            }
+        }
     }
 }
 

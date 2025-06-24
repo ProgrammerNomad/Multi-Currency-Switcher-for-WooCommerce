@@ -17,11 +17,18 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function changeCurrency(currency) {
-        // Create or update the cookie
-        document.cookie = "chosen_currency=" + currency + "; path=/; max-age=86400";
+        // Create or update the cookie (30 days expiry)
+        document.cookie = "chosen_currency=" + currency + "; path=/; max-age=2592000";
         
-        // Reload the page to reflect the currency change
-        window.location.reload();
+        // Add a timestamp parameter to prevent caching issues
+        const timestamp = new Date().getTime();
+        const separator = window.location.href.indexOf('?') !== -1 ? '&' : '?';
+        
+        // Reload the page with currency parameter
+        window.location.href = window.location.href.split('#')[0] + 
+                              separator + 
+                              'currency=' + currency + 
+                              '&_=' + timestamp;
     }
 
     // Don't try to access elements that might not exist

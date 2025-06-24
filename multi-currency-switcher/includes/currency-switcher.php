@@ -149,18 +149,40 @@ function multi_currency_switcher_display_on_product_page() {
 add_action('woocommerce_single_product_summary', 'multi_currency_switcher_display_on_product_page', 25);
 
 function multi_currency_switcher_read_cookie() {
-    if (!function_exists('WC') || !WC() || !WC()->session) {
+    if (!function_exists('WC') || !WC()->session) {
         return;
     }
     
-    // Check if the currency cookie exists
-    if (isset($_COOKIE['chosen_currency'])) {
+    // First check for currency in the URL (for direct switching)
+    if (isset($_GET['currency']) && !empty($_GET['currency'])) {
+        $currency = sanitize_text_field($_GET['currency']);
+        $available_currencies = get_available_currencies();
+        
+        if (array_key_exists($currency, $available_currencies)) {
+            WC()->session->set('chosen_currency', $currency);
+            // Set cookie for 30 days
+            setcookie('chosen_currency', $currency, time() + (86400 * 30), '/');
+        }
+    }
+    // Then check for existing cookie
+    else if (isset($_COOKIE['chosen_currency'])) {
         $currency = sanitize_text_field($_COOKIE['chosen_currency']);
         $available_currencies = get_available_currencies();
         
-        // Ensure the currency is valid
         if (array_key_exists($currency, $available_currencies)) {
             WC()->session->set('chosen_currency', $currency);
+        }
+    }
+    // If no currency set yet, try geolocating
+    else if (!WC()->session->get('chosen_currency')) {
+        $country = get_user_country();
+        $currency = get_currency_by_country($country);
+        $available_currencies = get_available_currencies();
+        
+        if ($currency && array_key_exists($currency, $available_currencies)) {
+            WC()->session->set('chosen_currency', $currency);
+            // Set cookie for 30 days
+            setcookie('chosen_currency', $currency, time() + (86400 * 30), '/');
         }
     }
 }

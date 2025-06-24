@@ -142,3 +142,36 @@ register_deactivation_hook(__FILE__, 'multi_currency_switcher_clear_scheduled_up
 function multi_currency_switcher_clear_scheduled_updates() {
     wp_clear_scheduled_hook('multi_currency_switcher_daily_update');
 }
+
+/**
+ * Override get_price and related functions to apply exchange rates
+ */
+function multi_currency_switcher_filter_displayed_price($price, $product) {
+    if (!function_exists('WC') || !WC()->session) {
+        return $price;
+    }
+    
+    $currency = WC()->session->get('chosen_currency', get_woocommerce_currency());
+    $base_currency = get_woocommerce_currency();
+    
+    // Don't convert if we're already using the base currency
+    if ($currency === $base_currency) {
+        return $price;
+    }
+    
+    // Check for a custom price for this product in this currency
+    $custom_price = get_post_meta($product->get_id(), '_price_' . $currency, true);
+    
+    if (!empty($custom_price)) {
+        // Format the price with WooCommerce's wc_price function
+        return wc_price($custom_price, array('currency' => $currency));
+    } else {
+        // No custom price, so convert using exchange rate
+        $exchange_rate = multi_currency_switcher_get_exchange_rate($currency);
+        $converted_price = $price * $exchange_rate;
+        
+        // Format the converted price
+        return wc_price($converted_price, array('currency' => $currency));
+    }
+}
+add_filter('woocommerce_get_price_html', 'multi_currency_switcher_filter_displayed_price', 10, 2);

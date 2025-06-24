@@ -1,0 +1,21 @@
+{
+    "name": "yourvendor/multi-currency-switcher",
+    "description": "A WooCommerce plugin for multi-currency switching.",
+    "type": "wordpress-plugin",
+    "license": "MIT",
+    "require": {
+        "php": ">=7.0",
+        "woocommerce/woocommerce": "^5.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "YourVendor\\MultiCurrencySwitcher\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "ProgrammerNomad",
+            "homepage": "https://github.com/ProgrammerNomad"
+        }
+    ]
+}

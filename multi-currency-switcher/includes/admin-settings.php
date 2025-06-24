@@ -320,7 +320,7 @@ class Multi_Currency_Switcher_Admin_Settings {
             $this->save_currencies();
         }
 
-        $all_currencies = $this->get_all_available_currencies();
+        $all_currencies = get_all_available_currencies();
         $enabled_currencies = get_option('multi_currency_switcher_enabled_currencies', array(get_woocommerce_currency()));
         $exchange_rates = get_option('multi_currency_switcher_exchange_rates', array());
         $currency_settings = get_option('multi_currency_switcher_currency_settings', array());

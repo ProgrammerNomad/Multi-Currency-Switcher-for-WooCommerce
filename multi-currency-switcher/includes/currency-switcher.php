@@ -32,18 +32,35 @@ class CurrencySwitcher {
         wp_enqueue_style( 'currency-switcher-style', plugins_url( '../assets/css/styles.css', __FILE__ ) );
     }
 
-    public function switch_currency() {
-        if (!function_exists('WC') || !WC() || !WC()->session) {
-            return;
+    public function switch_currency($cart_contents) {
+        if (!function_exists('WC') || !WC()->session) {
+            return $cart_contents;
         }
 
-        $country = get_user_country();
-        $currency = get_currency_by_country($country);
-
-        if ($currency && array_key_exists($currency, $this->currencies)) {
-            // Set the currency based on geolocation
-            WC()->session->set('chosen_currency', $currency);
+        // Get chosen currency (from cookie or geolocation)
+        $chosen_currency = WC()->session->get('chosen_currency', '');
+        
+        // If no currency is set, try to get from geolocation
+        if (empty($chosen_currency)) {
+            $country = get_user_country();
+            $currency = get_currency_by_country($country);
+            
+            if ($currency && array_key_exists($currency, $this->currencies)) {
+                WC()->session->set('chosen_currency', $currency);
+                $chosen_currency = $currency;
+            } else {
+                // Default to WooCommerce base currency
+                $chosen_currency = get_woocommerce_currency();
+                WC()->session->set('chosen_currency', $chosen_currency);
+            }
         }
+
+        // Set a cookie to remember the currency
+        if (!isset($_COOKIE['chosen_currency']) || $_COOKIE['chosen_currency'] !== $chosen_currency) {
+            setcookie('chosen_currency', $chosen_currency, time() + (86400 * 30), '/');
+        }
+        
+        return $cart_contents;
     }
 
     public function display_currency_options() {

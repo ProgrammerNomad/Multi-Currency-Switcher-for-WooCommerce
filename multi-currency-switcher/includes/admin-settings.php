@@ -33,6 +33,16 @@ class Multi_Currency_Switcher_Admin_Settings {
             'multi-currency-switcher-currencies',
             array( $this, 'create_currencies_page' )
         );
+        
+        // Add Style Settings submenu
+        add_submenu_page(
+            'multi-currency-switcher',
+            'Style Settings',
+            'Style Settings',
+            'manage_options',
+            'multi-currency-switcher-style',
+            array( $this, 'create_style_settings_page' )
+        );
     }
 
     public function create_settings_page() {
@@ -317,9 +327,183 @@ class Multi_Currency_Switcher_Admin_Settings {
         }
     }
 
+    public function create_style_settings_page() {
+        // Check if settings are being saved
+        if (isset($_POST['save_style_settings']) && check_admin_referer('save_style_settings', 'style_settings_nonce')) {
+            $this->save_style_settings();
+        }
+
+        // Get saved settings with defaults
+        $style_settings = get_option('multi_currency_switcher_style_settings', array(
+            'title_color' => '#333333',
+            'text_color' => '#000000',
+            'active_color' => '#04AE93',
+            'background_color' => '#FFFFFF',
+            'border_color' => '#B2B2B2',
+            'show_sticky_widget' => 'yes',
+            'sticky_position' => 'left',
+            'limit_currencies' => 'no',
+            'show_flags' => 'left',
+        ));
+        
+        ?>
+        <div class="wrap">
+            <h1>Style Settings</h1>
+            <p>Customize the appearance of currency widgets and shortcodes used in your shop.</p>
+            
+            <form method="post" action="">
+                <?php wp_nonce_field('save_style_settings', 'style_settings_nonce'); ?>
+                
+                <div class="style-settings-container">
+                    <div class="style-settings-section">
+                        <h2>Colors</h2>
+                        <p>Set the colors of all the currency widgets created in the shortcode tab.</p>
+                        
+                        <table class="form-table">
+                            <tr>
+                                <th scope="row">Titles</th>
+                                <td>
+                                    <input type="text" class="color-picker" name="style_settings[title_color]" 
+                                           value="<?php echo esc_attr($style_settings['title_color']); ?>">
+                                    <p class="description">Color for widget titles</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Text</th>
+                                <td>
+                                    <input type="text" class="color-picker" name="style_settings[text_color]" 
+                                           value="<?php echo esc_attr($style_settings['text_color']); ?>">
+                                    <p class="description">Color for widget text</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Active Selection</th>
+                                <td>
+                                    <input type="text" class="color-picker" name="style_settings[active_color]" 
+                                           value="<?php echo esc_attr($style_settings['active_color']); ?>">
+                                    <p class="description">Color for active selection</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Background</th>
+                                <td>
+                                    <input type="text" class="color-picker" name="style_settings[background_color]" 
+                                           value="<?php echo esc_attr($style_settings['background_color']); ?>">
+                                    <p class="description">Background color for widgets</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Borders</th>
+                                <td>
+                                    <input type="text" class="color-picker" name="style_settings[border_color]" 
+                                           value="<?php echo esc_attr($style_settings['border_color']); ?>">
+                                    <p class="description">Border color for widgets</p>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="style-settings-section">
+                        <h2>Sticky Widget</h2>
+                        <table class="form-table">
+                            <tr>
+                                <th scope="row">Show Sticky Currency Widget</th>
+                                <td>
+                                    <label>
+                                        <input type="checkbox" name="style_settings[show_sticky_widget]" value="yes" 
+                                               <?php checked('yes', $style_settings['show_sticky_widget']); ?>>
+                                        Enable to show the sticky currency widget in your shop
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Sticky Currency Widget Position</th>
+                                <td>
+                                    <select name="style_settings[sticky_position]">
+                                        <option value="left" <?php selected('left', $style_settings['sticky_position']); ?>>Left Side</option>
+                                        <option value="right" <?php selected('right', $style_settings['sticky_position']); ?>>Right Side</option>
+                                        <option value="top" <?php selected('top', $style_settings['sticky_position']); ?>>Top</option>
+                                        <option value="bottom" <?php selected('bottom', $style_settings['sticky_position']); ?>>Bottom</option>
+                                    </select>
+                                    <p class="description">Choose the position of the sticky currency widget in your shop</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Limit Currencies in Sticky Widget</th>
+                                <td>
+                                    <label>
+                                        <input type="checkbox" name="style_settings[limit_currencies]" value="yes" 
+                                               <?php checked('yes', $style_settings['limit_currencies']); ?>>
+                                        Choose to limit the number of currencies showing in the sticky widget
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Show Flags in Sticky Widget</th>
+                                <td>
+                                    <select name="style_settings[show_flags]">
+                                        <option value="none" <?php selected('none', $style_settings['show_flags']); ?>>No Flags</option>
+                                        <option value="left" <?php selected('left', $style_settings['show_flags']); ?>>Yes, on Left</option>
+                                        <option value="right" <?php selected('right', $style_settings['show_flags']); ?>>Yes, on Right</option>
+                                    </select>
+                                    <p class="description">Choose the position of the flags or whether to hide them</p>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <p class="submit">
+                    <input type="submit" name="save_style_settings" class="button-primary" value="Save Style Settings">
+                </p>
+            </form>
+        </div>
+        <?php
+    }
+
+    // Add this method to save style settings
+    private function save_style_settings() {
+        if (!isset($_POST['style_settings'])) {
+            return;
+        }
+        
+        $style_settings = array(
+            'title_color' => sanitize_hex_color($_POST['style_settings']['title_color']),
+            'text_color' => sanitize_hex_color($_POST['style_settings']['text_color']),
+            'active_color' => sanitize_hex_color($_POST['style_settings']['active_color']),
+            'background_color' => sanitize_hex_color($_POST['style_settings']['background_color']),
+            'border_color' => sanitize_hex_color($_POST['style_settings']['border_color']),
+            'show_sticky_widget' => isset($_POST['style_settings']['show_sticky_widget']) ? 'yes' : 'no',
+            'sticky_position' => sanitize_text_field($_POST['style_settings']['sticky_position']),
+            'limit_currencies' => isset($_POST['style_settings']['limit_currencies']) ? 'yes' : 'no',
+            'show_flags' => sanitize_text_field($_POST['style_settings']['show_flags']),
+        );
+        
+        update_option('multi_currency_switcher_style_settings', $style_settings);
+        
+        add_settings_error(
+            'multi_currency_switcher_messages',
+            'style_settings_updated',
+            'Style settings have been updated successfully.',
+            'updated'
+        );
+    }
+
     public function enqueue_admin_scripts( $hook ) {
         if ( strpos( $hook, 'multi-currency-switcher' ) !== false ) {
             wp_enqueue_style( 'multi-currency-switcher-admin', plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/admin-styles.css', array(), '1.0.0' );
+            
+            // For color picker
+            if (strpos($hook, 'multi-currency-switcher-style') !== false) {
+                wp_enqueue_style('wp-color-picker');
+                wp_enqueue_script('wp-color-picker');
+                wp_enqueue_script('multi-currency-switcher-admin-js', 
+                    plugin_dir_url(dirname(__FILE__)) . 'assets/js/admin-scripts.js', 
+                    array('wp-color-picker'), 
+                    '1.0.0', 
+                    true
+                );
+            }
         }
     }
 

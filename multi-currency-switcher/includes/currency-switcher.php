@@ -95,17 +95,68 @@ function multi_currency_switcher_filter_payment_gateways($available_gateways) {
 add_filter('woocommerce_available_payment_gateways', 'multi_currency_switcher_filter_payment_gateways', 20); // Ensure it runs after WooCommerce initialization
 
 function multi_currency_switcher_display_sticky_widget() {
+    $style_settings = get_option('multi_currency_switcher_style_settings', array(
+        'show_sticky_widget' => 'yes',
+        'limit_currencies' => 'no',
+        'show_flags' => 'left',
+    ));
+    
+    // Don't display if disabled
+    if ($style_settings['show_sticky_widget'] !== 'yes') {
+        return;
+    }
+    
     $currencies = get_available_currencies();
     $current_currency = (function_exists('WC') && WC() && WC()->session) ? 
         WC()->session->get('chosen_currency', 'USD') : 'USD';
     
-    echo '<div class="sticky-currency-switcher">';
+    // Add flag class based on settings
+    $flag_class = '';
+    if ($style_settings['show_flags'] !== 'none') {
+        $flag_class = 'flag-' . $style_settings['show_flags'];
+    }
+    
+    echo '<div class="sticky-currency-switcher ' . esc_attr($flag_class) . '">';
     echo '<label for="sticky-currency-selector">Currency:</label>';
     echo '<select id="sticky-currency-selector">';
     
     foreach ($currencies as $code => $name) {
         $selected = ($code === $current_currency) ? 'selected' : '';
-        echo sprintf('<option value="%s" %s>%s</option>', esc_attr($code), $selected, esc_html($name));
+        $flag_html = '';
+        
+        // Add flag if enabled
+        if ($style_settings['show_flags'] !== 'none') {
+            $country_code = strtolower(get_country_code_for_currency($code));
+            $flag_html = '<span class="currency-flag" style="background-image: url(' . 
+                         plugins_url('/assets/flags/' . $country_code . '.png', dirname(__FILE__)) . 
+                         ');"></span>';
+        }
+        
+        // Flag position based on settings
+        if ($style_settings['show_flags'] === 'left') {
+            echo sprintf(
+                '<option value="%s" %s>%s %s</option>', 
+                esc_attr($code), 
+                $selected, 
+                $flag_html, 
+                esc_html($name)
+            );
+        } else if ($style_settings['show_flags'] === 'right') {
+            echo sprintf(
+                '<option value="%s" %s>%s %s</option>', 
+                esc_attr($code), 
+                $selected, 
+                esc_html($name), 
+                $flag_html
+            );
+        } else {
+            echo sprintf(
+                '<option value="%s" %s>%s</option>', 
+                esc_attr($code), 
+                $selected, 
+                esc_html($name)
+            );
+        }
     }
     
     echo '</select>';
@@ -149,4 +200,77 @@ function multi_currency_switcher_read_cookie() {
     }
 }
 add_action('init', 'multi_currency_switcher_read_cookie', 20);
+
+function multi_currency_switcher_add_dynamic_styles() {
+    $style_settings = get_option('multi_currency_switcher_style_settings', array(
+        'title_color' => '#333333',
+        'text_color' => '#000000',
+        'active_color' => '#04AE93',
+        'background_color' => '#FFFFFF',
+        'border_color' => '#B2B2B2',
+        'show_sticky_widget' => 'yes',
+        'sticky_position' => 'left',
+        'limit_currencies' => 'no',
+        'show_flags' => 'left',
+    ));
+    
+    $css = "
+    <style type='text/css'>
+        .currency-switcher label,
+        .product-currency-switcher label,
+        .sticky-currency-switcher label {
+            color: {$style_settings['title_color']};
+        }
+        
+        .currency-switcher select,
+        .product-currency-switcher select,
+        .sticky-currency-switcher select {
+            color: {$style_settings['text_color']};
+            background-color: {$style_settings['background_color']};
+            border: 1px solid {$style_settings['border_color']};
+        }
+        
+        .currency-switcher select option:checked,
+        .product-currency-switcher select option:checked,
+        .sticky-currency-switcher select option:checked {
+            background-color: {$style_settings['active_color']};
+            color: white;
+        }
+        
+        .sticky-currency-switcher {
+            " . get_sticky_position_css($style_settings['sticky_position']) . "
+            background-color: {$style_settings['background_color']};
+            border: 1px solid {$style_settings['border_color']};
+        }
+    </style>
+    ";
+    
+    echo $css;
+}
+add_action('wp_head', 'multi_currency_switcher_add_dynamic_styles');
+
+// Helper function to get sticky position CSS
+function get_sticky_position_css($position) {
+    switch ($position) {
+        case 'left':
+            return 'left: 20px; top: 50%; transform: translateY(-50%);';
+        case 'right':
+            return 'right: 20px; top: 50%; transform: translateY(-50%);';
+        case 'top':
+            return 'top: 20px; left: 50%; transform: translateX(-50%);';
+        case 'bottom':
+            return 'bottom: 20px; left: 50%; transform: translateX(-50%);';
+        default:
+            return 'left: 20px; top: 50%; transform: translateY(-50%);';
+    }
+}
+
+// Helper function to get country code from currency
+function get_country_code_for_currency($currency) {
+    $all_currencies = get_all_available_currencies();
+    if (isset($all_currencies[$currency]) && isset($all_currencies[$currency]['country_code'])) {
+        return $all_currencies[$currency]['country_code'];
+    }
+    return 'us'; // Default to US flag
+}
 ?>

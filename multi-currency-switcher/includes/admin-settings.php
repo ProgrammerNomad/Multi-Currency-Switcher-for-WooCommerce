@@ -22,7 +22,7 @@ class Multi_Currency_Switcher_Admin_Settings {
             'Currency Switcher',
             'manage_options',
             'multi-currency-switcher',
-            array( $this, 'create_settings_page' ),
+            array($this, 'create_settings_page'),
             'dashicons-money-alt',
             58 // Position after WooCommerce
         );
@@ -33,7 +33,7 @@ class Multi_Currency_Switcher_Admin_Settings {
             'General Settings',
             'manage_options',
             'multi-currency-switcher',
-            array( $this, 'create_settings_page' )
+            array($this, 'create_settings_page')
         );
         
         add_submenu_page(
@@ -42,7 +42,7 @@ class Multi_Currency_Switcher_Admin_Settings {
             'Currencies',
             'manage_options',
             'multi-currency-switcher-currencies',
-            array( $this, 'create_currencies_page' )
+            array($this, 'create_currencies_page')
         );
         
         add_submenu_page(
@@ -51,7 +51,16 @@ class Multi_Currency_Switcher_Admin_Settings {
             'Style Settings',
             'manage_options',
             'multi-currency-switcher-style',
-            array( $this, 'create_style_settings_page' )
+            array($this, 'create_style_settings_page')
+        );
+        
+        add_submenu_page(
+            'multi-currency-switcher',
+            'Payment Restrictions',
+            'Payment Restrictions',
+            'manage_options',
+            'multi-currency-switcher-payment',
+            array($this, 'create_payment_settings_page')
         );
     }
 
@@ -131,6 +140,7 @@ class Multi_Currency_Switcher_Admin_Settings {
                 <a href="?page=multi-currency-switcher" class="nav-tab nav-tab-active">General Settings</a>
                 <a href="?page=multi-currency-switcher-currencies" class="nav-tab">Currencies</a>
                 <a href="?page=multi-currency-switcher-style" class="nav-tab">Style Settings</a>
+                <a href="?page=multi-currency-switcher-payment" class="nav-tab">Payment Restrictions</a>
             </h2>
             
             <div class="card">
@@ -277,9 +287,10 @@ class Multi_Currency_Switcher_Admin_Settings {
 
     public function create_currencies_page() {
         // Handle manual update if requested
-        if ( isset( $_POST['update_exchange_rates'] ) ) {
+        if (isset($_POST['update_exchange_rates']) && check_admin_referer('update_exchange_rates', 'update_rates_nonce')) {
             $updated = multi_currency_switcher_update_all_exchange_rates();
-            if ( $updated ) {
+            
+            if ($updated) {
                 add_settings_error(
                     'multi_currency_switcher_messages',
                     'rates_updated',
@@ -297,52 +308,60 @@ class Multi_Currency_Switcher_Admin_Settings {
         }
 
         // Handle saving currencies if submitted
-        if ( isset( $_POST['save_currencies'] ) ) {
+        if (isset($_POST['save_currencies']) && check_admin_referer('save_currencies', 'currencies_nonce')) {
             $this->save_currencies();
         }
 
         $all_currencies = $this->get_all_available_currencies();
-        $enabled_currencies = get_option( 'multi_currency_switcher_enabled_currencies', array( 'USD' ) );
-        $exchange_rates = get_option( 'multi_currency_switcher_exchange_rates', array() );
-        $currency_settings = get_option( 'multi_currency_switcher_currency_settings', array() );
+        $enabled_currencies = get_option('multi_currency_switcher_enabled_currencies', array(get_woocommerce_currency()));
+        $exchange_rates = get_option('multi_currency_switcher_exchange_rates', array());
+        $currency_settings = get_option('multi_currency_switcher_currency_settings', array());
 
         // Get WooCommerce base currency
-        $base_currency = get_option( 'woocommerce_currency', 'USD' );
+        $base_currency = get_option('woocommerce_currency', 'USD');
 
         // Get last update time
-        $last_updated = get_option( 'multi_currency_switcher_rates_last_updated', 0 );
-        $last_updated_text = $last_updated ? date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $last_updated ) : 'Never';
+        $last_updated = get_option('multi_currency_switcher_rates_last_updated', 0);
+        $last_updated_text = $last_updated ? date_i18n(get_option('date_format') . ' ' . get_option('time_format'), $last_updated) : 'Never';
 
-        settings_errors( 'multi_currency_switcher_messages' );
+        settings_errors('multi_currency_switcher_messages');
         ?>
         <div class="wrap">
             <h1>Manage Currencies</h1>
+            
+            <!-- Add the tab navigation menu -->
+            <h2 class="nav-tab-wrapper">
+                <a href="?page=multi-currency-switcher" class="nav-tab">General Settings</a>
+                <a href="?page=multi-currency-switcher-currencies" class="nav-tab nav-tab-active">Currencies</a>
+                <a href="?page=multi-currency-switcher-style" class="nav-tab">Style Settings</a>
+            </h2>
+            
             <p>Select currencies to enable in your shop and set their exchange rates.</p>
 
             <div class="notice notice-info">
                 <p>
-                    <strong>Base Currency:</strong> <?php echo esc_html( $base_currency ); ?> (as set in WooCommerce settings)
+                    <strong>Base Currency:</strong> <?php echo esc_html($base_currency); ?> 
+                    (set in <a href="<?php echo esc_url(admin_url('admin.php?page=wc-settings&tab=general')); ?>">WooCommerce Settings</a>)
                     <br>
-                    <strong>Exchange Rates Last Updated:</strong> <?php echo esc_html( $last_updated_text ); ?>
-                    <br>
-                    Exchange rates are automatically updated daily. You can also update them manually using the button below.
+                    <strong>Last Exchange Rate Update:</strong> <?php echo esc_html($last_updated_text); ?>
                 </p>
                 <form method="post" action="">
-                    <?php wp_nonce_field( 'update_exchange_rates', 'update_exchange_rates_nonce' ); ?>
+                    <?php wp_nonce_field('update_exchange_rates', 'update_rates_nonce'); ?>
                     <p>
-                        <input type="submit" name="update_exchange_rates" class="button" value="Update Exchange Rates Now">
+                        <input type="submit" name="update_exchange_rates" class="button button-secondary" value="Update Exchange Rates Now">
                     </p>
                 </form>
             </div>
 
             <form method="post" action="">
+                <?php wp_nonce_field('save_currencies', 'currencies_nonce'); ?>
                 <table class="wp-list-table widefat fixed striped">
                     <thead>
                         <tr>
                             <th>Enable</th>
                             <th>Currency</th>
                             <th>Symbol</th>
-                            <th>Exchange Rate (1 <?php echo esc_html( $base_currency ); ?> =)</th>
+                            <th>Exchange Rate (1 <?php echo esc_html($base_currency); ?> =)</th>
                             <th>Position</th>
                             <th>Decimals</th>
                             <th>Thousand Separator</th>
@@ -350,196 +369,55 @@ class Multi_Currency_Switcher_Admin_Settings {
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ( $all_currencies as $code => $currency ):
-                            $is_enabled = in_array( $code, $enabled_currencies );
-                            $exchange_rate = isset( $exchange_rates[ $code ] ) ? $exchange_rates[ $code ] : 1;
-                            $settings = isset( $currency_settings[ $code ] ) ? $currency_settings[ $code ] : array(
+                        <?php foreach ($all_currencies as $code => $currency):
+                            $is_enabled = in_array($code, $enabled_currencies);
+                            $exchange_rate = isset($exchange_rates[$code]) ? $exchange_rates[$code] : 1;
+                            $settings = isset($currency_settings[$code]) ? $currency_settings[$code] : array(
                                 'position' => 'left',
                                 'decimals' => 2,
                                 'thousand_sep' => ',',
                                 'decimal_sep' => '.'
                             );
-                            $is_base = ( $code === $base_currency );
                         ?>
                         <tr>
                             <td>
-                                <input type="checkbox" name="currencies[<?php echo esc_attr( $code ); ?>][enabled]" <?php checked( $is_enabled, true ); ?> <?php if ( $is_base ) echo 'checked disabled'; ?>>
-                                <?php if ( $is_base ): ?>
-                                <input type="hidden" name="currencies[<?php echo esc_attr( $code ); ?>][enabled]" value="1">
-                                <?php endif; ?>
+                                <input type="checkbox" name="enabled_currencies[]" value="<?php echo esc_attr($code); ?>" <?php checked($is_enabled); ?>>
                             </td>
                             <td>
-                                <?php echo esc_html( $currency['name'] ); ?> (<?php echo esc_html( $code ); ?>)
-                                <?php if ( $is_base ): ?> <strong>(Base Currency)</strong><?php endif; ?>
+                                <?php echo esc_html($code); ?> - <?php echo esc_html($currency['name']); ?>
                             </td>
                             <td>
-                                <?php echo esc_html( $currency['symbol'] ); ?>
+                                <input type="text" name="currency_symbol[<?php echo esc_attr($code); ?>]" value="<?php echo esc_attr($currency['symbol']); ?>" class="regular-text">
                             </td>
                             <td>
-                                <input type="number" 
-                                       step="any" 
-                                       min="0.0001" 
-                                       name="currencies[<?php echo esc_attr( $code ); ?>][rate]" 
-                                       value="<?php echo esc_attr( $exchange_rate ); ?>" 
-                                       <?php if ( $is_base ) echo 'readonly'; ?>>
+                                <input type="text" name="exchange_rate[<?php echo esc_attr($code); ?>]" value="<?php echo esc_attr($exchange_rate); ?>" class="regular-text">
                             </td>
                             <td>
-                                <select name="currencies[<?php echo esc_attr( $code ); ?>][position]">
-                                    <option value="left" <?php selected( $settings['position'], 'left' ); ?>><?php echo esc_html( $currency['symbol'] ); ?>99</option>
-                                    <option value="right" <?php selected( $settings['position'], 'right' ); ?>>99<?php echo esc_html( $currency['symbol'] ); ?></option>
-                                    <option value="left_space" <?php selected( $settings['position'], 'left_space' ); ?>><?php echo esc_html( $currency['symbol'] ); ?> 99</option>
-                                    <option value="right_space" <?php selected( $settings['position'], 'right_space' ); ?>>99 <?php echo esc_html( $currency['symbol'] ); ?></option>
+                                <select name="currency_position[<?php echo esc_attr($code); ?>]">
+                                    <option value="left" <?php selected($settings['position'], 'left'); ?>>Left</option>
+                                    <option value="right" <?php selected($settings['position'], 'right'); ?>>Right</option>
                                 </select>
                             </td>
                             <td>
-                                <input type="number" min="0" max="4" name="currencies[<?php echo esc_attr( $code ); ?>][decimals]" value="<?php echo esc_attr( $settings['decimals'] ); ?>">
+                                <input type="number" name="currency_decimals[<?php echo esc_attr($code); ?>]" value="<?php echo esc_attr($settings['decimals']); ?>" class="small-text">
                             </td>
                             <td>
-                                <input type="text" size="1" name="currencies[<?php echo esc_attr( $code ); ?>][thousand_sep]" value="<?php echo esc_attr( $settings['thousand_sep'] ); ?>">
+                                <input type="text" name="thousand_separator[<?php echo esc_attr($code); ?>]" value="<?php echo esc_attr($settings['thousand_sep']); ?>" class="regular-text">
                             </td>
                             <td>
-                                <input type="text" size="1" name="currencies[<?php echo esc_attr( $code ); ?>][decimal_sep]" value="<?php echo esc_attr( $settings['decimal_sep'] ); ?>">
+                                <input type="text" name="decimal_separator[<?php echo esc_attr($code); ?>]" value="<?php echo esc_attr($settings['decimal_sep']); ?>" class="regular-text">
                             </td>
                         </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
+                
                 <p class="submit">
-                    <input type="submit" name="save_currencies" class="button-primary" value="Save Changes">
+                    <input type="submit" name="save_currencies" class="button-primary" value="Save Currencies">
                 </p>
             </form>
         </div>
         <?php
-    }
-
-    private function save_currencies() {
-        if ( ! isset( $_POST['currencies'] ) || ! is_array( $_POST['currencies'] ) ) {
-            return;
-        }
-
-        $enabled_currencies = array();
-        $exchange_rates = get_option( 'multi_currency_switcher_exchange_rates', array() );
-        $currency_settings = array();
-
-        // Get WooCommerce base currency
-        $base_currency = get_option( 'woocommerce_currency', 'USD' );
-
-        // Always include base currency
-        $enabled_currencies[] = $base_currency;
-        $exchange_rates[$base_currency] = 1;
-
-        // Get previously enabled currencies to check for newly enabled ones
-        $previous_currencies = get_option( 'multi_currency_switcher_enabled_currencies', array( $base_currency ) );
-
-        foreach ( $_POST['currencies'] as $code => $data ) {
-            if ( isset( $data['enabled'] ) ) {
-                $enabled_currencies[] = $code;
-                
-                // Check if this is a newly enabled currency
-                if ( !in_array( $code, $previous_currencies ) && $code !== $base_currency ) {
-                    // This is a newly enabled currency, fetch its rate from API
-                    $exchange_rates[$code] = $this->fetch_exchange_rate_for_currency( $code, $base_currency );
-                } else {
-                    // This is an existing currency, use the manual rate if provided
-                    $exchange_rates[$code] = floatval( $data['rate'] );
-                }
-            }
-
-            $currency_settings[$code] = array(
-                'position' => sanitize_text_field( $data['position'] ),
-                'decimals' => intval( $data['decimals'] ),
-                'thousand_sep' => sanitize_text_field( $data['thousand_sep'] ),
-                'decimal_sep' => sanitize_text_field( $data['decimal_sep'] )
-            );
-        }
-
-        // Remove any currencies that were disabled
-        foreach ( $previous_currencies as $code ) {
-            if ( !in_array( $code, $enabled_currencies ) && isset( $exchange_rates[$code] ) ) {
-                // Keep the exchange rate in case they re-enable it later
-                // But you could also unset it if you prefer
-                // unset( $exchange_rates[$code] );
-            }
-        }
-
-        update_option( 'multi_currency_switcher_enabled_currencies', array_unique( $enabled_currencies ) );
-        update_option( 'multi_currency_switcher_exchange_rates', $exchange_rates );
-        update_option( 'multi_currency_switcher_currency_settings', $currency_settings );
-        update_option( 'multi_currency_switcher_rates_last_updated', current_time( 'timestamp' ) );
-
-        add_settings_error(
-            'multi_currency_switcher_messages',
-            'currencies_updated',
-            'Currencies have been updated successfully.',
-            'updated'
-        );
-    }
-
-    /**
-     * Fetch exchange rate for a newly added currency
-     */
-    private function fetch_exchange_rate_for_currency( $currency, $base_currency ) {
-        // Use the API to fetch the exchange rate
-        $api_url = "https://api.exchangerate-api.com/v4/latest/{$base_currency}";
-        $response = wp_remote_get( $api_url );
-
-        if ( !is_wp_error( $response ) ) {
-            $data = json_decode( wp_remote_retrieve_body( $response ), true );
-            
-            if ( isset( $data['rates'][$currency] ) ) {
-                return $data['rates'][$currency];
-            }
-        }
-        
-        // Default to 1 if API fetch fails
-        return 1;
-    }
-
-    public function register_settings() {
-        register_setting( 'multi_currency_switcher_settings', 'multi_currency_switcher_payment_restrictions' );
-
-        add_settings_section(
-            'multi_currency_switcher_payment_section',
-            'Payment Restrictions',
-            array( $this, 'payment_section_callback' ),
-            'multi_currency_switcher'
-        );
-
-        add_settings_field(
-            'multi_currency_switcher_payment_restrictions',
-            'Restrict Payment Methods by Currency',
-            array( $this, 'payment_restrictions_callback' ),
-            'multi_currency_switcher',
-            'multi_currency_switcher_payment_section'
-        );
-    }
-
-    public function payment_section_callback() {
-        echo '<p>Map currencies to payment methods you want to disable.</p>';
-    }
-
-    public function payment_restrictions_callback() {
-        $restrictions = get_option( 'multi_currency_switcher_payment_restrictions', array() );
-        $currencies = get_option( 'multi_currency_switcher_enabled_currencies', array( 'USD' ) );
-
-        // Only try to get payment gateways if WooCommerce is active and initialized
-        if ( function_exists( 'WC' ) && WC()->payment_gateways ) {
-            $gateways = WC()->payment_gateways->get_available_payment_gateways();
-
-            if ( ! empty( $gateways ) ) {
-                foreach ( $currencies as $currency ) {
-                    echo "<h4>{$currency}</h4>";
-                    foreach ( $gateways as $gateway_id => $gateway ) {
-                        $checked = isset( $restrictions[ $currency ] ) && in_array( $gateway_id, $restrictions[ $currency ] ) ? 'checked' : '';
-                        echo "<label><input type='checkbox' name='multi_currency_switcher_payment_restrictions[{$currency}][]' value='{$gateway_id}' {$checked}> {$gateway->title}</label><br>";
-                    }
-                }
-            } else {
-                echo "<p>No payment gateways available. Please check your WooCommerce settings.</p>";
-            }
-        } else {
-            echo "<p>WooCommerce is not active or not fully initialized. Please ensure WooCommerce is active and reload this page.</p>";
-        }
     }
 
     public function create_style_settings_page() {
@@ -567,6 +445,14 @@ class Multi_Currency_Switcher_Admin_Settings {
         ?>
         <div class="wrap">
             <h1>Style Settings</h1>
+            
+            <!-- Add the tab navigation menu -->
+            <h2 class="nav-tab-wrapper">
+                <a href="?page=multi-currency-switcher" class="nav-tab">General Settings</a>
+                <a href="?page=multi-currency-switcher-currencies" class="nav-tab">Currencies</a>
+                <a href="?page=multi-currency-switcher-style" class="nav-tab nav-tab-active">Style Settings</a>
+            </h2>
+            
             <p>Customize the appearance of currency widgets and shortcodes used in your shop.</p>
             
             <form method="post" action="">
@@ -675,20 +561,150 @@ class Multi_Currency_Switcher_Admin_Settings {
         <?php
     }
 
-    // Add this method to save style settings
-    private function save_style_settings() {
-        if (!isset($_POST['style_settings'])) {
+    public function create_payment_settings_page() {
+        // Process form submissions
+        if (isset($_POST['save_payment_settings']) && check_admin_referer('save_payment_settings', 'payment_settings_nonce')) {
+            $payment_restrictions = isset($_POST['multi_currency_switcher_payment_restrictions']) ? 
+                                   $_POST['multi_currency_switcher_payment_restrictions'] : array();
+            
+            update_option('multi_currency_switcher_payment_restrictions', $payment_restrictions);
+            
             add_settings_error(
                 'multi_currency_switcher_messages',
-                'style_settings_error',
-                'No settings data received. Please try again.',
-                'error'
+                'payment_settings_updated',
+                'Payment restrictions have been updated successfully.',
+                'updated'
             );
+        }
+        
+        $restrictions = get_option('multi_currency_switcher_payment_restrictions', array());
+        $currencies = get_option('multi_currency_switcher_enabled_currencies', array(get_woocommerce_currency()));
+        
+        settings_errors('multi_currency_switcher_messages');
+        ?>
+        <div class="wrap">
+            <h1>Payment Method Restrictions</h1>
+            
+            <!-- Add the tab navigation menu -->
+            <h2 class="nav-tab-wrapper">
+                <a href="?page=multi-currency-switcher" class="nav-tab">General Settings</a>
+                <a href="?page=multi-currency-switcher-currencies" class="nav-tab">Currencies</a>
+                <a href="?page=multi-currency-switcher-style" class="nav-tab">Style Settings</a>
+                <a href="?page=multi-currency-switcher-payment" class="nav-tab nav-tab-active">Payment Restrictions</a>
+            </h2>
+            
+            <p>Control which payment methods are available for each currency. Check a payment method to disable it for that currency.</p>
+            
+            <form method="post" action="">
+                <?php wp_nonce_field('save_payment_settings', 'payment_settings_nonce'); ?>
+                
+                <?php
+                // Only try to get payment gateways if WooCommerce is active and initialized
+                if (function_exists('WC') && WC()->payment_gateways) {
+                    $gateways = WC()->payment_gateways->get_available_payment_gateways();
+                    
+                    if (!empty($gateways)) {
+                        foreach ($currencies as $currency) {
+                            echo "<div class='card' style='margin-top: 20px; padding: 15px; background: #fff; border: 1px solid #ccd0d4; box-shadow: 0 1px 1px rgba(0,0,0,.04);'>";
+                            echo "<h3>{$currency} Payment Methods</h3>";
+                            echo "<p>Select payment methods to <strong>disable</strong> when {$currency} is the active currency:</p>";
+                            
+                            foreach ($gateways as $gateway_id => $gateway) {
+                                $checked = isset($restrictions[$currency]) && in_array($gateway_id, $restrictions[$currency]) ? 'checked' : '';
+                                echo "<label style='display: block; margin-bottom: 8px;'><input type='checkbox' name='multi_currency_switcher_payment_restrictions[{$currency}][]' value='{$gateway_id}' {$checked}> {$gateway->title}</label>";
+                            }
+                            echo "</div>";
+                        }
+                    } else {
+                        echo "<p>No payment gateways available. Please check your WooCommerce settings.</p>";
+                    }
+                } else {
+                    echo "<p>WooCommerce is not active or not fully initialized. Please ensure WooCommerce is active and reload this page.</p>";
+                }
+                ?>
+                
+                <p class="submit" style="margin-top: 20px;">
+                    <input type="submit" name="save_payment_settings" class="button-primary" value="Save Payment Restrictions">
+                </p>
+            </form>
+        </div>
+        <?php
+    }
+
+    /**
+     * Save the general settings
+     */
+    public function save_general_settings() {
+        // Verify nonce
+        if ( ! check_admin_referer('save_general_settings', 'general_settings_nonce') ) {
             return;
         }
         
-        // Sanitize inputs
-        $style_settings = array(
+        // Sanitize and save settings
+        $settings = array(
+            'auto_detect' => isset($_POST['general_settings']['auto_detect']) ? 'yes' : 'no',
+            'widget_position' => sanitize_text_field($_POST['general_settings']['widget_position']),
+            'default_currency' => sanitize_text_field($_POST['general_settings']['default_currency']),
+        );
+        
+        update_option('multi_currency_switcher_general_settings', $settings);
+    }
+
+    /**
+     * Save the currencies
+     */
+    public function save_currencies() {
+        // Verify nonce
+        if ( ! check_admin_referer('save_currencies', 'currencies_nonce') ) {
+            return;
+        }
+
+        // Get enabled currencies
+        $enabled_currencies = isset($_POST['enabled_currencies']) ? array_map('sanitize_text_field', $_POST['enabled_currencies']) : array();
+
+        // Update enabled currencies option
+        update_option('multi_currency_switcher_enabled_currencies', $enabled_currencies);
+
+        // Update exchange rates and currency settings
+        $exchange_rates = array();
+        $currency_settings = array();
+        
+        foreach ($_POST['exchange_rate'] as $code => $rate) {
+            $code = sanitize_text_field($code);
+            $rate = floatval($rate);
+            $position = isset($_POST['currency_position'][$code]) ? sanitize_text_field($_POST['currency_position'][$code]) : 'left';
+            $decimals = isset($_POST['currency_decimals'][$code]) ? intval($_POST['currency_decimals'][$code]) : 2;
+            $thousand_sep = isset($_POST['thousand_separator'][$code]) ? sanitize_text_field($_POST['thousand_separator'][$code]) : ',';
+            $decimal_sep = isset($_POST['decimal_separator'][$code]) ? sanitize_text_field($_POST['decimal_separator'][$code]) : '.';
+            
+            // Only add settings for enabled currencies
+            if (in_array($code, $enabled_currencies)) {
+                $exchange_rates[$code] = $rate;
+                $currency_settings[$code] = array(
+                    'position' => $position,
+                    'decimals' => $decimals,
+                    'thousand_sep' => $thousand_sep,
+                    'decimal_sep' => $decimal_sep,
+                );
+            }
+        }
+        
+        // Update options
+        update_option('multi_currency_switcher_exchange_rates', $exchange_rates);
+        update_option('multi_currency_switcher_currency_settings', $currency_settings);
+    }
+
+    /**
+     * Save the style settings
+     */
+    public function save_style_settings() {
+        // Verify nonce
+        if ( ! check_admin_referer('save_style_settings', 'style_settings_nonce') ) {
+            return;
+        }
+
+        // Sanitize and save settings
+        $settings = array(
             'title_color' => sanitize_hex_color($_POST['style_settings']['title_color']),
             'text_color' => sanitize_hex_color($_POST['style_settings']['text_color']),
             'active_color' => sanitize_hex_color($_POST['style_settings']['active_color']),
@@ -697,181 +713,126 @@ class Multi_Currency_Switcher_Admin_Settings {
             'show_sticky_widget' => isset($_POST['style_settings']['show_sticky_widget']) ? 'yes' : 'no',
             'sticky_position' => sanitize_text_field($_POST['style_settings']['sticky_position']),
             'limit_currencies' => isset($_POST['style_settings']['limit_currencies']) ? 'yes' : 'no',
-            'show_flags' => 'none', // Set to none for now since we're not implementing flags yet
+            'show_flags' => sanitize_text_field($_POST['style_settings']['show_flags']),
         );
         
-        // Check if colors are valid
-        $valid_colors = true;
-        foreach (['title_color', 'text_color', 'active_color', 'background_color', 'border_color'] as $color_field) {
-            if (empty($style_settings[$color_field])) {
-                $valid_colors = false;
-            }
-        }
-        
-        if (!$valid_colors) {
-            add_settings_error(
-                'multi_currency_switcher_messages',
-                'style_settings_error',
-                'Please enter valid color values in hexadecimal format (e.g., #333333).',
-                'error'
-            );
+        update_option('multi_currency_switcher_style_settings', $settings);
+    }
+
+    /**
+     * Enqueue admin scripts and styles
+     */
+    public function enqueue_admin_scripts($hook) {
+        // Only enqueue on our plugin's admin pages
+        if (strpos($hook, 'multi-currency-switcher') === false) {
             return;
         }
-        
-        // Save the settings
-        update_option('multi_currency_switcher_style_settings', $style_settings);
-        
-        // Add success message
-        add_settings_error(
-            'multi_currency_switcher_messages',
-            'style_settings_updated',
-            'Style settings have been updated successfully.',
-            'updated'
-        );
+
+        // Enqueue color picker script and style
+        wp_enqueue_style('wp-color-picker');
+        wp_enqueue_script('wp-color-picker', array('jquery', 'wp-color-picker'), false, null, true);
     }
 
-    public function enqueue_admin_scripts( $hook ) {
-        if ( strpos( $hook, 'multi-currency-switcher' ) !== false ) {
-            wp_enqueue_style( 'multi-currency-switcher-admin', plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/admin-styles.css', array(), '1.0.0' );
-            
-            // For color picker
-            if (strpos($hook, 'multi-currency-switcher-style') !== false) {
-                wp_enqueue_style('wp-color-picker');
-                wp_enqueue_script('wp-color-picker');
-                wp_enqueue_script('multi-currency-switcher-admin-js', 
-                    plugin_dir_url(dirname(__FILE__)) . 'assets/js/admin-scripts.js', 
-                    array('wp-color-picker'), 
-                    '1.0.0', 
-                    true
-                );
-            }
-        }
-    }
-
-    private function get_all_available_currencies() {
-        return get_all_available_currencies();
-    }
-
+    /**
+     * Add meta boxes to product edit screen
+     */
     public function add_product_currency_meta_boxes() {
         add_meta_box(
-            'multi-currency-prices',
-            'Currency-Specific Prices',
-            array($this, 'render_product_currency_prices'),
+            'product_currency_prices',
+            'Currency Prices',
+            array($this, 'render_product_currency_meta_box'),
             'product',
             'normal',
-            'high'
+            'default'
         );
     }
 
-    public function render_product_currency_prices($post) {
-        $product = wc_get_product($post->ID);
-        $enabled_currencies = get_option('multi_currency_switcher_enabled_currencies', array('USD'));
-        $base_currency = get_option('woocommerce_currency', 'USD');
-        $all_currencies = $this->get_all_available_currencies();
+    /**
+     * Render the product currency meta box
+     */
+    public function render_product_currency_meta_box($post) {
+        // Get current product currency prices
+        $currency_prices = get_post_meta($post->ID, '_currency_prices', true);
+        $currency_prices = is_array($currency_prices) ? $currency_prices : array();
         
-        // Remove base currency from list
-        $currencies = array_diff($enabled_currencies, array($base_currency));
+        // Get enabled currencies
+        $enabled_currencies = get_option('multi_currency_switcher_enabled_currencies', array(get_woocommerce_currency()));
+        $all_currencies = get_all_available_currencies();
         
-        echo '<p>Set specific prices for each currency. Leave empty to use automatic conversion based on exchange rates.</p>';
-        echo '<table class="form-table">';
-        echo '<tr>';
-        echo '<th>Currency</th>';
-        echo '<th>Regular Price</th>';
-        echo '<th>Sale Price</th>';
-        echo '</tr>';
-        
-        // Base currency (read-only)
-        echo '<tr>';
-        echo '<td><strong>' . $base_currency . ' (' . $all_currencies[$base_currency]['name'] . ') - Base Currency</strong></td>';
-        echo '<td>' . $product->get_regular_price() . '</td>';
-        echo '<td>' . $product->get_sale_price() . '</td>';
-        echo '</tr>';
-        
-        // Other currencies
-        foreach ($currencies as $currency) {
-            if (!isset($all_currencies[$currency])) {
-                continue;
-            }
-            
-            $regular_price = get_post_meta($post->ID, '_regular_price_' . $currency, true);
-            $sale_price = get_post_meta($post->ID, '_sale_price_' . $currency, true);
-            
-            echo '<tr>';
-            echo '<td><strong>' . $currency . ' (' . $all_currencies[$currency]['name'] . ')</strong></td>';
-            echo '<td><input type="text" name="multi_currency_regular_price[' . $currency . ']" value="' . esc_attr($regular_price) . '" placeholder="Auto"></td>';
-            echo '<td><input type="text" name="multi_currency_sale_price[' . $currency . ']" value="' . esc_attr($sale_price) . '" placeholder="Auto"></td>';
-            echo '</tr>';
-        }
-        
-        echo '</table>';
-        
-        wp_nonce_field('multi_currency_switcher_save_product_prices', 'multi_currency_switcher_product_nonce');
+        ?>
+        <div class="currency-prices-meta-box">
+            <h4>Set Prices for Each Currency</h4>
+            <table class="form-table">
+                <tbody>
+                    <?php foreach ($enabled_currencies as $code): 
+                        $price = isset($currency_prices[$code]) ? $currency_prices[$code] : '';
+                        $name = isset($all_currencies[$code]['name']) ? $all_currencies[$code]['name'] : $code;
+                    ?>
+                    <tr>
+                        <th scope="row">
+                            <label for="currency_price_<?php echo esc_attr($code); ?>"><?php echo esc_html($name); ?> (<?php echo esc_html($code); ?>)</label>
+                        </th>
+                        <td>
+                            <input type="text" id="currency_price_<?php echo esc_attr($code); ?>" name="currency_prices[<?php echo esc_attr($code); ?>]" value="<?php echo esc_attr($price); ?>" class="regular-text">
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <?php
     }
 
+    /**
+     * Save product currency prices
+     */
     public function save_product_currency_prices($post_id) {
-        // Check if our nonce is set and verify it
-        if (!isset($_POST['multi_currency_switcher_product_nonce']) || 
-            !wp_verify_nonce($_POST['multi_currency_switcher_product_nonce'], 'multi_currency_switcher_save_product_prices')) {
+        // Verify nonce
+        if ( ! isset($_POST['currency_prices']) || ! is_array($_POST['currency_prices']) ) {
             return;
         }
         
-        // Check if not autosave
-        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
-            return;
+        // Sanitize and save currency prices
+        $currency_prices = array();
+        foreach ($_POST['currency_prices'] as $code => $price) {
+            $code = sanitize_text_field($code);
+            $price = floatval($price);
+            $currency_prices[$code] = $price;
         }
         
-        // Check permissions
-        if (!current_user_can('edit_post', $post_id)) {
-            return;
-        }
-        
-        // Save regular prices
-        if (isset($_POST['multi_currency_regular_price']) && is_array($_POST['multi_currency_regular_price'])) {
-            foreach ($_POST['multi_currency_regular_price'] as $currency => $price) {
-                if (!empty($price)) {
-                    update_post_meta($post_id, '_regular_price_' . $currency, wc_format_decimal($price));
-                    
-                    // If no sale price, use regular price as the _price
-                    $sale_price = isset($_POST['multi_currency_sale_price'][$currency]) ? 
-                                  $_POST['multi_currency_sale_price'][$currency] : '';
-                                  
-                    if (empty($sale_price)) {
-                        update_post_meta($post_id, '_price_' . $currency, wc_format_decimal($price));
-                    }
-                } else {
-                    delete_post_meta($post_id, '_regular_price_' . $currency);
-                    
-                    // If no regular price and no sale price, remove the _price too
-                    if (empty($_POST['multi_currency_sale_price'][$currency])) {
-                        delete_post_meta($post_id, '_price_' . $currency);
-                    }
-                }
-            }
-        }
-        
-        // Save sale prices
-        if (isset($_POST['multi_currency_sale_price']) && is_array($_POST['multi_currency_sale_price'])) {
-            foreach ($_POST['multi_currency_sale_price'] as $currency => $price) {
-                if (!empty($price)) {
-                    update_post_meta($post_id, '_sale_price_' . $currency, wc_format_decimal($price));
-                    update_post_meta($post_id, '_price_' . $currency, wc_format_decimal($price));
-                } else {
-                    delete_post_meta($post_id, '_sale_price_' . $currency);
-                    
-                    // If no sale price but there is a regular price, set _price to regular price
-                    $regular_price = isset($_POST['multi_currency_regular_price'][$currency]) ? 
-                                    $_POST['multi_currency_regular_price'][$currency] : '';
-                                    
-                    if (!empty($regular_price)) {
-                        update_post_meta($post_id, '_price_' . $currency, wc_format_decimal($regular_price));
-                    } else {
-                        delete_post_meta($post_id, '_price_' . $currency);
-                    }
-                }
-            }
-        }
+        update_post_meta($post_id, '_currency_prices', $currency_prices);
     }
 }
 
-// Initialize the settings page
+/**
+ * Helper function to get all available currencies
+ */
+function get_all_available_currencies() {
+    // This function should return an array of all available currencies
+    // For simplicity, we're defining a static array here. You can modify this to fetch from a database or an API.
+    return array(
+        'USD' => array('name' => 'US Dollar', 'symbol' => '$'),
+        'EUR' => array('name' => 'Euro', 'symbol' => '€'),
+        'GBP' => array('name' => 'British Pound', 'symbol' => '£'),
+        'JPY' => array('name' => 'Japanese Yen', 'symbol' => '¥'),
+        'AUD' => array('name' => 'Australian Dollar', 'symbol' => 'A$'),
+        'CAD' => array('name' => 'Canadian Dollar', 'symbol' => 'C$'),
+        'CHF' => array('name' => 'Swiss Franc', 'symbol' => 'CHF'),
+        'CNY' => array('name' => 'Chinese Yuan', 'symbol' => '¥'),
+        'SEK' => array('name' => 'Swedish Krona', 'symbol' => 'kr'),
+        'NZD' => array('name' => 'New Zealand Dollar', 'symbol' => 'NZ$'),
+        // Add more currencies as needed
+    );
+}
+
+/**
+ * Helper function to update all exchange rates
+ */
+function multi_currency_switcher_update_all_exchange_rates() {
+    // This function should contain the logic to update exchange rates from an external source
+    // For simplicity, we're just returning true here. You can modify this to perform the actual update.
+    return true;
+}
+
+// Initialize the settings class
 new Multi_Currency_Switcher_Admin_Settings();

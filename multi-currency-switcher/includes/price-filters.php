@@ -458,3 +458,231 @@ remove_action('woocommerce_before_calculate_totals', 'multi_currency_switcher_up
 add_action('woocommerce_before_calculate_totals', 'multi_currency_switcher_update_cart_items', 20);
 remove_action('woocommerce_before_mini_cart', 'multi_currency_switcher_update_cart_items', 10);
 add_action('woocommerce_before_mini_cart', 'multi_currency_switcher_update_cart_items', 10);
+
+/**
+ * Ensure the correct currency is displayed on order pages
+ */
+function multi_currency_switcher_order_currency($currency) {
+    global $wp;
+    
+    // Check if we're on an order-received page
+    if (is_checkout() && !empty($wp->query_vars['order-received'])) {
+        $order_id = absint($wp->query_vars['order-received']);
+        $order = wc_get_order($order_id);
+        
+        if ($order && is_a($order, 'WC_Order')) {
+            // Return the currency used for this specific order
+            return $order->get_currency();
+        }
+    }
+    
+    // Otherwise return the current currency
+    if (function_exists('WC') && WC()->session) {
+        $chosen_currency = WC()->session->get('chosen_currency', '');
+        if (!empty($chosen_currency)) {
+            return $chosen_currency;
+        }
+    }
+    
+    return $currency;
+}
+
+// Apply this filter specifically for order pages with a high priority
+add_filter('woocommerce_currency', 'multi_currency_switcher_order_currency', 999);
+
+/**
+ * Save the current currency with new orders
+ */
+function multi_currency_switcher_update_order_currency($order_id) {
+    if (function_exists('WC') && WC()->session) {
+        $currency = WC()->session->get('chosen_currency', get_woocommerce_currency());
+        
+        if (!empty($currency)) {
+            // Get the order
+            $order = wc_get_order($order_id);
+            if ($order) {
+                // Set the order currency
+                $order->set_currency($currency);
+                $order->save();
+            }
+        }
+    }
+}
+add_action('woocommerce_checkout_update_order_meta', 'multi_currency_switcher_update_order_currency', 10, 1);
+
+/**
+ * Ensure order pages use the correct currency symbol
+ */
+function multi_currency_switcher_order_page_currency_symbol($symbol, $currency) {
+    global $wp;
+    
+    // Check if we're on an order-received page
+    if (is_checkout() && !empty($wp->query_vars['order-received'])) {
+        $order_id = absint($wp->query_vars['order-received']);
+        $order = wc_get_order($order_id);
+        
+        if ($order && is_a($order, 'WC_Order')) {
+            // Get the currency for this order
+            $order_currency = $order->get_currency();
+            
+            // If the requested currency matches the order currency, get its symbol
+            if ($currency === $order_currency) {
+                $all_currencies = get_all_available_currencies();
+                if (isset($all_currencies[$currency]) && isset($all_currencies[$currency]['symbol'])) {
+                    return $all_currencies[$currency]['symbol'];
+                }
+            }
+        }
+    }
+    
+    // For other pages, use the standard currency symbol logic
+    $all_currencies = get_all_available_currencies();
+    if (isset($all_currencies[$currency]) && isset($all_currencies[$currency]['symbol'])) {
+        return $all_currencies[$currency]['symbol'];
+    }
+    
+    return $symbol;
+}
+
+// Replace the existing currency symbol filter with this more specific one
+remove_filter('woocommerce_currency_symbol', 'multi_currency_switcher_change_currency_symbol', 10);
+add_filter('woocommerce_currency_symbol', 'multi_currency_switcher_order_page_currency_symbol', 10, 2);
+
+/**
+ * Apply correct formatting for order pages
+ */
+function multi_currency_switcher_order_price_format($args) {
+    global $wp;
+    
+    // Check if we're on an order-received page
+    if (is_checkout() && !empty($wp->query_vars['order-received'])) {
+        $order_id = absint($wp->query_vars['order-received']);
+        $order = wc_get_order($order_id);
+        
+        if ($order && is_a($order, 'WC_Order')) {
+            // Get the currency for this order
+            $currency = $order->get_currency();
+            $args['currency'] = $currency;
+            
+            // Get formatting settings for this currency
+            $currency_settings = get_option('multi_currency_switcher_currency_settings', array());
+            
+            if (isset($currency_settings[$currency])) {
+                $settings = $currency_settings[$currency];
+                
+                // Apply the currency-specific formatting
+                $args['decimals'] = isset($settings['decimals']) ? (int)$settings['decimals'] : $args['decimals'];
+                $args['decimal_separator'] = isset($settings['decimal_sep']) ? $settings['decimal_sep'] : $args['decimal_separator'];
+                $args['thousand_separator'] = isset($settings['thousand_sep']) ? $settings['thousand_sep'] : $args['thousand_separator'];
+                
+                // Set price format based on symbol position
+                if (isset($settings['position']) && isset($args['currency_symbol'])) {
+                    switch ($settings['position']) {
+                        case 'left':
+                            $args['price_format'] = '%1$s%2$s';
+                            break;
+                        case 'right':
+                            $args['price_format'] = '%2$s%1$s';
+                            break;
+                        case 'left_space':
+                            $args['price_format'] = '%1$s&nbsp;%2$s';
+                            break;
+                        case 'right_space':
+                            $args['price_format'] = '%2$s&nbsp;%1$s';
+                            break;
+                    }
+                }
+            }
+        }
+    }
+    
+    return $args;
+}
+add_filter('wc_price_args', 'multi_currency_switcher_order_price_format', 999);
+
+/**
+ * Ensure price formatting is correct on thank you page
+ */
+function multi_currency_switcher_thankyou_page_formatting($formatted_price, $price, $args, $unformatted_price) {
+    global $wp;
+    
+    // Check if we're on an order-received page
+    if (is_checkout() && !empty($wp->query_vars['order-received'])) {
+        $order_id = absint($wp->query_vars['order-received']);
+        $order = wc_get_order($order_id);
+        
+        if ($order && is_a($order, 'WC_Order')) {
+            $currency = $order->get_currency();
+            $all_currencies = get_all_available_currencies();
+            
+            // Ensure currency symbol is correct
+            if (isset($all_currencies[$currency]) && isset($all_currencies[$currency]['symbol'])) {
+                $symbol = $all_currencies[$currency]['symbol'];
+                
+                // Get formatting settings
+                $currency_settings = get_option('multi_currency_switcher_currency_settings', array());
+                
+                if (isset($currency_settings[$currency])) {
+                    $settings = $currency_settings[$currency];
+                    
+                    // Format the price manually
+                    $decimals = isset($settings['decimals']) ? (int)$settings['decimals'] : 2;
+                    $decimal_sep = isset($settings['decimal_sep']) ? $settings['decimal_sep'] : '.';
+                    $thousand_sep = isset($settings['thousand_sep']) ? $settings['thousand_sep'] : ',';
+                    
+                    $formatted_number = number_format($price, $decimals, $decimal_sep, $thousand_sep);
+                    
+                    // Apply the position
+                    $position = isset($settings['position']) ? $settings['position'] : 'left';
+                    
+                    switch ($position) {
+                        case 'left':
+                            return $symbol . $formatted_number;
+                        case 'right':
+                            return $formatted_number . $symbol;
+                        case 'left_space':
+                            return $symbol . ' ' . $formatted_number;
+                        case 'right_space':
+                            return $formatted_number . ' ' . $symbol;
+                        default:
+                            return $symbol . $formatted_number;
+                    }
+                }
+            }
+        }
+    }
+    
+    return $formatted_price;
+}
+add_filter('wc_price', 'multi_currency_switcher_thankyou_page_formatting', 999, 4);
+
+/**
+ * Add script to prevent currency switching on order received page
+ */
+function multi_currency_switcher_order_received_scripts() {
+    global $wp;
+    
+    // Only add on order received page
+    if (is_checkout() && !empty($wp->query_vars['order-received'])) {
+        ?>
+        <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            // Disable all currency switchers on order received page
+            const currencySelectors = document.querySelectorAll('#currency-selector, #sticky-currency-selector, #product-currency-selector, #currency-switcher');
+            currencySelectors.forEach(function(selector) {
+                if (selector) {
+                    selector.disabled = true;
+                }
+            });
+            
+            // Hide sticky currency switcher if present
+            const stickySwitcher = document.querySelector('.sticky-currency-switcher');
+            if (stickySwitcher) {
+                stickySwitcher.style.display = 'none';
+            }
+        });
+        </script>
+        <?php
+    }
+}
+add_action('wp_footer', 'multi_currency_switcher_order_received_scripts');

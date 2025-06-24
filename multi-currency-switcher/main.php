@@ -120,3 +120,25 @@ function multi_currency_switcher_adjust_coupon_amount($coupon_amount, $coupon) {
     return $coupon_amount; // Fallback to default amount
 }
 add_filter('woocommerce_coupon_get_discount_amount', 'multi_currency_switcher_adjust_coupon_amount', 10, 2);
+
+// Schedule daily exchange rate updates
+register_activation_hook(__FILE__, 'multi_currency_switcher_schedule_updates');
+add_action('multi_currency_switcher_daily_update', 'multi_currency_switcher_update_all_exchange_rates');
+
+/**
+ * Schedule the daily exchange rate update
+ */
+function multi_currency_switcher_schedule_updates() {
+    if (!wp_next_scheduled('multi_currency_switcher_daily_update')) {
+        wp_schedule_event(time(), 'daily', 'multi_currency_switcher_daily_update');
+    }
+}
+
+/**
+ * Clean up scheduled events on plugin deactivation
+ */
+register_deactivation_hook(__FILE__, 'multi_currency_switcher_clear_scheduled_updates');
+
+function multi_currency_switcher_clear_scheduled_updates() {
+    wp_clear_scheduled_hook('multi_currency_switcher_daily_update');
+}

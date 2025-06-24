@@ -51,6 +51,27 @@ class Multi_Currency_Switcher_Admin_Settings {
     }
 
     public function create_currencies_page() {
+        // Handle manual update if requested
+        if ( isset( $_POST['update_exchange_rates'] ) ) {
+            $updated = multi_currency_switcher_update_all_exchange_rates();
+            if ( $updated ) {
+                add_settings_error(
+                    'multi_currency_switcher_messages',
+                    'rates_updated',
+                    'Exchange rates have been updated successfully.',
+                    'updated'
+                );
+            } else {
+                add_settings_error(
+                    'multi_currency_switcher_messages',
+                    'rates_update_failed',
+                    'Failed to update exchange rates. Please try again later.',
+                    'error'
+                );
+            }
+        }
+
+        // Handle saving currencies if submitted
         if ( isset( $_POST['save_currencies'] ) ) {
             $this->save_currencies();
         }
@@ -60,10 +81,34 @@ class Multi_Currency_Switcher_Admin_Settings {
         $exchange_rates = get_option( 'multi_currency_switcher_exchange_rates', array() );
         $currency_settings = get_option( 'multi_currency_switcher_currency_settings', array() );
 
+        // Get WooCommerce base currency
+        $base_currency = get_option( 'woocommerce_currency', 'USD' );
+
+        // Get last update time
+        $last_updated = get_option( 'multi_currency_switcher_rates_last_updated', 0 );
+        $last_updated_text = $last_updated ? date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $last_updated ) : 'Never';
+
+        settings_errors( 'multi_currency_switcher_messages' );
         ?>
         <div class="wrap">
             <h1>Manage Currencies</h1>
             <p>Select currencies to enable in your shop and set their exchange rates.</p>
+
+            <div class="notice notice-info">
+                <p>
+                    <strong>Base Currency:</strong> <?php echo esc_html( $base_currency ); ?> (as set in WooCommerce settings)
+                    <br>
+                    <strong>Exchange Rates Last Updated:</strong> <?php echo esc_html( $last_updated_text ); ?>
+                    <br>
+                    Exchange rates are automatically updated daily. You can also update them manually using the button below.
+                </p>
+                <form method="post" action="">
+                    <?php wp_nonce_field( 'update_exchange_rates', 'update_exchange_rates_nonce' ); ?>
+                    <p>
+                        <input type="submit" name="update_exchange_rates" class="button" value="Update Exchange Rates Now">
+                    </p>
+                </form>
+            </div>
 
             <form method="post" action="">
                 <table class="wp-list-table widefat fixed striped">
@@ -72,7 +117,7 @@ class Multi_Currency_Switcher_Admin_Settings {
                             <th>Enable</th>
                             <th>Currency</th>
                             <th>Symbol</th>
-                            <th>Exchange Rate (1 USD =)</th>
+                            <th>Exchange Rate (1 <?php echo esc_html( $base_currency ); ?> =)</th>
                             <th>Position</th>
                             <th>Decimals</th>
                             <th>Thousand Separator</th>
@@ -89,19 +134,24 @@ class Multi_Currency_Switcher_Admin_Settings {
                                 'thousand_sep' => ',',
                                 'decimal_sep' => '.'
                             );
+                            $is_base = ( $code === $base_currency );
                         ?>
                         <tr>
                             <td>
-                                <input type="checkbox" name="currencies[<?php echo esc_attr( $code ); ?>][enabled]" <?php checked( $is_enabled, true ); ?>>
+                                <input type="checkbox" name="currencies[<?php echo esc_attr( $code ); ?>][enabled]" <?php checked( $is_enabled, true ); ?> <?php if ( $is_base ) echo 'checked disabled'; ?>>
+                                <?php if ( $is_base ): ?>
+                                <input type="hidden" name="currencies[<?php echo esc_attr( $code ); ?>][enabled]" value="1">
+                                <?php endif; ?>
                             </td>
                             <td>
                                 <?php echo esc_html( $currency['name'] ); ?> (<?php echo esc_html( $code ); ?>)
+                                <?php if ( $is_base ): ?> <strong>(Base Currency)</strong><?php endif; ?>
                             </td>
                             <td>
                                 <?php echo esc_html( $currency['symbol'] ); ?>
                             </td>
                             <td>
-                                <input type="number" step="0.0001" min="0.0001" name="currencies[<?php echo esc_attr( $code ); ?>][rate]" value="<?php echo esc_attr( $exchange_rate ); ?>" <?php if ( $code === 'USD' ) echo 'readonly'; ?>>
+                                <input type="number" step="0.0001" min="0.0001" name="currencies[<?php echo esc_attr( $code ); ?>][rate]" value="<?php echo esc_attr( $exchange_rate ); ?>" <?php if ( $is_base ) echo 'readonly'; ?>>
                             </td>
                             <td>
                                 <select name="currencies[<?php echo esc_attr( $code ); ?>][position]">

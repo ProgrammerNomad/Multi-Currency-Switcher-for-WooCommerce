@@ -806,7 +806,11 @@ class Multi_Currency_Switcher_Admin_Settings {
 
 /**
  * Helper function to get all available currencies
+ * 
+ * NOTE: This is now commented out to avoid the duplicate function declaration.
+ * The function is already defined in helpers.php which is loaded first.
  */
+/*
 function get_all_available_currencies() {
     // This function should return an array of all available currencies
     // For simplicity, we're defining a static array here. You can modify this to fetch from a database or an API.
@@ -824,6 +828,7 @@ function get_all_available_currencies() {
         // Add more currencies as needed
     );
 }
+*/
 
 /**
  * Helper function to update all exchange rates

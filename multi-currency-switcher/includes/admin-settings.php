@@ -24,9 +24,18 @@ class Multi_Currency_Switcher_Admin_Settings {
             'multi-currency-switcher',
             array( $this, 'create_settings_page' ),
             'dashicons-money-alt',
-            100
+            58 // Position after WooCommerce
         );
 
+        add_submenu_page(
+            'multi-currency-switcher',
+            'General Settings',
+            'General Settings',
+            'manage_options',
+            'multi-currency-switcher',
+            array( $this, 'create_settings_page' )
+        );
+        
         add_submenu_page(
             'multi-currency-switcher',
             'Currencies',
@@ -36,7 +45,6 @@ class Multi_Currency_Switcher_Admin_Settings {
             array( $this, 'create_currencies_page' )
         );
         
-        // Add Style Settings submenu
         add_submenu_page(
             'multi-currency-switcher',
             'Style Settings',
@@ -47,18 +55,223 @@ class Multi_Currency_Switcher_Admin_Settings {
         );
     }
 
+    /**
+     * Create the main settings page
+     */
     public function create_settings_page() {
+        // Get current settings
+        $general_settings = get_option('multi_currency_switcher_general_settings', array(
+            'auto_detect' => 'yes',
+            'widget_position' => 'both',
+            'default_currency' => get_woocommerce_currency(),
+        ));
+        
+        // Get exchange rate data
+        $exchange_rates = get_option('multi_currency_switcher_exchange_rates', array());
+        $last_updated = get_option('multi_currency_switcher_rates_last_updated', 0);
+        $last_updated_text = $last_updated ? date_i18n(get_option('date_format') . ' ' . get_option('time_format'), $last_updated) : 'Never';
+        
+        // Process form submissions
+        if (isset($_POST['save_general_settings']) && check_admin_referer('save_general_settings', 'general_settings_nonce')) {
+            $general_settings = array(
+                'auto_detect' => isset($_POST['general_settings']['auto_detect']) ? 'yes' : 'no',
+                'widget_position' => sanitize_text_field($_POST['general_settings']['widget_position']),
+                'default_currency' => sanitize_text_field($_POST['general_settings']['default_currency']),
+            );
+            
+            update_option('multi_currency_switcher_general_settings', $general_settings);
+            
+            // Show success message
+            add_settings_error(
+                'multi_currency_switcher_messages',
+                'settings_updated',
+                'Settings saved successfully.',
+                'updated'
+            );
+        }
+        
+        // Handle manual exchange rate update
+        if (isset($_POST['update_exchange_rates']) && check_admin_referer('update_exchange_rates', 'update_rates_nonce')) {
+            $updated = multi_currency_switcher_update_all_exchange_rates();
+            
+            if ($updated) {
+                add_settings_error(
+                    'multi_currency_switcher_messages',
+                    'rates_updated',
+                    'Exchange rates have been updated successfully.',
+                    'updated'
+                );
+                
+                // Refresh the exchange rates
+                $exchange_rates = get_option('multi_currency_switcher_exchange_rates', array());
+                $last_updated = get_option('multi_currency_switcher_rates_last_updated', 0);
+                $last_updated_text = $last_updated ? date_i18n(get_option('date_format') . ' ' . get_option('time_format'), $last_updated) : 'Never';
+            } else {
+                add_settings_error(
+                    'multi_currency_switcher_messages',
+                    'rates_update_failed',
+                    'Failed to update exchange rates. Please try again later.',
+                    'error'
+                );
+            }
+        }
+        
+        // Get enabled currencies
+        $enabled_currencies = get_option('multi_currency_switcher_enabled_currencies', array(get_woocommerce_currency()));
+        $all_currencies = get_all_available_currencies();
+        $base_currency = get_woocommerce_currency();
+        
+        // Display the settings page
+        settings_errors('multi_currency_switcher_messages');
         ?>
         <div class="wrap">
-            <h1>Multi Currency Switcher Settings</h1>
-            <form method="post" action="options.php">
-                <?php
-                settings_fields( 'multi_currency_switcher_settings' );
-                do_settings_sections( 'multi_currency_switcher' );
-                submit_button();
-                ?>
-            </form>
+            <h1>Multi Currency Switcher</h1>
+            
+            <h2 class="nav-tab-wrapper">
+                <a href="?page=multi-currency-switcher" class="nav-tab nav-tab-active">General Settings</a>
+                <a href="?page=multi-currency-switcher-currencies" class="nav-tab">Currencies</a>
+                <a href="?page=multi-currency-switcher-style" class="nav-tab">Style Settings</a>
+            </h2>
+            
+            <div class="card">
+                <h2>Plugin Overview</h2>
+                <p>Multi Currency Switcher allows your customers to shop in their preferred currency. Key features include:</p>
+                <ul style="list-style-type: disc; margin-left: 20px;">
+                    <li>Support for multiple currencies with automatic exchange rate updates</li>
+                    <li>Geolocation-based currency detection</li>
+                    <li>Custom currency formatting options</li>
+                    <li>Product-specific pricing for each currency</li>
+                    <li>Currency switcher widgets and shortcodes</li>
+                </ul>
+            </div>
+            
+            <div class="card" style="margin-top: 20px;">
+                <h2>Exchange Rate Information</h2>
+                <p><strong>Base Currency:</strong> <?php echo esc_html($base_currency); ?> (set in WooCommerce settings)</p>
+                <p><strong>Last Exchange Rate Update:</strong> <?php echo esc_html($last_updated_text); ?></p>
+                <p>Exchange rates are automatically updated daily. You can also update them manually.</p>
+                
+                <form method="post" action="">
+                    <?php wp_nonce_field('update_exchange_rates', 'update_rates_nonce'); ?>
+                    <p>
+                        <input type="submit" name="update_exchange_rates" class="button button-secondary" value="Update Exchange Rates Now">
+                    </p>
+                </form>
+                
+                <?php if (!empty($exchange_rates)): ?>
+                    <h3>Current Exchange Rates</h3>
+                    <table class="widefat striped" style="max-width: 500px;">
+                        <thead>
+                            <tr>
+                                <th>Currency</th>
+                                <th>Rate (1 <?php echo esc_html($base_currency); ?> =)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($enabled_currencies as $code): 
+                                if ($code === $base_currency) continue;
+                                $rate = isset($exchange_rates[$code]) ? $exchange_rates[$code] : 'N/A';
+                                $name = isset($all_currencies[$code]['name']) ? $all_currencies[$code]['name'] : $code;
+                            ?>
+                                <tr>
+                                    <td><?php echo esc_html($code); ?> - <?php echo esc_html($name); ?></td>
+                                    <td><?php echo esc_html($rate); ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                <?php endif; ?>
+            </div>
+            
+            <div class="card" style="margin-top: 20px;">
+                <h2>General Settings</h2>
+                <form method="post" action="">
+                    <?php wp_nonce_field('save_general_settings', 'general_settings_nonce'); ?>
+                    
+                    <table class="form-table">
+                        <tr>
+                            <th scope="row"><label for="auto_detect">Auto-detect Currency</label></th>
+                            <td>
+                                <label>
+                                    <input type="checkbox" id="auto_detect" name="general_settings[auto_detect]" value="yes" <?php checked($general_settings['auto_detect'], 'yes'); ?>>
+                                    Automatically detect and set currency based on visitor's location
+                                </label>
+                                <p class="description">When enabled, the plugin will attempt to detect the visitor's country and set an appropriate currency.</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="widget_position">Currency Switcher Display</label></th>
+                            <td>
+                                <select id="widget_position" name="general_settings[widget_position]">
+                                    <option value="both" <?php selected($general_settings['widget_position'], 'both'); ?>>Show in both product pages and sticky widget</option>
+                                    <option value="products_only" <?php selected($general_settings['widget_position'], 'products_only'); ?>>Show only on product pages</option>
+                                    <option value="sticky_only" <?php selected($general_settings['widget_position'], 'sticky_only'); ?>>Show only as sticky widget</option>
+                                    <option value="none" <?php selected($general_settings['widget_position'], 'none'); ?>>Don't show automatically (use shortcode only)</option>
+                                </select>
+                                <p class="description">Control where the currency switcher appears on your site. Use the shortcode [multi_currency_switcher] to add it to specific locations.</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="default_currency">Default Currency</label></th>
+                            <td>
+                                <select id="default_currency" name="general_settings[default_currency]">
+                                    <?php foreach ($enabled_currencies as $code): 
+                                        $name = isset($all_currencies[$code]['name']) ? $all_currencies[$code]['name'] : $code;
+                                    ?>
+                                        <option value="<?php echo esc_attr($code); ?>" <?php selected($general_settings['default_currency'], $code); ?>>
+                                            <?php echo esc_html($code . ' - ' . $name); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <p class="description">The currency to use when auto-detection is disabled or fails. This should typically be your shop's base currency.</p>
+                            </td>
+                        </tr>
+                    </table>
+                    
+                    <p class="submit">
+                        <input type="submit" name="save_general_settings" class="button-primary" value="Save Settings">
+                    </p>
+                </form>
+            </div>
+            
+            <div class="card" style="margin-top: 20px;">
+                <h2>Shortcodes</h2>
+                <p>Use these shortcodes to add currency switchers to your site:</p>
+                
+                <table class="widefat" style="max-width: 600px;">
+                    <thead>
+                        <tr>
+                            <th>Shortcode</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>[multi_currency_switcher]</code></td>
+                            <td>Basic currency dropdown selector</td>
+                        </tr>
+                        <tr>
+                            <td><code>[multi_currency_switcher style="buttons"]</code></td>
+                            <td>Currency selector with button-style interface</td>
+                        </tr>
+                        <tr>
+                            <td><code>[multi_currency_switcher currencies="USD,EUR,GBP"]</code></td>
+                            <td>Currency selector with only specified currencies</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
+        <style>
+            .card {
+                background: #fff;
+                border: 1px solid #ccd0d4;
+                border-radius: 4px;
+                padding: 20px;
+                margin-bottom: 20px;
+                box-shadow: 0 1px 1px rgba(0,0,0,.04);
+            }
+        </style>
         <?php
     }
 

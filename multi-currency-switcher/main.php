@@ -189,3 +189,24 @@ function multi_currency_switcher_handle_currency_switch() {
 }
 add_action('wp_ajax_multi_currency_switch', 'multi_currency_switcher_handle_currency_switch');
 add_action('wp_ajax_nopriv_multi_currency_switch', 'multi_currency_switcher_handle_currency_switch');
+
+// Add after the other functions
+function multi_currency_switcher_widget_display_control() {
+    // Get display settings
+    $general_settings = get_option('multi_currency_switcher_general_settings', array(
+        'widget_position' => 'both',
+    ));
+    
+    $position = isset($general_settings['widget_position']) ? $general_settings['widget_position'] : 'both';
+    
+    // Remove the sticky widget if needed
+    if ($position === 'products_only' || $position === 'none') {
+        remove_action('wp_footer', 'multi_currency_switcher_display_sticky_widget');
+    }
+    
+    // Remove the product page widget if needed
+    if ($position === 'sticky_only' || $position === 'none') {
+        remove_action('woocommerce_single_product_summary', 'multi_currency_switcher_display_on_product_page', 25);
+    }
+}
+add_action('wp', 'multi_currency_switcher_widget_display_control');

@@ -101,3 +101,31 @@ body {
     border-radius: 4px;
     cursor: pointer;
 }
+
+/* Button style currency switcher */
+.currency-switcher-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin: 10px 0;
+}
+
+.currency-switcher-buttons .currency-button {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.currency-switcher-buttons .currency-button:hover {
+    background-color: #e5e5e5;
+}
+
+.currency-switcher-buttons .currency-button.active {
+    background-color: #4CAF50;
+    color: white;
+    border-color: #4CAF50;
+}

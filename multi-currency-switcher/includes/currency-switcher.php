@@ -86,21 +86,78 @@ class CurrencySwitcher {
 
 new CurrencySwitcher();
 
-function multi_currency_switcher_display() {
+function multi_currency_switcher_display($atts) {
+    // Parse attributes
+    $atts = shortcode_atts(array(
+        'style' => 'dropdown',
+        'currencies' => '',
+    ), $atts, 'multi_currency_switcher');
+    
+    $style = $atts['style'];
+    $selected_currencies = !empty($atts['currencies']) ? explode(',', $atts['currencies']) : array();
+    
+    // Get all available currencies
     $currencies = get_available_currencies();
     $current_currency = (function_exists('WC') && WC() && WC()->session) ? 
-        WC()->session->get('chosen_currency', 'USD') : 'USD';
+        WC()->session->get('chosen_currency', get_woocommerce_currency()) : get_woocommerce_currency();
     
-    echo '<div class="currency-switcher">';
-    echo '<select id="currency-selector">';
-    
-    foreach ($currencies as $code => $name) {
-        $selected = ($code === $current_currency) ? 'selected' : '';
-        echo sprintf('<option value="%s" %s>%s</option>', esc_attr($code), $selected, esc_html($name));
+    // Filter currencies if specified
+    if (!empty($selected_currencies)) {
+        $filtered_currencies = array();
+        foreach ($selected_currencies as $code) {
+            if (isset($currencies[$code])) {
+                $filtered_currencies[$code] = $currencies[$code];
+            }
+        }
+        $currencies = $filtered_currencies;
     }
     
-    echo '</select>';
-    echo '</div>';
+    $output = '';
+    
+    // Generate the switcher based on style
+    if ($style === 'buttons') {
+        $output .= '<div class="currency-switcher currency-switcher-buttons">';
+        foreach ($currencies as $code => $name) {
+            $active_class = ($code === $current_currency) ? 'active' : '';
+            $output .= sprintf(
+                '<button type="button" class="currency-button %s" data-currency="%s">%s</button>',
+                esc_attr($active_class),
+                esc_attr($code),
+                esc_html($code)
+            );
+        }
+        $output .= '</div>';
+        
+        // Add JavaScript for button-based switching
+        $output .= "
+        <script type='text/javascript'>
+        document.addEventListener('DOMContentLoaded', function() {
+            const buttons = document.querySelectorAll('.currency-switcher-buttons .currency-button');
+            buttons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    const currency = this.getAttribute('data-currency');
+                    document.cookie = 'chosen_currency=' + currency + '; path=/; max-age=2592000';
+                    window.location.reload();
+                });
+            });
+        });
+        </script>
+        ";
+    } else {
+        // Default dropdown style
+        $output .= '<div class="currency-switcher">';
+        $output .= '<select id="currency-selector">';
+        
+        foreach ($currencies as $code => $name) {
+            $selected = ($code === $current_currency) ? 'selected' : '';
+            $output .= sprintf('<option value="%s" %s>%s</option>', esc_attr($code), $selected, esc_html($name));
+        }
+        
+        $output .= '</select>';
+        $output .= '</div>';
+    }
+    
+    return $output;
 }
 add_shortcode('multi_currency_switcher', 'multi_currency_switcher_display');
 
@@ -183,6 +240,10 @@ function multi_currency_switcher_read_cookie() {
     
     $currency_changed = false;
     $available_currencies = get_available_currencies();
+    $general_settings = get_option('multi_currency_switcher_general_settings', array(
+        'auto_detect' => 'yes',
+        'default_currency' => get_woocommerce_currency(),
+    ));
     
     // First check for currency in the URL (for direct switching)
     if (isset($_GET['currency']) && !empty($_GET['currency'])) {
@@ -206,14 +267,31 @@ function multi_currency_switcher_read_cookie() {
             }
         }
     }
-    // If no currency set yet, try geolocating
-    else if (!WC()->session->get('chosen_currency')) {
+    // If no currency set yet, try geolocating (only if auto-detect is enabled)
+    else if (!WC()->session->get('chosen_currency') && $general_settings['auto_detect'] === 'yes') {
         $country = get_user_country();
         $currency = get_currency_by_country($country);
         
         if ($currency && array_key_exists($currency, $available_currencies)) {
             WC()->session->set('chosen_currency', $currency);
             setcookie('chosen_currency', $currency, time() + (86400 * 30), '/');
+            $currency_changed = true;
+        } else {
+            // Use default currency
+            $default_currency = $general_settings['default_currency'];
+            if (array_key_exists($default_currency, $available_currencies)) {
+                WC()->session->set('chosen_currency', $default_currency);
+                setcookie('chosen_currency', $default_currency, time() + (86400 * 30), '/');
+                $currency_changed = true;
+            }
+        }
+    }
+    // If auto-detect is disabled and no currency is set, use the default
+    else if (!WC()->session->get('chosen_currency') && $general_settings['auto_detect'] !== 'yes') {
+        $default_currency = $general_settings['default_currency'];
+        if (array_key_exists($default_currency, $available_currencies)) {
+            WC()->session->set('chosen_currency', $default_currency);
+            setcookie('chosen_currency', $default_currency, time() + (86400 * 30), '/');
             $currency_changed = true;
         }
     }

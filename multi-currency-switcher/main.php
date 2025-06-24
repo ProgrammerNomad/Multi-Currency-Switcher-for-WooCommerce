@@ -10,17 +10,32 @@
 
 defined('ABSPATH') || exit;
 
-// Include necessary files
+// Include files in the correct order
+require_once plugin_dir_path(__FILE__) . 'includes/helpers.php'; // Load helpers first
 require_once plugin_dir_path(__FILE__) . 'includes/admin-settings.php';
 require_once plugin_dir_path(__FILE__) . 'includes/currency-switcher.php';
-require_once plugin_dir_path(__FILE__) . 'includes/helpers.php';
 
 // Initialize the plugin
 function multi_currency_switcher_init() {
     // Add hooks and filters here
+    // Check if WooCommerce is active
+    if (!class_exists('WooCommerce')) {
+        add_action('admin_notices', 'multi_currency_switcher_woocommerce_notice');
+        return;
+    }
 }
 add_action('plugins_loaded', 'multi_currency_switcher_init');
 
+// Display notice if WooCommerce is not active
+function multi_currency_switcher_woocommerce_notice() {
+    ?>
+    <div class="error">
+        <p><?php _e('Multi Currency Switcher for WooCommerce requires WooCommerce to be installed and active.', 'multi-currency-switcher'); ?></p>
+    </div>
+    <?php
+}
+
+// AJAX handlers
 function handle_geolocation_currency() {
     $country = get_user_country();
     $currency = get_currency_by_country($country);
@@ -54,6 +69,10 @@ add_filter('woocommerce_get_price_html', function($price, $product) {
 }, 10, 2);
 
 function multi_currency_switcher_override_product_price($price, $product) {
+    if (!function_exists('WC') || !WC() || !WC()->session) {
+        return $price;
+    }
+    
     $currency = WC()->session->get('chosen_currency', 'USD'); // Default to USD
     $custom_price = get_post_meta($product->get_id(), '_price_' . $currency, true);
 
@@ -65,7 +84,12 @@ function multi_currency_switcher_override_product_price($price, $product) {
 }
 add_filter('woocommerce_get_price_html', 'multi_currency_switcher_override_product_price', 10, 2);
 
+// Adjust shipping costs based on currency
 function multi_currency_switcher_adjust_shipping_cost($package_rates, $package) {
+    if (!function_exists('WC') || !WC() || !WC()->session) {
+        return $package_rates;
+    }
+    
     $currency = WC()->session->get('chosen_currency', 'USD'); // Default to USD
     $exchange_rate = multi_currency_switcher_get_exchange_rate($currency);
 
@@ -80,7 +104,12 @@ function multi_currency_switcher_adjust_shipping_cost($package_rates, $package) 
 }
 add_filter('woocommerce_package_rates', 'multi_currency_switcher_adjust_shipping_cost', 10, 2);
 
+// Adjust coupon amount based on currency
 function multi_currency_switcher_adjust_coupon_amount($coupon_amount, $coupon) {
+    if (!function_exists('WC') || !WC() || !WC()->session) {
+        return $coupon_amount;
+    }
+    
     $currency = WC()->session->get('chosen_currency', 'USD'); // Default to USD
     $custom_amount = get_post_meta($coupon->get_id(), '_coupon_amount_' . $currency, true);
 

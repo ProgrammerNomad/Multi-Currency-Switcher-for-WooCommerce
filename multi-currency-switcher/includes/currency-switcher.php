@@ -7,6 +7,12 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly.
 }
 
+// Ensure helper functions are available
+if ( ! function_exists( 'get_available_currencies' ) ) {
+    // If for some reason helpers.php wasn't loaded first, load it now
+    require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/helpers.php';
+}
+
 /**
  * Class CurrencySwitcher
  */
@@ -27,6 +33,10 @@ class CurrencySwitcher {
     }
 
     public function switch_currency() {
+        if (!function_exists('WC') || !WC() || !WC()->session) {
+            return;
+        }
+
         $country = get_user_country();
         $currency = get_currency_by_country($country);
 
@@ -50,7 +60,8 @@ new CurrencySwitcher();
 
 function multi_currency_switcher_display() {
     $currencies = get_available_currencies();
-    $current_currency = WC()->session->get('chosen_currency', 'USD');
+    $current_currency = (function_exists('WC') && WC() && WC()->session) ? 
+        WC()->session->get('chosen_currency', 'USD') : 'USD';
     
     echo '<div class="currency-switcher">';
     echo '<select id="currency-selector">';

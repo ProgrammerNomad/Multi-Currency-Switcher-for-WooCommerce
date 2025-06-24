@@ -10,6 +10,14 @@
 
 defined('ABSPATH') || exit;
 
+// Increase memory limit for the plugin
+if (!defined('WP_MAX_MEMORY_LIMIT')) {
+    define('WP_MAX_MEMORY_LIMIT', '256M');
+}
+
+// Try to increase PHP memory limit
+@ini_set('memory_limit', '256M');
+
 // Include files in the correct order
 require_once plugin_dir_path(__FILE__) . 'includes/helpers.php'; // Load helpers first
 require_once plugin_dir_path(__FILE__) . 'includes/admin-settings.php';

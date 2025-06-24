@@ -776,6 +776,78 @@ class Multi_Currency_Switcher_Admin_Settings {
         $currency_prices = isset($_POST['currency_prices']) ? array_map('sanitize_text_field', $_POST['currency_prices']) : array();
         update_post_meta($post_id, '_currency_prices', $currency_prices);
     }
+
+    /**
+     * Create the payment restrictions settings page
+     */
+    public function create_payment_settings_page() {
+        // Process form submissions
+        if (isset($_POST['save_payment_settings']) && check_admin_referer('save_payment_settings', 'payment_settings_nonce')) {
+            $payment_restrictions = isset($_POST['multi_currency_switcher_payment_restrictions']) ? 
+                              $_POST['multi_currency_switcher_payment_restrictions'] : array();
+            
+            update_option('multi_currency_switcher_payment_restrictions', $payment_restrictions);
+            
+            add_settings_error(
+                'multi_currency_switcher_messages',
+                'payment_settings_updated',
+                'Payment restrictions have been updated successfully.',
+                'updated'
+            );
+        }
+        
+        $restrictions = get_option('multi_currency_switcher_payment_restrictions', array());
+        $currencies = get_option('multi_currency_switcher_enabled_currencies', array(get_woocommerce_currency()));
+        
+        settings_errors('multi_currency_switcher_messages');
+        ?>
+        <div class="wrap">
+            <h1>Payment Method Restrictions</h1>
+            
+            <h2 class="nav-tab-wrapper">
+                <a href="?page=multi-currency-switcher" class="nav-tab">General Settings</a>
+                <a href="?page=multi-currency-switcher-currencies" class="nav-tab">Currencies</a>
+                <a href="?page=multi-currency-switcher-style" class="nav-tab">Style Settings</a>
+                <a href="?page=multi-currency-switcher-payment" class="nav-tab nav-tab-active">Payment Restrictions</a>
+            </h2>
+            
+            <p>Control which payment methods are available for each currency. Check a payment method to disable it for that currency.</p>
+            
+            <form method="post" action="">
+                <?php wp_nonce_field('save_payment_settings', 'payment_settings_nonce'); ?>
+                
+                <?php
+                // Only try to get payment gateways if WooCommerce is active and initialized
+                if (function_exists('WC') && isset(WC()->payment_gateways) && WC()->payment_gateways) {
+                    $gateways = WC()->payment_gateways->get_available_payment_gateways();
+                    
+                    if (!empty($gateways)) {
+                        foreach ($currencies as $currency) {
+                            echo "<div class='card' style='margin-top: 20px; padding: 15px; background: #fff; border: 1px solid #ccd0d4; box-shadow: 0 1px 1px rgba(0,0,0,.04);'>";
+                            echo "<h3>{$currency} Payment Methods</h3>";
+                            echo "<p>Select payment methods to <strong>disable</strong> when {$currency} is the active currency:</p>";
+                            
+                            foreach ($gateways as $gateway_id => $gateway) {
+                                $checked = isset($restrictions[$currency]) && in_array($gateway_id, $restrictions[$currency]) ? 'checked' : '';
+                                echo "<label style='display: block; margin-bottom: 8px;'><input type='checkbox' name='multi_currency_switcher_payment_restrictions[{$currency}][]' value='{$gateway_id}' {$checked}> {$gateway->title}</label>";
+                            }
+                            echo "</div>";
+                        }
+                    } else {
+                        echo "<p>No payment gateways available. Please check your WooCommerce settings.</p>";
+                    }
+                } else {
+                    echo "<p>WooCommerce is not active or not fully initialized. Please ensure WooCommerce is active and reload this page.</p>";
+                }
+                ?>
+                
+                <p class="submit" style="margin-top: 20px;">
+                    <input type="submit" name="save_payment_settings" class="button-primary" value="Save Payment Restrictions">
+                </p>
+            </form>
+        </div>
+        <?php
+    }
 }
 
 /**

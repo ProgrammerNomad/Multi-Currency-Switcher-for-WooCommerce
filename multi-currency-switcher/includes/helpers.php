@@ -193,3 +193,35 @@ function mcs_log_error($message, $data = []) {
         error_log($log_message);
     }
 }
+
+/**
+ * Helper function to safely manage memory during intensive operations
+ *
+ * @param callable $callback Function to run with higher memory
+ * @param string $context Context for the memory limit (default, admin, etc)
+ * @return mixed The result of the callback
+ */
+function multi_currency_switcher_with_increased_memory($callback, $context = 'admin') {
+    // Save current memory limit
+    $current_limit = ini_get('memory_limit');
+    $result = null;
+    
+    try {
+        // Increase memory limit if possible
+        if (function_exists('wp_raise_memory_limit')) {
+            wp_raise_memory_limit($context);
+        } else {
+            @ini_set('memory_limit', '256M');
+        }
+        
+        // Execute the callback
+        $result = call_user_func($callback);
+    } catch (Exception $e) {
+        error_log('Multi Currency Switcher memory error: ' . $e->getMessage());
+    } finally {
+        // Restore original memory limit
+        @ini_set('memory_limit', $current_limit);
+    }
+    
+    return $result;
+}

@@ -140,11 +140,6 @@ function multi_currency_switcher_change_currency_symbol($symbol, $currency) {
  * Apply formatting for the current currency (decimal places, separators, etc.)
  */
 function multi_currency_switcher_price_format_args($args) {
-    // Fix for undefined array key "currency_symbol"
-    if (!isset($args['currency_symbol'])) {
-        $args['currency_symbol'] = '$'; // Default fallback symbol
-    }
-    
     $currency = $args['currency'];
     $currency_settings = get_option('multi_currency_switcher_currency_settings', array());
     
@@ -463,49 +458,3 @@ remove_action('woocommerce_before_calculate_totals', 'multi_currency_switcher_up
 add_action('woocommerce_before_calculate_totals', 'multi_currency_switcher_update_cart_items', 20);
 remove_action('woocommerce_before_mini_cart', 'multi_currency_switcher_update_cart_items', 10);
 add_action('woocommerce_before_mini_cart', 'multi_currency_switcher_update_cart_items', 10);
-
-/**
- * Ensure order totals display correctly
- */
-function multi_currency_switcher_order_formatted_line_subtotal($formatted_subtotal, $item, $order) {
-    // The order has already been processed with a specific currency
-    // Just ensure proper formatting
-    return $formatted_subtotal;
-}
-add_filter('woocommerce_order_formatted_line_subtotal', 'multi_currency_switcher_order_formatted_line_subtotal', 10, 3);
-
-/**
- * Apply currency symbol to order pages
- */
-function multi_currency_switcher_order_currency_symbol($currency_symbol, $currency) {
-    // For orders, get symbol from our currency data
-    $all_currencies = get_all_available_currencies();
-    
-    if (isset($all_currencies[$currency]) && isset($all_currencies[$currency]['symbol'])) {
-        return $all_currencies[$currency]['symbol'];
-    }
-    
-    return $currency_symbol;
-}
-add_filter('woocommerce_currency_symbol', 'multi_currency_switcher_order_currency_symbol', 20, 2);
-
-/**
- * Ensure currency format is applied on thank you page
- */
-function multi_currency_switcher_thankyou_page_currency($args, $currency_pos) {
-    // Make sure currency_symbol is set
-    if (!isset($args['currency_symbol']) && isset($args['currency'])) {
-        $currency = $args['currency'];
-        $all_currencies = get_all_available_currencies();
-        
-        if (isset($all_currencies[$currency]) && isset($all_currencies[$currency]['symbol'])) {
-            $args['currency_symbol'] = $all_currencies[$currency]['symbol'];
-        } else {
-            // Fallback to currency code if symbol not found
-            $args['currency_symbol'] = $currency;
-        }
-    }
-    
-    return $args;
-}
-add_filter('wc_price_args', 'multi_currency_switcher_thankyou_page_currency', 20, 2);

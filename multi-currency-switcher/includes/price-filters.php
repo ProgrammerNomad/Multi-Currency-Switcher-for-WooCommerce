@@ -277,30 +277,33 @@ function multi_currency_switcher_coupon_amount($amount, $coupon) {
  * Convert mini cart fragments to display correct currency
  */
 function multi_currency_switcher_mini_cart_fragments($fragments) {
-    // Get current currency to add to fragment cache keys
-    if (function_exists('WC') && WC()->session) {
-        $currency = WC()->session->get('chosen_currency', get_woocommerce_currency());
-        
-        // Force WooCommerce to regenerate all fragments when currency changes
-        foreach ($fragments as $key => $fragment) {
-            // Add currency to the fragment key to ensure proper caching
-            $new_key = $key . '_' . $currency;
-            $fragments[$new_key] = $fragment;
+    // Only attempt to modify fragments if cart is loaded
+    if (function_exists('WC') && WC()->cart && !WC()->cart->is_empty()) {
+        // Get current currency to add to fragment cache keys
+        if (WC()->session) {
+            $currency = WC()->session->get('chosen_currency', get_woocommerce_currency());
             
-            // Keep the original key for compatibility
-            $fragments[$key] = $fragment;
-        }
-        
-        // If using Storefront theme, update the specific cart fragment
-        if (isset($fragments['a.cart-contents'])) {
-            ob_start();
-            ?>
-            <a class="cart-contents" href="<?php echo wc_get_cart_url(); ?>" title="<?php _e('View your shopping cart', 'storefront'); ?>">
-                <?php echo wp_kses_post(WC()->cart->get_cart_subtotal()); ?>
-                <span class="count"><?php echo wp_kses_data(sprintf(_n('%d item', '%d items', WC()->cart->get_cart_contents_count(), 'storefront'), WC()->cart->get_cart_contents_count())); ?></span>
-            </a>
-            <?php
-            $fragments['a.cart-contents'] = ob_get_clean();
+            // Force WooCommerce to regenerate all fragments when currency changes
+            foreach ($fragments as $key => $fragment) {
+                // Add currency to the fragment key to ensure proper caching
+                $new_key = $key . '_' . $currency;
+                $fragments[$new_key] = $fragment;
+                
+                // Keep the original key for compatibility
+                $fragments[$key] = $fragment;
+            }
+            
+            // If using Storefront theme, update the specific cart fragment
+            if (isset($fragments['a.cart-contents'])) {
+                ob_start();
+                ?>
+                <a class="cart-contents" href="<?php echo wc_get_cart_url(); ?>" title="<?php _e('View your shopping cart', 'storefront'); ?>">
+                    <?php echo wp_kses_post(WC()->cart->get_cart_subtotal()); ?>
+                    <span class="count"><?php echo wp_kses_data(sprintf(_n('%d item', '%d items', WC()->cart->get_cart_contents_count(), 'storefront'), WC()->cart->get_cart_contents_count())); ?></span>
+                </a>
+                <?php
+                $fragments['a.cart-contents'] = ob_get_clean();
+            }
         }
     }
     
@@ -396,7 +399,7 @@ function multi_currency_switcher_update_cart_items() {
     // Flag to track if we need to recalculate
     $needs_recalculation = false;
     
-    // Loop through cart items and ensure prices are in the correct currency
+    // We're already in a cart operation, so it's safe to use get_cart() now
     foreach (WC()->cart->get_cart() as $cart_item_key => $cart_item) {
         $product_id = $cart_item['product_id'];
         $variation_id = $cart_item['variation_id'] ? $cart_item['variation_id'] : 0;
@@ -431,8 +434,10 @@ function multi_currency_switcher_update_cart_items() {
     
     // Recalculate if needed
     if ($needs_recalculation) {
-        WC()->cart->calculate_totals();
+        // No need to calculate here - WooCommerce will do it after this filter
     }
 }
+remove_action('woocommerce_before_calculate_totals', 'multi_currency_switcher_update_cart_items', 20);
 add_action('woocommerce_before_calculate_totals', 'multi_currency_switcher_update_cart_items', 20);
+remove_action('woocommerce_before_mini_cart', 'multi_currency_switcher_update_cart_items', 10);
 add_action('woocommerce_before_mini_cart', 'multi_currency_switcher_update_cart_items', 10);

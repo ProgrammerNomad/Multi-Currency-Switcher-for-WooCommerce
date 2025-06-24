@@ -26,7 +26,7 @@ class CurrencySwitcher {
         add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
         add_action('woocommerce_before_calculate_totals', array($this, 'switch_currency'));
         
-        // Add this new line to force cart recalculation when pages load
+        // Change this to wp action instead of wp_loaded to ensure cart is fully loaded
         add_action('wp', array($this, 'force_cart_recalculation'));
     }
 
@@ -75,9 +75,10 @@ class CurrencySwitcher {
         echo $output;
     }
 
-    // Add this new method to the CurrencySwitcher class:
+    // Update the force_cart_recalculation method 
     public function force_cart_recalculation() {
-        if (function_exists('WC') && WC()->cart) {
+        // Only run this on frontend, not during AJAX or admin
+        if (!is_admin() && !defined('DOING_AJAX') && function_exists('WC') && WC()->cart) {
             WC()->cart->calculate_totals();
         }
     }
@@ -217,16 +218,35 @@ function multi_currency_switcher_read_cookie() {
         }
     }
     
-    // When currency changes, we need to force recalculation of the cart
-    if ($currency_changed && WC()->cart) {
-        // Remove all fragments to force regeneration
-        WC_Cache_Helper::get_transient_version('fragments', true);
-        
-        // Force recalculation of totals
-        WC()->cart->calculate_totals();
+    // Mark a flag in the session that we need to recalculate totals later
+    // Rather than doing it now when cart isn't fully loaded
+    if ($currency_changed) {
+        WC()->session->set('currency_changed', true);
     }
 }
-add_action('init', 'multi_currency_switcher_read_cookie', 20);
+// Change the hook from 'init' to 'wp_loaded' to ensure WooCommerce is ready
+remove_action('init', 'multi_currency_switcher_read_cookie', 20);
+add_action('wp_loaded', 'multi_currency_switcher_read_cookie', 20);
+
+// Add a new function to handle cart recalculation after WooCommerce is fully loaded
+function multi_currency_switcher_maybe_recalculate_cart() {
+    if (!function_exists('WC') || !WC()->session || !WC()->cart) {
+        return;
+    }
+    
+    // Check if currency was changed
+    if (WC()->session->get('currency_changed')) {
+        // Clear WC fragments cache to force regeneration
+        WC_Cache_Helper::get_transient_version('fragments', true);
+        
+        // Force cart recalculation
+        WC()->cart->calculate_totals();
+        
+        // Reset the flag
+        WC()->session->set('currency_changed', false);
+    }
+}
+add_action('woocommerce_cart_loaded_from_session', 'multi_currency_switcher_maybe_recalculate_cart', 99);
 
 function multi_currency_switcher_add_dynamic_styles() {
     $style_settings = get_option('multi_currency_switcher_style_settings', array(

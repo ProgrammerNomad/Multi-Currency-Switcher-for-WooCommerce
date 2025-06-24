@@ -180,37 +180,50 @@ function multi_currency_switcher_read_cookie() {
         return;
     }
     
+    $currency_changed = false;
+    $available_currencies = get_available_currencies();
+    
     // First check for currency in the URL (for direct switching)
     if (isset($_GET['currency']) && !empty($_GET['currency'])) {
         $currency = sanitize_text_field($_GET['currency']);
-        $available_currencies = get_available_currencies();
         
         if (array_key_exists($currency, $available_currencies)) {
             WC()->session->set('chosen_currency', $currency);
-            // Set cookie for 30 days
             setcookie('chosen_currency', $currency, time() + (86400 * 30), '/');
+            $currency_changed = true;
         }
     }
     // Then check for existing cookie
     else if (isset($_COOKIE['chosen_currency'])) {
         $currency = sanitize_text_field($_COOKIE['chosen_currency']);
-        $available_currencies = get_available_currencies();
         
         if (array_key_exists($currency, $available_currencies)) {
-            WC()->session->set('chosen_currency', $currency);
+            $current = WC()->session->get('chosen_currency', '');
+            if ($current !== $currency) {
+                WC()->session->set('chosen_currency', $currency);
+                $currency_changed = true;
+            }
         }
     }
     // If no currency set yet, try geolocating
     else if (!WC()->session->get('chosen_currency')) {
         $country = get_user_country();
         $currency = get_currency_by_country($country);
-        $available_currencies = get_available_currencies();
         
         if ($currency && array_key_exists($currency, $available_currencies)) {
             WC()->session->set('chosen_currency', $currency);
-            // Set cookie for 30 days
             setcookie('chosen_currency', $currency, time() + (86400 * 30), '/');
+            $currency_changed = true;
         }
+    }
+    
+    // When currency changes, we need to force recalculation of the cart
+    if ($currency_changed && WC()->cart) {
+        // Remove all fragments to force regeneration
+        WC_Cache_Helper::get_transient_version('fragments', true);
+        
+        // Force recalculation of totals
+        WC()->cart->calculate_totals();
     }
 }
 add_action('init', 'multi_currency_switcher_read_cookie', 20);
@@ -306,4 +319,19 @@ function multi_currency_switcher_set_ajax_currency() {
     }
 }
 add_action('woocommerce_init', 'multi_currency_switcher_set_ajax_currency', 5);
+
+// Add this function to ensure the Storefront theme mini cart is updated
+function multi_currency_switcher_storefront_compatibility() {
+    // Check if Storefront theme is active
+    if (function_exists('storefront_is_woocommerce_activated') && function_exists('WC') && WC()->cart) {
+        // Add a filter to ensure the cart widget is properly displayed
+        add_filter('storefront_cart_link_fragment', function($fragments) {
+            ob_start();
+            storefront_cart_link();
+            $fragments['a.cart-contents'] = ob_get_clean();
+            return $fragments;
+        });
+    }
+}
+add_action('wp_loaded', 'multi_currency_switcher_storefront_compatibility');
 ?>

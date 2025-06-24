@@ -113,3 +113,86 @@ function multi_currency_switcher_before_add_to_cart() {
     }
 }
 add_action('woocommerce_ajax_added_to_cart', 'multi_currency_switcher_before_add_to_cart', 1);
+
+// Add this to your main.php file to load templates
+function multi_currency_switcher_template_loader($template, $template_name, $template_path) {
+    if ($template_name === 'cart/mini-cart.php') {
+        // Check if our custom template exists
+        $plugin_template = plugin_dir_path(__FILE__) . 'templates/mini-cart.php';
+        
+        if (file_exists($plugin_template)) {
+            return $plugin_template;
+        }
+    }
+    
+    return $template;
+}
+add_filter('wc_get_template', 'multi_currency_switcher_template_loader', 10, 3);
+
+/**
+ * AJAX handler for currency switching
+ * This updates the cart and mini cart when currency is changed via JavaScript
+ */
+function multi_currency_switcher_handle_currency_switch() {
+    // Security checks
+    if (!isset($_GET['currency']) || empty($_GET['currency'])) {
+        wp_send_json_error(['message' => 'Missing currency parameter']);
+        return;
+    }
+
+    if (!function_exists('WC') || !WC()->session || !WC()->cart) {
+        wp_send_json_error(['message' => 'WooCommerce not initialized']);
+        return;
+    }
+    
+    $currency = sanitize_text_field($_GET['currency']);
+    $available_currencies = get_available_currencies();
+    
+    if (!array_key_exists($currency, $available_currencies)) {
+        wp_send_json_error(['message' => 'Invalid currency']);
+        return;
+    }
+    
+    // Set the new currency in session
+    $old_currency = WC()->session->get('chosen_currency', get_woocommerce_currency());
+    WC()->session->set('chosen_currency', $currency);
+    
+    // Set cookie
+    setcookie('chosen_currency', $currency, time() + (86400 * 30), '/');
+    
+    // Clear WC fragments cache to force regeneration
+    WC_Cache_Helper::get_transient_version('fragments', true);
+    
+    // Force cart recalculation with the new currency
+    multi_currency_switcher_update_cart_items();
+    WC()->cart->calculate_totals();
+    
+    // Get updated fragments
+    ob_start();
+    woocommerce_mini_cart();
+    $mini_cart = ob_get_clean();
+    
+    // Build fragments array
+    $fragments = [
+        'div.widget_shopping_cart_content' => '<div class="widget_shopping_cart_content">' . $mini_cart . '</div>'
+    ];
+    
+    // Add Storefront specific fragment
+    if (function_exists('storefront_cart_link')) {
+        ob_start();
+        storefront_cart_link();
+        $fragments['a.cart-contents'] = ob_get_clean();
+    }
+    
+    // Add additional data
+    $data = [
+        'fragments' => apply_filters('woocommerce_add_to_cart_fragments', $fragments),
+        'cart_hash' => WC()->cart->get_cart_hash(),
+        'old_currency' => $old_currency,
+        'new_currency' => $currency
+    ];
+    
+    wp_send_json_success($data);
+}
+add_action('wp_ajax_multi_currency_switch', 'multi_currency_switcher_handle_currency_switch');
+add_action('wp_ajax_nopriv_multi_currency_switch', 'multi_currency_switcher_handle_currency_switch');

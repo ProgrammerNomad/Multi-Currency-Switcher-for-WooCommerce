@@ -277,10 +277,36 @@ function multi_currency_switcher_coupon_amount($amount, $coupon) {
  * Convert mini cart fragments to display correct currency
  */
 function multi_currency_switcher_mini_cart_fragments($fragments) {
-    // This ensures the mini cart updates with correct currency when refreshed via AJAX
+    // Get current currency to add to fragment cache keys
+    if (function_exists('WC') && WC()->session) {
+        $currency = WC()->session->get('chosen_currency', get_woocommerce_currency());
+        
+        // Force WooCommerce to regenerate all fragments when currency changes
+        foreach ($fragments as $key => $fragment) {
+            // Add currency to the fragment key to ensure proper caching
+            $new_key = $key . '_' . $currency;
+            $fragments[$new_key] = $fragment;
+            
+            // Keep the original key for compatibility
+            $fragments[$key] = $fragment;
+        }
+        
+        // If using Storefront theme, update the specific cart fragment
+        if (isset($fragments['a.cart-contents'])) {
+            ob_start();
+            ?>
+            <a class="cart-contents" href="<?php echo wc_get_cart_url(); ?>" title="<?php _e('View your shopping cart', 'storefront'); ?>">
+                <?php echo wp_kses_post(WC()->cart->get_cart_subtotal()); ?>
+                <span class="count"><?php echo wp_kses_data(sprintf(_n('%d item', '%d items', WC()->cart->get_cart_contents_count(), 'storefront'), WC()->cart->get_cart_contents_count())); ?></span>
+            </a>
+            <?php
+            $fragments['a.cart-contents'] = ob_get_clean();
+        }
+    }
+    
     return $fragments;
 }
-add_filter('woocommerce_add_to_cart_fragments', 'multi_currency_switcher_mini_cart_fragments');
+add_filter('woocommerce_add_to_cart_fragments', 'multi_currency_switcher_mini_cart_fragments', 999);
 
 /**
  * Handle mini cart price display
@@ -352,3 +378,61 @@ function multi_currency_switcher_cart_subtotal($cart_subtotal, $compound = false
     // We just need to make sure it's displayed correctly
     return $cart_subtotal;
 }
+
+// Add this function to ensure cart items are updated with the correct currency
+function multi_currency_switcher_update_cart_items() {
+    if (!function_exists('WC') || !WC()->cart || !WC()->session) {
+        return;
+    }
+    
+    $currency = WC()->session->get('chosen_currency', get_woocommerce_currency());
+    $base_currency = get_woocommerce_currency();
+    
+    // Skip if using base currency
+    if ($currency === $base_currency) {
+        return;
+    }
+    
+    // Flag to track if we need to recalculate
+    $needs_recalculation = false;
+    
+    // Loop through cart items and ensure prices are in the correct currency
+    foreach (WC()->cart->get_cart() as $cart_item_key => $cart_item) {
+        $product_id = $cart_item['product_id'];
+        $variation_id = $cart_item['variation_id'] ? $cart_item['variation_id'] : 0;
+        
+        // Get the correct product ID for price lookup
+        $price_product_id = $variation_id ? $variation_id : $product_id;
+        
+        // Check if there's a custom price for this product in the current currency
+        $custom_price = get_post_meta($price_product_id, '_price_' . $currency, true);
+        
+        if (!empty($custom_price) && is_numeric($custom_price)) {
+            // Use custom price if set
+            if ($cart_item['data']->get_price() != $custom_price) {
+                $cart_item['data']->set_price($custom_price);
+                $needs_recalculation = true;
+            }
+        } else {
+            // Otherwise use exchange rate conversion
+            $exchange_rate = multi_currency_switcher_get_exchange_rate($currency);
+            $base_price = get_post_meta($price_product_id, '_price', true);
+            
+            if (!empty($base_price) && is_numeric($base_price)) {
+                $converted_price = floatval($base_price) * floatval($exchange_rate);
+                
+                if ($cart_item['data']->get_price() != $converted_price) {
+                    $cart_item['data']->set_price($converted_price);
+                    $needs_recalculation = true;
+                }
+            }
+        }
+    }
+    
+    // Recalculate if needed
+    if ($needs_recalculation) {
+        WC()->cart->calculate_totals();
+    }
+}
+add_action('woocommerce_before_calculate_totals', 'multi_currency_switcher_update_cart_items', 20);
+add_action('woocommerce_before_mini_cart', 'multi_currency_switcher_update_cart_items', 10);

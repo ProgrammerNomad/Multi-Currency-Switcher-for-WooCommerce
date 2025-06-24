@@ -439,14 +439,10 @@ class Multi_Currency_Switcher_Admin_Settings {
                                 </td>
                             </tr>
                             <tr>
-                                <th scope="row">Show Flags in Sticky Widget</th>
+                                <th scope="row">Show Flags in Widgets</th>
                                 <td>
-                                    <select name="style_settings[show_flags]">
-                                        <option value="none" <?php selected('none', $style_settings['show_flags']); ?>>No Flags</option>
-                                        <option value="left" <?php selected('left', $style_settings['show_flags']); ?>>Yes, on Left</option>
-                                        <option value="right" <?php selected('right', $style_settings['show_flags']); ?>>Yes, on Right</option>
-                                    </select>
-                                    <p class="description">Choose the position of the flags or whether to hide them</p>
+                                    <p class="description">Flag support will be added in a future update.</p>
+                                    <input type="hidden" name="style_settings[show_flags]" value="none">
                                 </td>
                             </tr>
                         </table>

@@ -101,19 +101,3 @@ body {
     border-radius: 4px;
     cursor: pointer;
 }
-
-/* Flag positioning */
-.currency-flag {
-    display: inline-block;
-    margin-right: 5px;
-    width: 20px;
-    height: 15px;
-    background-size: contain;
-    background-repeat: no-repeat;
-    vertical-align: middle;
-}
-
-.flag-right .currency-flag {
-    margin-right: 0;
-    margin-left: 5px;
-}

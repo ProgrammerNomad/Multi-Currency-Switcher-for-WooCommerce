@@ -98,7 +98,7 @@ function multi_currency_switcher_display_sticky_widget() {
     $style_settings = get_option('multi_currency_switcher_style_settings', array(
         'show_sticky_widget' => 'yes',
         'limit_currencies' => 'no',
-        'show_flags' => 'left',
+        'show_flags' => 'none', // Default to no flags
     ));
     
     // Don't display if disabled
@@ -110,53 +110,18 @@ function multi_currency_switcher_display_sticky_widget() {
     $current_currency = (function_exists('WC') && WC() && WC()->session) ? 
         WC()->session->get('chosen_currency', 'USD') : 'USD';
     
-    // Add flag class based on settings
-    $flag_class = '';
-    if ($style_settings['show_flags'] !== 'none') {
-        $flag_class = 'flag-' . $style_settings['show_flags'];
-    }
-    
-    echo '<div class="sticky-currency-switcher ' . esc_attr($flag_class) . '">';
+    echo '<div class="sticky-currency-switcher">';
     echo '<label for="sticky-currency-selector">Currency:</label>';
     echo '<select id="sticky-currency-selector">';
     
     foreach ($currencies as $code => $name) {
         $selected = ($code === $current_currency) ? 'selected' : '';
-        $flag_html = '';
-        
-        // Add flag if enabled
-        if ($style_settings['show_flags'] !== 'none') {
-            $country_code = strtolower(get_country_code_for_currency($code));
-            $flag_html = '<span class="currency-flag" style="background-image: url(' . 
-                         plugins_url('/assets/flags/' . $country_code . '.png', dirname(__FILE__)) . 
-                         ');"></span>';
-        }
-        
-        // Flag position based on settings
-        if ($style_settings['show_flags'] === 'left') {
-            echo sprintf(
-                '<option value="%s" %s>%s %s</option>', 
-                esc_attr($code), 
-                $selected, 
-                $flag_html, 
-                esc_html($name)
-            );
-        } else if ($style_settings['show_flags'] === 'right') {
-            echo sprintf(
-                '<option value="%s" %s>%s %s</option>', 
-                esc_attr($code), 
-                $selected, 
-                esc_html($name), 
-                $flag_html
-            );
-        } else {
-            echo sprintf(
-                '<option value="%s" %s>%s</option>', 
-                esc_attr($code), 
-                $selected, 
-                esc_html($name)
-            );
-        }
+        echo sprintf(
+            '<option value="%s" %s>%s</option>', 
+            esc_attr($code), 
+            $selected, 
+            esc_html($name)
+        );
     }
     
     echo '</select>';
@@ -211,7 +176,6 @@ function multi_currency_switcher_add_dynamic_styles() {
         'show_sticky_widget' => 'yes',
         'sticky_position' => 'left',
         'limit_currencies' => 'no',
-        'show_flags' => 'left',
     ));
     
     $css = "
@@ -241,6 +205,10 @@ function multi_currency_switcher_add_dynamic_styles() {
             " . get_sticky_position_css($style_settings['sticky_position']) . "
             background-color: {$style_settings['background_color']};
             border: 1px solid {$style_settings['border_color']};
+            padding: 10px 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 9999;
         }
     </style>
     ";

@@ -66,6 +66,10 @@ function multi_currency_switcher_display() {
 add_shortcode('multi_currency_switcher', 'multi_currency_switcher_display');
 
 function multi_currency_switcher_filter_payment_gateways($available_gateways) {
+    if (!WC()->session) {
+        return $available_gateways; // Return default gateways if session is not initialized
+    }
+
     $currency = WC()->session->get('chosen_currency', 'USD'); // Default to USD
     $restrictions = get_option('multi_currency_switcher_payment_restrictions', []);
 
@@ -77,7 +81,7 @@ function multi_currency_switcher_filter_payment_gateways($available_gateways) {
 
     return $available_gateways;
 }
-add_filter('woocommerce_available_payment_gateways', 'multi_currency_switcher_filter_payment_gateways');
+add_filter('woocommerce_available_payment_gateways', 'multi_currency_switcher_filter_payment_gateways', 20); // Ensure it runs after WooCommerce initialization
 
 function multi_currency_switcher_display_sticky_widget() {
     echo '<div class="sticky-currency-switcher">';

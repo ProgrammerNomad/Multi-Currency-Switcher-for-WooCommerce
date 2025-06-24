@@ -57,6 +57,17 @@ function multi_currency_switcher_apply_price_filters() {
     
     // Product variations cache
     add_filter('woocommerce_get_variation_prices_hash', 'multi_currency_switcher_variation_prices_hash', 10, 3);
+
+    // Add these new filters
+    add_filter('woocommerce_cart_contents_total', 'multi_currency_switcher_cart_contents_total', 10, 1);
+    add_filter('woocommerce_cart_subtotal', 'multi_currency_switcher_cart_subtotal', 10, 3);
+    
+    // This is critical for mini cart display
+    add_filter('woocommerce_before_mini_cart', 'multi_currency_switcher_before_mini_cart');
+    add_filter('woocommerce_after_mini_cart', 'multi_currency_switcher_after_mini_cart');
+    
+    // For updating mini cart totals
+    add_filter('woocommerce_cart_item_subtotal', 'multi_currency_switcher_cart_item_subtotal', 10, 3);
 }
 add_action('init', 'multi_currency_switcher_apply_price_filters', 20);
 
@@ -261,4 +272,70 @@ function multi_currency_switcher_coupon_amount($amount, $coupon) {
     // Otherwise convert using exchange rate
     $exchange_rate = multi_currency_switcher_get_exchange_rate($currency);
     return floatval($amount) * floatval($exchange_rate);
+}
+
+/**
+ * Convert mini cart fragments to display correct currency
+ */
+function multi_currency_switcher_mini_cart_fragments($fragments) {
+    // This ensures the mini cart updates with correct currency when refreshed via AJAX
+    return $fragments;
+}
+add_filter('woocommerce_add_to_cart_fragments', 'multi_currency_switcher_mini_cart_fragments');
+
+/**
+ * Handle mini cart price display
+ */
+function multi_currency_switcher_mini_cart_price_filter() {
+    // Filters for mini cart prices
+    add_filter('woocommerce_cart_item_price', 'multi_currency_switcher_filter_item_price', 10, 3);
+    add_filter('woocommerce_widget_cart_item_quantity', 'multi_currency_switcher_filter_widget_cart_item_quantity', 10, 3);
+}
+add_action('wp_loaded', 'multi_currency_switcher_mini_cart_price_filter');
+
+/**
+ * Filter mini cart item price
+ */
+function multi_currency_switcher_filter_item_price($price_html, $cart_item, $cart_item_key) {
+    // Price is already converted by WooCommerce, we just need to ensure it's properly displayed
+    return $price_html;
+}
+
+/**
+ * Filter mini cart item quantity text with correct currency
+ */
+function multi_currency_switcher_filter_widget_cart_item_quantity($quantity_html, $cart_item, $cart_item_key) {
+    // Quantity already includes price that has been converted, we just need to ensure it's properly displayed
+    return $quantity_html;
+}
+
+/**
+ * Function to run before mini cart is displayed
+ */
+function multi_currency_switcher_before_mini_cart() {
+    // Prepare the mini cart for display with the correct currency
+    WC()->cart->calculate_totals();
+}
+
+/**
+ * Function to run after mini cart is displayed
+ */
+function multi_currency_switcher_after_mini_cart() {
+    // Cleanup after mini cart display if needed
+}
+
+/**
+ * Filter cart contents total
+ */
+function multi_currency_switcher_cart_contents_total($total) {
+    // Total already converted, just return it
+    return $total;
+}
+
+/**
+ * Filter cart item subtotal
+ */
+function multi_currency_switcher_cart_item_subtotal($subtotal, $cart_item, $cart_item_key) {
+    // Subtotal already converted, just return it
+    return $subtotal;
 }

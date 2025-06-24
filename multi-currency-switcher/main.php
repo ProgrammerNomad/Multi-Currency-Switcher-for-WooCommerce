@@ -63,6 +63,15 @@ function handle_get_exchange_rate() {
 add_action('wp_ajax_get_exchange_rate', 'handle_get_exchange_rate');
 add_action('wp_ajax_nopriv_get_exchange_rate', 'handle_get_exchange_rate');
 
+/**
+ * Force mini cart recalculation when currency changes
+ */
+function multi_currency_switcher_refresh_fragments() {
+    WC_AJAX::get_refreshed_fragments();
+}
+add_action('wp_ajax_multi_currency_refresh_fragments', 'multi_currency_switcher_refresh_fragments');
+add_action('wp_ajax_nopriv_multi_currency_refresh_fragments', 'multi_currency_switcher_refresh_fragments');
+
 // Add a data attribute to store the original price
 add_filter('woocommerce_get_price_html', function($price, $product) {
     $original_price = $product->get_price();
@@ -90,3 +99,17 @@ register_deactivation_hook(__FILE__, 'multi_currency_switcher_clear_scheduled_up
 function multi_currency_switcher_clear_scheduled_updates() {
     wp_clear_scheduled_hook('multi_currency_switcher_daily_update');
 }
+
+// Add this function to ensure the currency is properly set during AJAX add to cart:
+
+function multi_currency_switcher_before_add_to_cart() {
+    if (isset($_COOKIE['chosen_currency']) && function_exists('WC') && WC()->session) {
+        $currency = sanitize_text_field($_COOKIE['chosen_currency']);
+        $available_currencies = get_available_currencies();
+        
+        if (array_key_exists($currency, $available_currencies)) {
+            WC()->session->set('chosen_currency', $currency);
+        }
+    }
+}
+add_action('woocommerce_ajax_added_to_cart', 'multi_currency_switcher_before_add_to_cart', 1);

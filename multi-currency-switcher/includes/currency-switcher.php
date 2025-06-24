@@ -25,6 +25,9 @@ class CurrencySwitcher {
 
         add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
         add_action('woocommerce_before_calculate_totals', array($this, 'switch_currency'));
+        
+        // Add this new line to force cart recalculation when pages load
+        add_action('wp', array($this, 'force_cart_recalculation'));
     }
 
     public function enqueue_scripts() {
@@ -70,6 +73,13 @@ class CurrencySwitcher {
         }
         $output .= '</select>';
         echo $output;
+    }
+
+    // Add this new method to the CurrencySwitcher class:
+    public function force_cart_recalculation() {
+        if (function_exists('WC') && WC()->cart) {
+            WC()->cart->calculate_totals();
+        }
     }
 }
 
@@ -280,4 +290,20 @@ function get_country_code_for_currency($currency) {
     }
     return 'us'; // Default to US flag
 }
+
+// Add this function to ensure AJAX requests use the correct currency:
+
+function multi_currency_switcher_set_ajax_currency() {
+    if (defined('DOING_AJAX') && DOING_AJAX) {
+        if (isset($_COOKIE['chosen_currency'])) {
+            $currency = sanitize_text_field($_COOKIE['chosen_currency']);
+            $available_currencies = get_available_currencies();
+            
+            if (array_key_exists($currency, $available_currencies) && function_exists('WC') && WC()->session) {
+                WC()->session->set('chosen_currency', $currency);
+            }
+        }
+    }
+}
+add_action('woocommerce_init', 'multi_currency_switcher_set_ajax_currency', 5);
 ?>

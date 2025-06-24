@@ -15,15 +15,10 @@ class CurrencySwitcher {
     private $currencies;
 
     public function __construct() {
-        $this->currencies = apply_filters( 'mcs_available_currencies', array(
-            'USD' => 'United States Dollar',
-            'EUR' => 'Euro',
-            'GBP' => 'British Pound',
-            'JPY' => 'Japanese Yen',
-        ));
+        $this->currencies = get_available_currencies();
 
-        add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-        add_action( 'woocommerce_before_calculate_totals', array( $this, 'switch_currency' ) );
+        add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
+        add_action('woocommerce_before_calculate_totals', array($this, 'switch_currency'));
     }
 
     public function enqueue_scripts() {
@@ -54,12 +49,17 @@ class CurrencySwitcher {
 new CurrencySwitcher();
 
 function multi_currency_switcher_display() {
-    // Logic to display currency switcher
+    $currencies = get_available_currencies();
+    $current_currency = WC()->session->get('chosen_currency', 'USD');
+    
     echo '<div class="currency-switcher">';
     echo '<select id="currency-selector">';
-    echo '<option value="USD">USD</option>';
-    echo '<option value="EUR">EUR</option>';
-    echo '<option value="GBP">GBP</option>';
+    
+    foreach ($currencies as $code => $name) {
+        $selected = ($code === $current_currency) ? 'selected' : '';
+        echo sprintf('<option value="%s" %s>%s</option>', esc_attr($code), $selected, esc_html($name));
+    }
+    
     echo '</select>';
     echo '</div>';
 }

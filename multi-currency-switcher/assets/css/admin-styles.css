@@ -1,0 +1,14 @@
+.wp-list-table.widefat {
+    margin-top: 20px;
+}
+
+.wp-list-table input[type="number"],
+.wp-list-table input[type="text"] {
+    width: 100%;
+    max-width: 100px;
+}
+
+.wp-list-table select {
+    width: 100%;
+    max-width: 150px;
+}

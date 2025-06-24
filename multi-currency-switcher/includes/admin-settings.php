@@ -740,14 +740,6 @@ class Multi_Currency_Switcher_Admin_Settings {
 }
 
 /**
- * Helper function to update all exchange rates
+ * Initialize the settings class
  */
-function multi_currency_switcher_update_all_exchange_rates() {
-    // This function should contain the logic to update all exchange rates
-    // For the sake of this example, we will simulate a successful update
-    update_option('multi_currency_switcher_rates_last_updated', time());
-    return true;
-}
-
-// Initialize the settings class
 new Multi_Currency_Switcher_Admin_Settings();

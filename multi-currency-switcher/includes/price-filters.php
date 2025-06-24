@@ -384,57 +384,74 @@ function multi_currency_switcher_cart_subtotal($cart_subtotal, $compound = false
 
 // Add this function to ensure cart items are updated with the correct currency
 function multi_currency_switcher_update_cart_items() {
-    if (!function_exists('WC') || !WC()->cart || !WC()->session) {
+    // Skip if not in a cart context or WooCommerce isn't fully loaded
+    if (!function_exists('WC') || !WC()->cart || !WC()->session || !is_object(WC()->cart) || !method_exists(WC()->cart, 'get_cart')) {
         return;
     }
     
-    $currency = WC()->session->get('chosen_currency', get_woocommerce_currency());
-    $base_currency = get_woocommerce_currency();
-    
-    // Skip if using base currency
-    if ($currency === $base_currency) {
-        return;
-    }
-    
-    // Flag to track if we need to recalculate
-    $needs_recalculation = false;
-    
-    // We're already in a cart operation, so it's safe to use get_cart() now
-    foreach (WC()->cart->get_cart() as $cart_item_key => $cart_item) {
-        $product_id = $cart_item['product_id'];
-        $variation_id = $cart_item['variation_id'] ? $cart_item['variation_id'] : 0;
+    try {
+        $currency = WC()->session->get('chosen_currency', get_woocommerce_currency());
+        $base_currency = get_woocommerce_currency();
         
-        // Get the correct product ID for price lookup
-        $price_product_id = $variation_id ? $variation_id : $product_id;
+        // Skip if using base currency
+        if ($currency === $base_currency) {
+            return;
+        }
         
-        // Check if there's a custom price for this product in the current currency
-        $custom_price = get_post_meta($price_product_id, '_price_' . $currency, true);
+        // Get the cart - with extra checks to prevent errors
+        $cart = WC()->cart->get_cart();
         
-        if (!empty($custom_price) && is_numeric($custom_price)) {
-            // Use custom price if set
-            if ($cart_item['data']->get_price() != $custom_price) {
-                $cart_item['data']->set_price($custom_price);
-                $needs_recalculation = true;
+        if (empty($cart) || !is_array($cart)) {
+            return;
+        }
+        
+        // Flag to track if we need to recalculate
+        $needs_recalculation = false;
+        
+        foreach ($cart as $cart_item_key => $cart_item) {
+            // Skip if the cart item is invalid
+            if (!isset($cart_item['data']) || !is_object($cart_item['data']) || !method_exists($cart_item['data'], 'get_price')) {
+                continue;
             }
-        } else {
-            // Otherwise use exchange rate conversion
-            $exchange_rate = multi_currency_switcher_get_exchange_rate($currency);
-            $base_price = get_post_meta($price_product_id, '_price', true);
             
-            if (!empty($base_price) && is_numeric($base_price)) {
-                $converted_price = floatval($base_price) * floatval($exchange_rate);
-                
-                if ($cart_item['data']->get_price() != $converted_price) {
-                    $cart_item['data']->set_price($converted_price);
+            $product_id = isset($cart_item['product_id']) ? $cart_item['product_id'] : 0;
+            $variation_id = isset($cart_item['variation_id']) && $cart_item['variation_id'] ? $cart_item['variation_id'] : 0;
+            
+            // Skip if product ID is invalid
+            if (empty($product_id)) {
+                continue;
+            }
+            
+            // Get the correct product ID for price lookup
+            $price_product_id = $variation_id ? $variation_id : $product_id;
+            
+            // Check if there's a custom price for this product in the current currency
+            $custom_price = get_post_meta($price_product_id, '_price_' . $currency, true);
+            
+            if (!empty($custom_price) && is_numeric($custom_price)) {
+                // Use custom price if set
+                if ($cart_item['data']->get_price() != $custom_price) {
+                    $cart_item['data']->set_price($custom_price);
                     $needs_recalculation = true;
+                }
+            } else {
+                // Otherwise use exchange rate conversion
+                $exchange_rate = multi_currency_switcher_get_exchange_rate($currency);
+                $base_price = get_post_meta($price_product_id, '_price', true);
+                
+                if (!empty($base_price) && is_numeric($base_price)) {
+                    $converted_price = floatval($base_price) * floatval($exchange_rate);
+                    
+                    if ($cart_item['data']->get_price() != $converted_price) {
+                        $cart_item['data']->set_price($converted_price);
+                        $needs_recalculation = true;
+                    }
                 }
             }
         }
-    }
-    
-    // Recalculate if needed
-    if ($needs_recalculation) {
-        // No need to calculate here - WooCommerce will do it after this filter
+    } catch (Exception $e) {
+        // Log any errors but don't let them break the site
+        error_log('Error in multi_currency_switcher_update_cart_items: ' . $e->getMessage());
     }
 }
 remove_action('woocommerce_before_calculate_totals', 'multi_currency_switcher_update_cart_items', 20);

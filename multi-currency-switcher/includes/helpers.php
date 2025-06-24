@@ -178,3 +178,18 @@ function get_all_available_currencies() {
         'GBP' => array('name' => 'British Pound', 'symbol' => '£')
     );
 }
+
+/**
+ * Log errors for debugging
+ */
+function mcs_log_error($message, $data = []) {
+    if (defined('WP_DEBUG') && WP_DEBUG) {
+        $log_message = '[Multi Currency Switcher] ' . $message;
+        
+        if (!empty($data)) {
+            $log_message .= ' | Data: ' . json_encode($data);
+        }
+        
+        error_log($log_message);
+    }
+}

@@ -91,21 +91,9 @@ function format_price_in_currency($price, $currency = 'USD') {
         $settings['thousand_sep']
     );
     
-    $all_currencies = array(
-        'USD' => '$',
-        'EUR' => '€',
-        'GBP' => '£',
-        'JPY' => '¥',
-        'AUD' => 'A$',
-        'CAD' => 'C$',
-        'CHF' => 'CHF',
-        'CNY' => '¥',
-        'SEK' => 'kr',
-        'NZD' => 'NZ$',
-        // Add more currencies as needed
-    );
-    
-    $symbol = isset($all_currencies[$currency]) ? $all_currencies[$currency] : $currency;
+    // Get currency data from JSON instead of hardcoding
+    $all_currencies = get_all_available_currencies();
+    $symbol = isset($all_currencies[$currency]['symbol']) ? $all_currencies[$currency]['symbol'] : $currency;
     
     switch ($settings['position']) {
         case 'left':

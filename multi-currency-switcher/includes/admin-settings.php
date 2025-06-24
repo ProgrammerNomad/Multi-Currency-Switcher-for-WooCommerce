@@ -151,7 +151,12 @@ class Multi_Currency_Switcher_Admin_Settings {
                                 <?php echo esc_html( $currency['symbol'] ); ?>
                             </td>
                             <td>
-                                <input type="number" step="0.0001" min="0.0001" name="currencies[<?php echo esc_attr( $code ); ?>][rate]" value="<?php echo esc_attr( $exchange_rate ); ?>" <?php if ( $is_base ) echo 'readonly'; ?>>
+                                <input type="number" 
+                                       step="any" 
+                                       min="0.0001" 
+                                       name="currencies[<?php echo esc_attr( $code ); ?>][rate]" 
+                                       value="<?php echo esc_attr( $exchange_rate ); ?>" 
+                                       <?php if ( $is_base ) echo 'readonly'; ?>>
                             </td>
                             <td>
                                 <select name="currencies[<?php echo esc_attr( $code ); ?>][position]">

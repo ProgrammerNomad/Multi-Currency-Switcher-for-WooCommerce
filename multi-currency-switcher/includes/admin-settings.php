@@ -740,26 +740,6 @@ class Multi_Currency_Switcher_Admin_Settings {
 }
 
 /**
- * Helper function to get all available currencies
- */
-function get_all_available_currencies() {
-    // This function should return an array of all available currencies
-    // For the sake of this example, we will return a static array
-    return array(
-        'USD' => array('name' => 'US Dollar', 'symbol' => '$'),
-        'EUR' => array('name' => 'Euro', 'symbol' => '€'),
-        'GBP' => array('name' => 'British Pound', 'symbol' => '£'),
-        'JPY' => array('name' => 'Japanese Yen', 'symbol' => '¥'),
-        'AUD' => array('name' => 'Australian Dollar', 'symbol' => 'A$'),
-        'CAD' => array('name' => 'Canadian Dollar', 'symbol' => 'C$'),
-        'CHF' => array('name' => 'Swiss Franc', 'symbol' => 'CHF'),
-        'CNY' => array('name' => 'Chinese Yuan', 'symbol' => '¥'),
-        'SEK' => array('name' => 'Swedish Krona', 'symbol' => 'kr'),
-        'NZD' => array('name' => 'New Zealand Dollar', 'symbol' => 'NZ$'),
-    );
-}
-
-/**
  * Helper function to update all exchange rates
  */
 function multi_currency_switcher_update_all_exchange_rates() {

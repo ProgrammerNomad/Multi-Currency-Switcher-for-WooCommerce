@@ -343,8 +343,11 @@ class Multi_Currency_Switcher_Admin_Settings {
             'show_sticky_widget' => 'yes',
             'sticky_position' => 'left',
             'limit_currencies' => 'no',
-            'show_flags' => 'left',
+            'show_flags' => 'none',
         ));
+        
+        // Display any settings errors/notices
+        settings_errors('multi_currency_switcher_messages');
         
         ?>
         <div class="wrap">
@@ -460,9 +463,16 @@ class Multi_Currency_Switcher_Admin_Settings {
     // Add this method to save style settings
     private function save_style_settings() {
         if (!isset($_POST['style_settings'])) {
+            add_settings_error(
+                'multi_currency_switcher_messages',
+                'style_settings_error',
+                'No settings data received. Please try again.',
+                'error'
+            );
             return;
         }
         
+        // Sanitize inputs
         $style_settings = array(
             'title_color' => sanitize_hex_color($_POST['style_settings']['title_color']),
             'text_color' => sanitize_hex_color($_POST['style_settings']['text_color']),
@@ -472,11 +482,31 @@ class Multi_Currency_Switcher_Admin_Settings {
             'show_sticky_widget' => isset($_POST['style_settings']['show_sticky_widget']) ? 'yes' : 'no',
             'sticky_position' => sanitize_text_field($_POST['style_settings']['sticky_position']),
             'limit_currencies' => isset($_POST['style_settings']['limit_currencies']) ? 'yes' : 'no',
-            'show_flags' => sanitize_text_field($_POST['style_settings']['show_flags']),
+            'show_flags' => 'none', // Set to none for now since we're not implementing flags yet
         );
         
+        // Check if colors are valid
+        $valid_colors = true;
+        foreach (['title_color', 'text_color', 'active_color', 'background_color', 'border_color'] as $color_field) {
+            if (empty($style_settings[$color_field])) {
+                $valid_colors = false;
+            }
+        }
+        
+        if (!$valid_colors) {
+            add_settings_error(
+                'multi_currency_switcher_messages',
+                'style_settings_error',
+                'Please enter valid color values in hexadecimal format (e.g., #333333).',
+                'error'
+            );
+            return;
+        }
+        
+        // Save the settings
         update_option('multi_currency_switcher_style_settings', $style_settings);
         
+        // Add success message
         add_settings_error(
             'multi_currency_switcher_messages',
             'style_settings_updated',

@@ -87,3 +87,69 @@
     margin-bottom: 20px;
     box-shadow: 0 1px 1px rgba(0,0,0,.04);
 }
+
+/* Fix for currencies table */
+.currency-table-container {
+    margin-top: 20px;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.currency-table-container table {
+    table-layout: fixed;
+    min-width: 800px;
+}
+
+.currency-table-container table th,
+.currency-table-container table td {
+    word-wrap: break-word;
+    vertical-align: middle;
+    padding: 10px 5px;
+}
+
+.currency-table-container input[type="text"],
+.currency-table-container input[type="number"] {
+    max-width: 100%;
+}
+
+/* Make sure the wp-list-table in our plugin doesn't cause scrolling */
+.wp-list-table td, 
+.wp-list-table th {
+    padding: 10px 5px;
+}
+
+/* Additional CSS for better admin UI */
+.form-table th {
+    width: 200px;
+}
+
+.style-settings-container {
+    margin-top: 0;
+}
+
+.style-settings-section {
+    margin-bottom: 30px;
+}
+
+.notice {
+    margin: 20px 0;
+}
+
+/* Improve responsive layout */
+@media screen and (max-width: 782px) {
+    .form-table td input[type="text"],
+    .form-table td input[type="number"],
+    .form-table td select {
+        width: 100%;
+    }
+    
+    .form-table th {
+        width: 100%;
+        display: block;
+    }
+    
+    .form-table td {
+        display: block;
+        padding: 10px 0;
+    }
+}

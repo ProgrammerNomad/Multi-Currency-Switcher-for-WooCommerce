@@ -141,11 +141,13 @@ class Multi_Currency_Switcher_Currencies_Settings {
                             ?>
                             <tr class="<?php echo esc_attr($separator_class); ?>">
                                 <td>
-                                    <input type="checkbox" name="currencies[<?php echo esc_attr($code); ?>][enable]" value="1" 
-                                           <?php checked($is_enabled); ?> 
-                                           <?php if ($is_base) echo 'checked disabled'; ?>>
                                     <?php if ($is_base): ?>
-                                    <input type="hidden" name="currencies[<?php echo esc_attr($code); ?>][enable]" value="1">
+                                        <input type="checkbox" name="currencies[<?php echo esc_attr($code); ?>][enable]" value="1" 
+                                               checked disabled>
+                                        <input type="hidden" name="currencies[<?php echo esc_attr($code); ?>][enable]" value="1">
+                                    <?php else: ?>
+                                        <input type="checkbox" name="currencies[<?php echo esc_attr($code); ?>][enable]" value="1" 
+                                               <?php checked($is_enabled); ?>>
                                     <?php endif; ?>
                                 </td>
                                 <td><strong><?php echo esc_html($code); ?></strong></td>
@@ -206,49 +208,8 @@ class Multi_Currency_Switcher_Currencies_Settings {
         </style>
         
         <?php
-        // Add JavaScript for dynamic currency table UI
-        echo '<script type="text/javascript">
-        jQuery(document).ready(function($) {
-            // Handle currency checkbox toggling and visual updates
-            $("input[type=\'checkbox\'][name^=\'currencies\']").on("change", function() {
-                var $row = $(this).closest("tr");
-                var isChecked = $(this).is(":checked");
-                
-                // Update row class
-                if (isChecked) {
-                    $row.removeClass("disabled-currency").addClass("enabled-currency");
-                    
-                    // Move the row below base currency but above disabled currencies
-                    var $baseCurrency = $(".base-currency");
-                    var $disabledCurrencies = $(".disabled-currency").first();
-                    
-                    if ($disabledCurrencies.length) {
-                        $row.insertBefore($disabledCurrencies);
-                    } else {
-                        // If no disabled currencies, add to the end of the table
-                        $row.appendTo($row.parent());
-                    }
-                } else {
-                    $row.removeClass("enabled-currency").addClass("disabled-currency");
-                    
-                    // Move to the disabled section (end of the table)
-                    $row.appendTo($row.parent());
-                }
-            });
-            
-            // Prevent unchecking base currency
-            $(".base-currency input[type=\'checkbox\']").on("click", function(e) {
-                if (!$(this).is(":checked")) {
-                    e.preventDefault();
-                    alert("Base currency cannot be disabled.");
-                    return false;
-                }
-            });
-        });
-        </script>';
-        
         // Enqueue specific JavaScript for currencies page
-        wp_enqueue_script('multi-currency-admin-currencies', plugins_url('../../../assets/js/admin-currencies.js', __FILE__), array('jquery'), false, true);
+        // wp_enqueue_script('multi-currency-admin-currencies', plugins_url('../../../assets/js/admin-currencies.js', __FILE__), array('jquery'), time(), true);
     }
 
     /**
@@ -263,15 +224,15 @@ class Multi_Currency_Switcher_Currencies_Settings {
         // Get existing data
         $base_currency = get_option('woocommerce_currency', 'USD');
         
-        // Initialize arrays with base currency always included
-        $enabled_currencies = array($base_currency);
-        $exchange_rates = array($base_currency => 1); // Base currency rate is always 1
+        // Initialize arrays
+        $enabled_currencies = array($base_currency); // Always include base currency
+        $exchange_rates = array();
         $currency_settings = array();
         
         // Process each currency from the form
         if (isset($_POST['currencies']) && is_array($_POST['currencies'])) {
             foreach ($_POST['currencies'] as $code => $data) {
-                // Save currency settings for all currencies in the form
+                // Save settings for all currencies
                 $currency_settings[$code] = array(
                     'position' => isset($data['position']) ? sanitize_text_field($data['position']) : 'left',
                     'decimals' => isset($data['decimals']) ? intval($data['decimals']) : 2,
@@ -279,17 +240,20 @@ class Multi_Currency_Switcher_Currencies_Settings {
                     'decimal_sep' => isset($data['decimal_sep']) ? sanitize_text_field($data['decimal_sep']) : '.',
                 );
                 
-                // Save exchange rate for all currencies in the form
+                // Save exchange rate for all currencies
                 $exchange_rates[$code] = isset($data['rate']) ? floatval($data['rate']) : 1;
                 
-                // Only add to enabled currencies if checkbox is checked or this is the base currency
-                if ((isset($data['enable']) && $data['enable'] == 1) || $code === $base_currency) {
+                // Add to enabled currencies if checkbox is checked or this is base currency
+                if ($code === $base_currency || (isset($data['enable']) && $data['enable'] == 1)) {
                     if (!in_array($code, $enabled_currencies)) {
                         $enabled_currencies[] = $code;
                     }
                 }
             }
         }
+        
+        // Make sure base currency has rate of 1
+        $exchange_rates[$base_currency] = 1;
         
         // Update options
         update_option('multi_currency_switcher_enabled_currencies', $enabled_currencies);

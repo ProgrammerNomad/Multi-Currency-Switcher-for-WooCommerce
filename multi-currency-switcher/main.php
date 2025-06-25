@@ -20,8 +20,8 @@ if (!defined('WP_MAX_MEMORY_LIMIT')) {
 
 // Include files in the correct order
 require_once plugin_dir_path(__FILE__) . 'includes/helpers.php'; // Load helpers first
-require_once plugin_dir_path(__FILE__) . 'includes/admin-settings.php';
-require_once plugin_dir_path(__FILE__) . 'includes/price-filters.php'; // Add this line
+require_once plugin_dir_path(__FILE__) . 'includes/admin-settings.php'; // This will load the class files
+require_once plugin_dir_path(__FILE__) . 'includes/price-filters.php';
 require_once plugin_dir_path(__FILE__) . 'includes/currency-switcher.php';
 
 // Initialize the plugin

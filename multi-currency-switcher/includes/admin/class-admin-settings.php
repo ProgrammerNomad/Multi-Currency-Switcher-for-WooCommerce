@@ -1,8 +1,11 @@
 <?php
-// This file handles the admin settings for the currency switcher.
-// It defines functions to create and manage the settings page in the WordPress admin area.
+// filepath: c:\xampp\htdocs\Multi-Currency-Switcher-for-WooCommerce\multi-currency-switcher\includes\admin\class-admin-settings.php
+/**
+ * Main Admin Settings Class
+ * This class handles the admin menu registration and loads the appropriate settings page.
+ */
 
-if ( ! defined( 'ABSPATH' ) ) {
+if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
@@ -41,6 +44,10 @@ class Multi_Currency_Switcher_Admin_Settings {
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_init', array($this, 'register_settings'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
+        
+        // Add meta boxes for product-specific currency pricing
+        add_action('add_meta_boxes', array($this, 'add_product_currency_meta_boxes'));
+        add_action('save_post_product', array($this, 'save_product_currency_prices'));
     }
 
     /**
@@ -150,21 +157,74 @@ class Multi_Currency_Switcher_Admin_Settings {
         wp_enqueue_script('wp-color-picker');
         wp_enqueue_script('multi-currency-admin-scripts', plugins_url('../../assets/js/admin-scripts.js', __FILE__), array('jquery', 'wp-color-picker'), false, true);
     }
+    
+    /**
+     * Add meta boxes to product edit screen
+     */
+    public function add_product_currency_meta_boxes() {
+        add_meta_box(
+            'product_currency_prices',
+            'Currency Prices',
+            array($this, 'render_product_currency_meta_box'),
+            'product',
+            'normal',
+            'default'
+        );
+    }
+
+    /**
+     * Render the product currency meta box
+     */
+    public function render_product_currency_meta_box($post) {
+        // Nonce field for security
+        wp_nonce_field('save_product_currency_prices', 'product_currency_nonce');
+        
+        // Get current product currency prices
+        $currency_prices = get_post_meta($post->ID, '_currency_prices', true);
+        $currency_prices = is_array($currency_prices) ? $currency_prices : array();
+        
+        // Get enabled currencies
+        $enabled_currencies = get_option('multi_currency_switcher_enabled_currencies', array(get_woocommerce_currency()));
+        $all_currencies = get_all_available_currencies();
+        $base_currency = get_woocommerce_currency();
+        ?>
+        <div class="currency-prices-meta-box">
+            <h4>Set Product Prices by Currency</h4>
+            <p>Enter the price for each currency. Leave blank to use the default currency price.</p>
+            
+            <table class="form-table">
+                <tbody>
+                    <?php foreach ($enabled_currencies as $code): 
+                        $price = isset($currency_prices[$code]) ? $currency_prices[$code] : '';
+                        $name = isset($all_currencies[$code]['name']) ? $all_currencies[$code]['name'] : $code;
+                    ?>
+                    <tr>
+                        <th scope="row"><label for="price_<?php echo esc_attr($code); ?>"><?php echo esc_html($name); ?> (<?php echo esc_html($code); ?>)</label></th>
+                        <td>
+                            <input type="text" id="price_<?php echo esc_attr($code); ?>" name="currency_prices[<?php echo esc_attr($code); ?>]" value="<?php echo esc_attr($price); ?>" class="regular-text">
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <?php
+    }
+
+    /**
+     * Save product currency prices
+     */
+    public function save_product_currency_prices($post_id) {
+        // Check nonce
+        if (!isset($_POST['product_currency_nonce']) || !wp_verify_nonce($_POST['product_currency_nonce'], 'save_product_currency_prices')) {
+            return;
+        }
+        
+        // Save the currency prices
+        $currency_prices = isset($_POST['currency_prices']) ? array_map('sanitize_text_field', $_POST['currency_prices']) : array();
+        update_post_meta($post_id, '_currency_prices', $currency_prices);
+    }
 }
 
 // Initialize the main admin settings class
 new Multi_Currency_Switcher_Admin_Settings();
-
-/**
- * Admin Settings Loader
- *
- * This file loads the admin settings from the new class structure.
- * It exists for backward compatibility with existing code.
- */
-
-if (!defined('ABSPATH')) {
-    exit; // Exit if accessed directly
-}
-
-// Include the new admin settings class
-require_once plugin_dir_path(__FILE__) . 'admin/class-admin-settings.php';

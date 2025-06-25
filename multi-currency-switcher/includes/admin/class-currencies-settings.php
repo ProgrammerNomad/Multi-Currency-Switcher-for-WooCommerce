@@ -246,6 +246,9 @@ class Multi_Currency_Switcher_Currencies_Settings {
             });
         });
         </script>';
+        
+        // Enqueue specific JavaScript for currencies page
+        wp_enqueue_script('multi-currency-admin-currencies', plugins_url('../../../assets/js/admin-currencies.js', __FILE__), array('jquery'), false, true);
     }
 
     /**
@@ -258,17 +261,12 @@ class Multi_Currency_Switcher_Currencies_Settings {
         }
 
         // Get existing data
-        $existing_enabled_currencies = get_option('multi_currency_switcher_enabled_currencies', array(get_woocommerce_currency()));
-        $existing_exchange_rates = get_option('multi_currency_switcher_exchange_rates', array());
-        $existing_currency_settings = get_option('multi_currency_switcher_currency_settings', array());
         $base_currency = get_option('woocommerce_currency', 'USD');
         
         // Initialize arrays with base currency always included
         $enabled_currencies = array($base_currency);
-        $exchange_rates = isset($existing_exchange_rates[$base_currency]) ? 
-            $existing_exchange_rates : 
-            array_merge($existing_exchange_rates, array($base_currency => 1));
-        $currency_settings = $existing_currency_settings;
+        $exchange_rates = array($base_currency => 1); // Base currency rate is always 1
+        $currency_settings = array();
         
         // Process each currency from the form
         if (isset($_POST['currencies']) && is_array($_POST['currencies'])) {
@@ -284,9 +282,11 @@ class Multi_Currency_Switcher_Currencies_Settings {
                 // Save exchange rate for all currencies in the form
                 $exchange_rates[$code] = isset($data['rate']) ? floatval($data['rate']) : 1;
                 
-                // Add to enabled currencies if checkbox is checked
-                if (isset($data['enable']) && $data['enable'] == 1 && $code != $base_currency) {
-                    $enabled_currencies[] = $code;
+                // Only add to enabled currencies if checkbox is checked or this is the base currency
+                if ((isset($data['enable']) && $data['enable'] == 1) || $code === $base_currency) {
+                    if (!in_array($code, $enabled_currencies)) {
+                        $enabled_currencies[] = $code;
+                    }
                 }
             }
         }

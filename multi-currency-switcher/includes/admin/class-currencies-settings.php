@@ -212,29 +212,45 @@ class Multi_Currency_Switcher_Currencies_Settings {
      */
     public function save_currencies() {
         // Verify nonce
-        if ( ! check_admin_referer('save_currencies', 'currencies_nonce') ) {
+        if (!check_admin_referer('save_currencies', 'currencies_nonce')) {
             return;
         }
 
-        $enabled_currencies = array();
-        $exchange_rates = array();
-        $currency_settings = array();
-
-        foreach ($_POST['currencies'] as $code => $data) {
-            if (isset($data['enable']) && $data['enable'] == 1) {
-                $enabled_currencies[] = $code;
-                
-                $exchange_rates[$code] = isset($data['rate']) ? floatval($data['rate']) : 1;
-                
+        // Get existing data
+        $existing_enabled_currencies = get_option('multi_currency_switcher_enabled_currencies', array(get_woocommerce_currency()));
+        $existing_exchange_rates = get_option('multi_currency_switcher_exchange_rates', array());
+        $existing_currency_settings = get_option('multi_currency_switcher_currency_settings', array());
+        $base_currency = get_option('woocommerce_currency', 'USD');
+        
+        // Initialize arrays with base currency always included
+        $enabled_currencies = array($base_currency);
+        $exchange_rates = isset($existing_exchange_rates[$base_currency]) ? 
+            $existing_exchange_rates : 
+            array_merge($existing_exchange_rates, array($base_currency => 1));
+        $currency_settings = $existing_currency_settings;
+        
+        // Process each currency from the form
+        if (isset($_POST['currencies']) && is_array($_POST['currencies'])) {
+            foreach ($_POST['currencies'] as $code => $data) {
+                // Save currency settings for all currencies in the form
                 $currency_settings[$code] = array(
                     'position' => isset($data['position']) ? sanitize_text_field($data['position']) : 'left',
                     'decimals' => isset($data['decimals']) ? intval($data['decimals']) : 2,
                     'thousand_sep' => isset($data['thousand_sep']) ? sanitize_text_field($data['thousand_sep']) : ',',
                     'decimal_sep' => isset($data['decimal_sep']) ? sanitize_text_field($data['decimal_sep']) : '.',
                 );
+                
+                // Save exchange rate for all currencies in the form
+                $exchange_rates[$code] = isset($data['rate']) ? floatval($data['rate']) : 1;
+                
+                // Add to enabled currencies if checkbox is checked
+                if (isset($data['enable']) && $data['enable'] == 1 && $code != $base_currency) {
+                    $enabled_currencies[] = $code;
+                }
             }
         }
-
+        
+        // Update options
         update_option('multi_currency_switcher_enabled_currencies', $enabled_currencies);
         update_option('multi_currency_switcher_exchange_rates', $exchange_rates);
         update_option('multi_currency_switcher_currency_settings', $currency_settings);

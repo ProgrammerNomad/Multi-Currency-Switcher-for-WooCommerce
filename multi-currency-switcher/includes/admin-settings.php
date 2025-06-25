@@ -369,7 +369,7 @@ class Multi_Currency_Switcher_Admin_Settings {
                         <thead>
                             <tr>
                                 <th style="width: 60px;">Enable</th>
-                                <th style="width: 180px;">Currency<br>Code</th>
+                                <th style="width: 50px;">Currency<br>Code</th>
                                 <th style="width: 180px;">Currency</th>
                                 <th style="width: 80px;">Symbol</th>
                                 <th style="width: 150px;">Exchange Rate<br>(1 <?php echo esc_html($base_currency); ?> =)</th>

@@ -221,14 +221,11 @@ class Multi_Currency_Switcher_Currencies_Settings {
             return;
         }
 
-        // Get existing data
         $base_currency = get_option('woocommerce_currency', 'USD');
-        
-        // Initialize arrays
         $enabled_currencies = array($base_currency); // Always include base currency
         $exchange_rates = array();
         $currency_settings = array();
-        
+
         // Process each currency from the form
         if (isset($_POST['currencies']) && is_array($_POST['currencies'])) {
             foreach ($_POST['currencies'] as $code => $data) {
@@ -239,10 +236,9 @@ class Multi_Currency_Switcher_Currencies_Settings {
                     'thousand_sep' => isset($data['thousand_sep']) ? sanitize_text_field($data['thousand_sep']) : ',',
                     'decimal_sep' => isset($data['decimal_sep']) ? sanitize_text_field($data['decimal_sep']) : '.',
                 );
-                
                 // Save exchange rate for all currencies
                 $exchange_rates[$code] = isset($data['rate']) ? floatval($data['rate']) : 1;
-                
+
                 // Only add to enabled currencies if checkbox is checked or this is base currency
                 if ($code === $base_currency || (isset($data['enable']) && $data['enable'] == 1)) {
                     if (!in_array($code, $enabled_currencies)) {
@@ -251,15 +247,18 @@ class Multi_Currency_Switcher_Currencies_Settings {
                 }
             }
         }
-        
+
         // Make sure base currency has rate of 1
         $exchange_rates[$base_currency] = 1;
-        
-        // Update options
+
+        // Remove duplicates just in case
+        $enabled_currencies = array_unique($enabled_currencies);
+
+        // Save to database
         update_option('multi_currency_switcher_enabled_currencies', $enabled_currencies);
         update_option('multi_currency_switcher_exchange_rates', $exchange_rates);
         update_option('multi_currency_switcher_currency_settings', $currency_settings);
-        
+
         add_settings_error(
             'multi_currency_switcher_messages',
             'currencies_updated',

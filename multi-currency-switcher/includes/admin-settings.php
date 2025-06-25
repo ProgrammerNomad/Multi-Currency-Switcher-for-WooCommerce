@@ -144,12 +144,7 @@ class Multi_Currency_Switcher_Admin_Settings {
         <div class="wrap">
             <h1>Multi Currency Switcher</h1>
             
-            <h2 class="nav-tab-wrapper">
-                <a href="?page=multi-currency-switcher" class="nav-tab nav-tab-active">General Settings</a>
-                <a href="?page=multi-currency-switcher-currencies" class="nav-tab">Currencies</a>
-                <a href="?page=multi-currency-switcher-style" class="nav-tab">Style Settings</a>
-                <a href="?page=multi-currency-switcher-payment" class="nav-tab">Payment Restrictions</a>
-            </h2>
+            <?php $this->display_admin_tabs('general'); ?>
             
             <div class="card">
                 <h2>Plugin Overview</h2>
@@ -337,13 +332,7 @@ class Multi_Currency_Switcher_Admin_Settings {
         <div class="wrap">
             <h1>Manage Currencies</h1>
             
-            <!-- Updated navigation tabs to include Payment Restrictions -->
-            <h2 class="nav-tab-wrapper">
-                <a href="?page=multi-currency-switcher" class="nav-tab">General Settings</a>
-                <a href="?page=multi-currency-switcher-currencies" class="nav-tab nav-tab-active">Currencies</a>
-                <a href="?page=multi-currency-switcher-style" class="nav-tab">Style Settings</a>
-                <a href="?page=multi-currency-switcher-payment" class="nav-tab">Payment Restrictions</a>
-            </h2>
+            <?php $this->display_admin_tabs('currencies'); ?>
             
             <p>Select currencies to enable in your shop and set their exchange rates.</p>
 
@@ -471,13 +460,7 @@ class Multi_Currency_Switcher_Admin_Settings {
         <div class="wrap">
             <h1>Style Settings</h1>
             
-            <!-- Updated navigation tabs to include Payment Restrictions -->
-            <h2 class="nav-tab-wrapper">
-                <a href="?page=multi-currency-switcher" class="nav-tab">General Settings</a>
-                <a href="?page=multi-currency-switcher-currencies" class="nav-tab">Currencies</a>
-                <a href="?page=multi-currency-switcher-style" class="nav-tab nav-tab-active">Style Settings</a>
-                <a href="?page=multi-currency-switcher-payment" class="nav-tab">Payment Restrictions</a>
-            </h2>
+            <?php $this->display_admin_tabs('style'); ?>
             
             <p>Customize the appearance of currency widgets and shortcodes used in your shop.</p>
             
@@ -813,12 +796,7 @@ class Multi_Currency_Switcher_Admin_Settings {
         <div class="wrap">
             <h1>Payment Method Restrictions</h1>
             
-            <h2 class="nav-tab-wrapper">
-                <a href="?page=multi-currency-switcher" class="nav-tab">General Settings</a>
-                <a href="?page=multi-currency-switcher-currencies" class="nav-tab">Currencies</a>
-                <a href="?page=multi-currency-switcher-style" class="nav-tab">Style Settings</a>
-                <a href="?page=multi-currency-switcher-payment" class="nav-tab nav-tab-active">Payment Restrictions</a>
-            </h2>
+            <?php $this->display_admin_tabs('payment'); ?>
             
             <p>Control which payment methods are available for each currency. Check a payment method to disable it for that currency.</p>
             
@@ -856,6 +834,46 @@ class Multi_Currency_Switcher_Admin_Settings {
             </form>
         </div>
         <?php
+    }
+    
+    /**
+     * Display admin navigation tabs with the current tab highlighted
+     * 
+     * @param string $current_tab The slug of the current tab
+     */
+    public function display_admin_tabs($current_tab) {
+        $tabs = array(
+            'general' => array(
+                'url' => 'admin.php?page=multi-currency-switcher',
+                'label' => 'General Settings'
+            ),
+            'currencies' => array(
+                'url' => 'admin.php?page=multi-currency-switcher-currencies',
+                'label' => 'Currencies'
+            ),
+            'style' => array(
+                'url' => 'admin.php?page=multi-currency-switcher-style',
+                'label' => 'Style Settings'
+            ),
+            'payment' => array(
+                'url' => 'admin.php?page=multi-currency-switcher-payment',
+                'label' => 'Payment Restrictions'
+            )
+        );
+        
+        echo '<h2 class="nav-tab-wrapper">';
+        
+        foreach ($tabs as $tab_id => $tab) {
+            $active_class = ($current_tab === $tab_id) ? 'nav-tab-active' : '';
+            printf(
+                '<a href="%s" class="nav-tab %s">%s</a>',
+                esc_url(admin_url($tab['url'])),
+                esc_attr($active_class),
+                esc_html($tab['label'])
+            );
+        }
+        
+        echo '</h2>';
     }
 }
 

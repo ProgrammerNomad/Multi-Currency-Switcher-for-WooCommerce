@@ -313,6 +313,35 @@ class Multi_Currency_Switcher_Currencies_Settings {
             });
         });
         </script>
+        
+        <script type="text/javascript">
+        jQuery(document).ready(function($) {
+            // Store rows in a hidden field instead of removing them
+            $(document).on('click', '.remove-currency', function(e) {
+                e.preventDefault();
+                var row = $(this).closest('tr');
+                var code = row.data('currency-code');
+                
+                // Don't actually remove the row, just hide it and mark as disabled
+                row.css('display', 'none');
+                
+                // Change the input name to indicate removal
+                row.find('input[name^="currencies['+code+'][enable]"]').val('0');
+                
+                // Add back to dropdown
+                if (window.allCurrencies && window.allCurrencies[code]) {
+                    var optionText = code + ' - ' + window.allCurrencies[code].name;
+                    $('#add-currency-select').append($('<option></option>').attr('value', code).text(optionText));
+                }
+            });
+            
+            // Prevent form submit from removing rows
+            $('#currencies-form').on('submit', function(e) {
+                // Don't manipulate the DOM before submission
+                return true;
+            });
+        });
+        </script>
         <?php
     }
 
@@ -336,12 +365,12 @@ class Multi_Currency_Switcher_Currencies_Settings {
         $exchange_rates = array($base_currency => 1);
         $currency_settings = array();
         
-        // Get list of explicitly removed currencies
-        $removed_currencies = isset($_POST['removed_currencies']) ? array_map('sanitize_text_field', $_POST['removed_currencies']) : array();
-        
-        // Process currencies in the form (visible rows)
+        // Process currencies in the form
         if (isset($_POST['currencies']) && is_array($_POST['currencies'])) {
             foreach ($_POST['currencies'] as $code => $data) {
+                // Skip completely missing data
+                if (empty($data)) continue;
+                
                 // Save settings for all currencies in the form
                 $currency_settings[$code] = array(
                     'position' => isset($data['position']) ? sanitize_text_field($data['position']) : 'left',
@@ -353,9 +382,11 @@ class Multi_Currency_Switcher_Currencies_Settings {
                 // Save exchange rate for all currencies in the form
                 $exchange_rates[$code] = isset($data['rate']) ? floatval($data['rate']) : 1;
                 
-                // Enable all currencies in the form (they're visible, so they must be enabled)
-                if ($code !== $base_currency && isset($data['enable']) && $data['enable'] == 1) {
-                    $enabled_currencies[] = $code;
+                // Add to enabled currencies if explicitly enabled or is base currency
+                if ($code === $base_currency || (isset($data['enable']) && $data['enable'] == 1)) {
+                    if (!in_array($code, $enabled_currencies)) {
+                        $enabled_currencies[] = $code;
+                    }
                 }
             }
         }

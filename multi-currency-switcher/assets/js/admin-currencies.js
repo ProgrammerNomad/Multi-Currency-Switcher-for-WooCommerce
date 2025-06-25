@@ -1,6 +1,11 @@
 jQuery(document).ready(function($) {
     console.log('Currency admin script loaded');
     
+    // Make sure allCurrencies is properly defined
+    if (typeof window.allCurrencies === 'undefined') {
+        window.allCurrencies = {};
+    }
+    
     // Set row class on page load
     $('input[type="checkbox"][name^="currencies"]').each(function() {
         var $row = $(this).closest('tr');
@@ -104,20 +109,21 @@ jQuery(document).ready(function($) {
         $('#add-currency-select').val('');
     });
     
-    // Remove currency - the key fix is here
+    // Remove currency - FIX HERE - use window.allCurrencies instead of allCurrencies
     $(document).on('click', '.remove-currency', function() {
         var row = $(this).closest('tr');
         var code = row.data('currency-code');
         
-        // Create a hidden field to track removed currencies
-        // This tells PHP the currency was explicitly removed
-        $('form').append('<input type="hidden" name="removed_currencies[]" value="' + code + '">');
-        
-        // Add back to dropdown
-        if (window.allCurrencies[code]) {
+        // Only proceed if we have the currency data
+        if (window.allCurrencies && window.allCurrencies[code]) {
             var optionText = code + ' - ' + window.allCurrencies[code].name;
             $('#add-currency-select').append($('<option></option>').attr('value', code).text(optionText));
+        } else {
+            console.log('Currency data not found for: ' + code);
         }
+        
+        // Create a hidden field to track removed currencies
+        $('form').append('<input type="hidden" name="removed_currencies[]" value="' + code + '">');
         
         // Remove row
         row.remove();

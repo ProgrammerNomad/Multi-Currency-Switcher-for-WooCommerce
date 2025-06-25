@@ -111,22 +111,6 @@ class Multi_Currency_Switcher_Admin_Settings {
             'multi_currency_switcher_general_settings'
         );
         
-        // Register currency settings
-        register_setting(
-            'multi_currency_switcher_enabled_currencies',
-            'multi_currency_switcher_enabled_currencies'
-        );
-        
-        register_setting(
-            'multi_currency_switcher_exchange_rates',
-            'multi_currency_switcher_exchange_rates'
-        );
-        
-        register_setting(
-            'multi_currency_switcher_currency_settings',
-            'multi_currency_switcher_currency_settings'
-        );
-        
         // Register style settings
         register_setting(
             'multi_currency_switcher_style_settings',

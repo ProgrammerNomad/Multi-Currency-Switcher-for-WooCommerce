@@ -288,6 +288,9 @@ class Multi_Currency_Switcher_Admin_Settings {
         <?php
     }
 
+    /**
+     * Create the currencies page with sorted currencies display
+     */
     public function create_currencies_page() {
         // Handle manual update if requested
         if (isset($_POST['update_exchange_rates']) && check_admin_referer('update_exchange_rates', 'update_rates_nonce')) {
@@ -326,6 +329,28 @@ class Multi_Currency_Switcher_Admin_Settings {
         // Get last update time
         $last_updated = get_option('multi_currency_switcher_rates_last_updated', 0);
         $last_updated_text = $last_updated ? date_i18n(get_option('date_format') . ' ' . get_option('time_format'), $last_updated) : 'Never';
+
+        // Sort currencies: base currency first, then enabled, then the rest
+        $sorted_currencies = array();
+        
+        // 1. Add base currency first (if it exists in all_currencies)
+        if (isset($all_currencies[$base_currency])) {
+            $sorted_currencies[$base_currency] = $all_currencies[$base_currency];
+        }
+        
+        // 2. Add other enabled currencies (skipping base which is already added)
+        foreach ($enabled_currencies as $code) {
+            if ($code !== $base_currency && isset($all_currencies[$code])) {
+                $sorted_currencies[$code] = $all_currencies[$code];
+            }
+        }
+        
+        // 3. Add remaining currencies that aren't enabled
+        foreach ($all_currencies as $code => $currency) {
+            if (!in_array($code, $enabled_currencies)) {
+                $sorted_currencies[$code] = $currency;
+            }
+        }
 
         settings_errors('multi_currency_switcher_messages');
         ?>
@@ -369,7 +394,9 @@ class Multi_Currency_Switcher_Admin_Settings {
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($all_currencies as $code => $currency):
+                            <?php 
+                            // Use the sorted currencies array instead of all_currencies
+                            foreach ($sorted_currencies as $code => $currency):
                                 $is_enabled = in_array($code, $enabled_currencies);
                                 $exchange_rate = isset($exchange_rates[$code]) ? $exchange_rates[$code] : 1;
                                 $settings = isset($currency_settings[$code]) ? $currency_settings[$code] : array(
@@ -378,13 +405,24 @@ class Multi_Currency_Switcher_Admin_Settings {
                                     'thousand_sep' => ',',
                                     'decimal_sep' => '.'
                                 );
+                                $is_base = ($code === $base_currency);
+                                
+                                // Add visual separator after base currency and enabled currencies
+                                $separator_class = '';
+                                if ($is_base) {
+                                    $separator_class = ' base-currency';
+                                } elseif ($is_enabled && !$is_base) {
+                                    $separator_class = ' enabled-currency';
+                                } else {
+                                    $separator_class = ' disabled-currency';
+                                }
                             ?>
-                            <tr>
+                            <tr class="<?php echo esc_attr($separator_class); ?>">
                                 <td>
                                     <input type="checkbox" name="currencies[<?php echo esc_attr($code); ?>][enable]" value="1" 
                                            <?php checked($is_enabled); ?> 
-                                           <?php if ($code === $base_currency) echo 'checked disabled'; ?>>
-                                    <?php if ($code === $base_currency): ?>
+                                           <?php if ($is_base) echo 'checked disabled'; ?>>
+                                    <?php if ($is_base): ?>
                                     <input type="hidden" name="currencies[<?php echo esc_attr($code); ?>][enable]" value="1">
                                     <?php endif; ?>
                                 </td>
@@ -400,7 +438,7 @@ class Multi_Currency_Switcher_Admin_Settings {
                                 <td>
                                     <input type="text" name="currencies[<?php echo esc_attr($code); ?>][rate]" 
                                            value="<?php echo esc_attr($exchange_rate); ?>" class="regular-text"
-                                           <?php if ($code === $base_currency) echo 'readonly value="1"'; ?>>
+                                           <?php if ($is_base) echo 'readonly value="1"'; ?>>
                                 </td>
                                 <td>
                                     <select name="currencies[<?php echo esc_attr($code); ?>][position]">
@@ -431,6 +469,17 @@ class Multi_Currency_Switcher_Admin_Settings {
                 </p>
             </form>
         </div>
+        
+        <style>
+        /* Optional visual styling to separate the currency groups */
+        .base-currency {
+            background-color: #f7fcff !important;
+            border-bottom: 2px solid #bfe7ff !important;
+        }
+        .enabled-currency:last-of-type {
+            border-bottom: 1px solid #ccd0d4 !important;
+        }
+        </style>
         <?php
     }
 

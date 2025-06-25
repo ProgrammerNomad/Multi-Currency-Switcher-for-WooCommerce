@@ -7,10 +7,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Make sure we load the individual admin page classes
-require_once plugin_dir_path(__FILE__) . 'class-general-settings.php';
-require_once plugin_dir_path(__FILE__) . 'class-currencies-settings.php';
-require_once plugin_dir_path(__FILE__) . 'class-style-settings.php';
-require_once plugin_dir_path(__FILE__) . 'class-payment-settings.php';
+require_once plugin_dir_path(__FILE__) . 'admin/class-general-settings.php';
+require_once plugin_dir_path(__FILE__) . 'admin/class-currencies-settings.php';
+require_once plugin_dir_path(__FILE__) . 'admin/class-style-settings.php';
+require_once plugin_dir_path(__FILE__) . 'admin/class-payment-settings.php';
 
 class Multi_Currency_Switcher_Admin_Settings {
 
@@ -154,17 +154,3 @@ class Multi_Currency_Switcher_Admin_Settings {
 
 // Initialize the main admin settings class
 new Multi_Currency_Switcher_Admin_Settings();
-
-/**
- * Admin Settings Loader
- *
- * This file loads the admin settings from the new class structure.
- * It exists for backward compatibility with existing code.
- */
-
-if (!defined('ABSPATH')) {
-    exit; // Exit if accessed directly
-}
-
-// Include the new admin settings class
-require_once plugin_dir_path(__FILE__) . 'admin/class-admin-settings.php';

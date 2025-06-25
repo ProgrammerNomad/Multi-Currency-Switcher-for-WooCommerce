@@ -48,9 +48,29 @@ class Multi_Currency_Switcher_Payment_Settings {
                 <?php wp_nonce_field('save_payment_settings', 'payment_settings_nonce'); ?>
                 
                 <?php
-                // Only try to get payment gateways if WooCommerce is active and initialized
-                if (function_exists('WC') && isset(WC()->payment_gateways) && WC()->payment_gateways) {
-                    $gateways = WC()->payment_gateways->get_available_payment_gateways();
+                // Check if WooCommerce class exists
+                if (!class_exists('WooCommerce')) {
+                    echo '<div class="notice notice-error"><p>WooCommerce is not active. Please activate WooCommerce plugin.</p></div>';
+                } else {
+                    // Make sure payment gateways are loaded
+                    $gateways = array();
+                    
+                    // Load payment gateways in a way that works even if WC isn't fully initialized
+                    if (function_exists('WC')) {
+                        // Try direct initialization if needed
+                        if (!isset(WC()->payment_gateways) || !WC()->payment_gateways) {
+                            // If WC() exists but payment gateways aren't loaded, try to initialize them
+                            if (!did_action('woocommerce_payment_gateways_loaded')) {
+                                // Load WC payment gateways
+                                require_once(WP_PLUGIN_DIR . '/woocommerce/includes/class-wc-payment-gateways.php');
+                                $wc_payment_gateways = new WC_Payment_Gateways();
+                                $gateways = $wc_payment_gateways->payment_gateways();
+                            }
+                        } else {
+                            // Use existing WC payment gateways
+                            $gateways = WC()->payment_gateways->payment_gateways();
+                        }
+                    }
                     
                     if (!empty($gateways)) {
                         foreach ($currencies as $currency) {
@@ -75,10 +95,8 @@ class Multi_Currency_Switcher_Payment_Settings {
                             echo "</div>";
                         }
                     } else {
-                        echo "<div class='notice notice-warning'><p>No payment gateways available. Please check your WooCommerce settings.</p></div>";
+                        echo "<div class='notice notice-warning'><p>No payment gateways found. This could be because WooCommerce is still initializing or no payment gateways are enabled. Please check your WooCommerce payment settings.</p></div>";
                     }
-                } else {
-                    echo "<div class='notice notice-error'><p>WooCommerce is not active or not fully initialized. Please ensure WooCommerce is active and reload this page.</p></div>";
                 }
                 ?>
                 

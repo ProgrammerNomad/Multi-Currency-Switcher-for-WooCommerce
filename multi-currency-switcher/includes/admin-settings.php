@@ -142,13 +142,13 @@ class Multi_Currency_Switcher_Admin_Settings {
             return;
         }
 
-        // Add our admin styles
-        wp_enqueue_style('multi-currency-admin-styles', plugins_url('../../assets/css/admin-styles.css', __FILE__));
+        // Add our admin styles - FIXED PATH
+        wp_enqueue_style('multi-currency-admin-styles', plugins_url('../assets/css/admin-styles.css', __FILE__));
         
         // Enqueue color picker script and style
         wp_enqueue_style('wp-color-picker');
         wp_enqueue_script('wp-color-picker');
-        wp_enqueue_script('multi-currency-admin-scripts', plugins_url('../../assets/js/admin-scripts.js', __FILE__), array('jquery', 'wp-color-picker'), false, true);
+        wp_enqueue_script('multi-currency-admin-scripts', plugins_url('../assets/js/admin-scripts.js', __FILE__), array('jquery', 'wp-color-picker'), false, true);
     }
 }
 

@@ -149,7 +149,7 @@ class Multi_Currency_Switcher_Admin_Settings {
             return;
         }
 
-        // Add our admin styles
+        // Add our admin styles - FIXED PATH
         wp_enqueue_style('multi-currency-admin-styles', plugins_url('../../assets/css/admin-styles.css', __FILE__));
         
         // Enqueue color picker script and style

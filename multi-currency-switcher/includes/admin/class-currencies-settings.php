@@ -216,10 +216,14 @@ class Multi_Currency_Switcher_Currencies_Settings {
      * Save the currencies
      */
     public function save_currencies() {
+        error_log('save_currencies called');
         // Verify nonce
         if (!check_admin_referer('save_currencies', 'currencies_nonce')) {
+            error_log('save_currencies nonce failed');
             return;
         }
+        error_log('save_currencies nonce passed');
+        error_log('POST: ' . print_r($_POST, true));
 
         $base_currency = get_option('woocommerce_currency', 'USD');
         $enabled_currencies = array($base_currency); // Always include base currency

@@ -3,17 +3,13 @@
 A WooCommerce plugin for multi-currency switching, designed to maximize international sales by allowing customers to view and pay in their local currency.
 
 ## Features
-- Add and manage unlimited currencies with a clean, intuitive interface
-- Automatic exchange rate updates via API (e.g., European Central Bank)
+- Add and manage multiple currencies with a clean, intuitive interface
 - Manual exchange rate input for full control
-- Geolocation-based currency detection for automatic currency switching
 - Customizable currency format (symbol position, separators, decimals)
 - Payment gateway restrictions for specific currencies
-- Sticky currency converter widget with customizable position
+- Currency converter widget
 - Consistent admin interface with intuitive navigation tabs
 - Shortcodes for flexible currency switcher placement
-- Product-specific pricing in different currencies
-- Memory-optimized cart calculations for better performance
 - Responsive design that works on all devices
 
 ## Installation
@@ -30,13 +26,10 @@ A WooCommerce plugin for multi-currency switching, designed to maximize internat
 3. Use Currency Switcher > Style Settings to customize the appearance
 
 ### **Currency Management**
-- Enable/disable currencies from the Currencies tab
-- Set exchange rates manually or update automatically
+- Add currencies using the dropdown menu on the Currencies tab
+- Remove currencies you don't need with the remove button
+- Set exchange rates manually for each currency
 - Configure decimal places, thousand separators, and symbol positions
-
-### **Geolocation**
-- Enable automatic currency detection based on visitor location
-- Set fallback currency for when geolocation fails
 
 ### **Payment Gateway Restrictions**
 - Control which payment methods are available for each currency
@@ -44,26 +37,17 @@ A WooCommerce plugin for multi-currency switching, designed to maximize internat
 
 ### **Style Customization**
 - Customize colors for currency switcher elements
-- Configure sticky widget position (left, right, top, bottom)
+- Configure widget position
 - Set text colors, background colors, and border styles
-
-### **Product-Specific Pricing**
-- Set product prices manually for each currency in the product edit page
-- Override automatic currency conversion for specific products
 
 ### **Shortcode Usage**
 - Use `[multi_currency_switcher]` to display the currency switcher anywhere on your site
-- Additional parameters available for customization: `[multi_currency_switcher style="buttons" title="Select Currency"]`
-
-## Performance Considerations
-- The plugin includes memory optimization for cart calculations
-- Caching is implemented for exchange rates to improve performance
-- Product prices are cached to minimize database queries
+- Additional parameters available for customization: `[multi_currency_switcher style="dropdown"]`
 
 ## Troubleshooting
-- If you encounter memory issues, increase your PHP memory limit to at least 256MB
+- If you encounter memory issues with large currency lists, increase your PHP memory limit or reduce the number of enabled currencies
 - For issues with currency display, clear your WooCommerce cache
-- Check the debug log for detailed error messages if you encounter problems
+- Check that your currency settings match your WooCommerce general settings
 
 ## Author
 Created by [ProgrammerNomad](https://github.com/ProgrammerNomad).

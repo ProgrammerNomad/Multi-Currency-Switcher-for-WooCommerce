@@ -392,20 +392,26 @@ class Multi_Currency_Switcher_Admin_Settings {
                             ?>
                             <tr>
                                 <td>
-                                    <label>
-                                        <input type="checkbox" name="currencies[<?php echo esc_attr($code); ?>][enable]" value="1" <?php checked($is_enabled); ?>>
-                                        Enable
-                                    </label>
+                                    <input type="checkbox" name="currencies[<?php echo esc_attr($code); ?>][enable]" value="1" 
+                                           <?php checked($is_enabled); ?> 
+                                           <?php if ($code === $base_currency) echo 'checked disabled'; ?>>
+                                    <?php if ($code === $base_currency): ?>
+                                    <input type="hidden" name="currencies[<?php echo esc_attr($code); ?>][enable]" value="1">
+                                    <?php endif; ?>
                                 </td>
                                 <td><strong><?php echo esc_html($code); ?></strong></td>
                                 <td>
-                                    <input type="text" name="currencies[<?php echo esc_attr($code); ?>][name]" value="<?php echo esc_attr($currency['name']); ?>" class="regular-text">
+                                    <input type="text" name="currencies[<?php echo esc_attr($code); ?>][name]" 
+                                           value="<?php echo esc_attr($currency['name']); ?>" class="regular-text">
                                 </td>
                                 <td>
-                                    <input type="text" name="currencies[<?php echo esc_attr($code); ?>][symbol]" value="<?php echo esc_attr($currency['symbol']); ?>" class="regular-text">
+                                    <input type="text" name="currencies[<?php echo esc_attr($code); ?>][symbol]" 
+                                           value="<?php echo esc_attr($currency['symbol']); ?>" class="regular-text">
                                 </td>
                                 <td>
-                                    <input type="text" name="currencies[<?php echo esc_attr($code); ?>][rate]" value="<?php echo esc_attr($exchange_rate); ?>" class="regular-text">
+                                    <input type="text" name="currencies[<?php echo esc_attr($code); ?>][rate]" 
+                                           value="<?php echo esc_attr($exchange_rate); ?>" class="regular-text"
+                                           <?php if ($code === $base_currency) echo 'readonly value="1"'; ?>>
                                 </td>
                                 <td>
                                     <select name="currencies[<?php echo esc_attr($code); ?>][position]">
@@ -414,13 +420,16 @@ class Multi_Currency_Switcher_Admin_Settings {
                                     </select>
                                 </td>
                                 <td>
-                                    <input type="number" name="currencies[<?php echo esc_attr($code); ?>][decimals]" value="<?php echo esc_attr($settings['decimals']); ?>" class="small-text">
+                                    <input type="number" name="currencies[<?php echo esc_attr($code); ?>][decimals]" 
+                                           value="<?php echo esc_attr($settings['decimals']); ?>" class="small-text">
                                 </td>
                                 <td>
-                                    <input type="text" name="currencies[<?php echo esc_attr($code); ?>][thousand_sep]" value="<?php echo esc_attr($settings['thousand_sep']); ?>" class="regular-text">
+                                    <input type="text" name="currencies[<?php echo esc_attr($code); ?>][thousand_sep]" 
+                                           value="<?php echo esc_attr($settings['thousand_sep']); ?>" class="regular-text">
                                 </td>
                                 <td>
-                                    <input type="text" name="currencies[<?php echo esc_attr($code); ?>][decimal_sep]" value="<?php echo esc_attr($settings['decimal_sep']); ?>" class="regular-text">
+                                    <input type="text" name="currencies[<?php echo esc_attr($code); ?>][decimal_sep]" 
+                                           value="<?php echo esc_attr($settings['decimal_sep']); ?>" class="regular-text">
                                 </td>
                             </tr>
                             <?php endforeach; ?>

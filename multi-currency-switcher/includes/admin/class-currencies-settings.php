@@ -243,7 +243,7 @@ class Multi_Currency_Switcher_Currencies_Settings {
                 // Save exchange rate for all currencies
                 $exchange_rates[$code] = isset($data['rate']) ? floatval($data['rate']) : 1;
                 
-                // Add to enabled currencies if checkbox is checked or this is base currency
+                // Only add to enabled currencies if checkbox is checked or this is base currency
                 if ($code === $base_currency || (isset($data['enable']) && $data['enable'] == 1)) {
                     if (!in_array($code, $enabled_currencies)) {
                         $enabled_currencies[] = $code;

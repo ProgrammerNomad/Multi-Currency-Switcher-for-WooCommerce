@@ -1,6 +1,16 @@
 jQuery(document).ready(function($) {
     console.log('Currency admin script loaded');
     
+    // Set row class on page load
+    $('input[type="checkbox"][name^="currencies"]').each(function() {
+        var $row = $(this).closest('tr');
+        if ($(this).is(':checked')) {
+            $row.removeClass('disabled-currency').addClass('enabled-currency');
+        } else {
+            $row.removeClass('enabled-currency').addClass('disabled-currency');
+        }
+    });
+
     // Track changes to checkboxes
     $(document).on('change', 'input[type="checkbox"][name^="currencies"]', function() {
         var $row = $(this).closest('tr');

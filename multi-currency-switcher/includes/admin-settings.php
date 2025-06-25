@@ -930,3 +930,49 @@ class Multi_Currency_Switcher_Admin_Settings {
  * Initialize the settings class
  */
 new Multi_Currency_Switcher_Admin_Settings();
+
+/**
+ * Control the display of the currency switcher widget based on settings
+ */
+function multi_currency_switcher_widget_display_control() {
+    // Get display settings
+    $general_settings = get_option('multi_currency_switcher_general_settings', array(
+        'widget_position' => 'both',
+    ));
+    
+    $position = isset($general_settings['widget_position']) ? $general_settings['widget_position'] : 'both';
+    
+    // Handle different display positions
+    switch ($position) {
+        case 'both':
+            // Both product pages and sticky widget - do nothing as these are added by default
+            break;
+            
+        case 'products_only':
+            // Only show on product pages - remove sticky widget
+            remove_action('wp_footer', 'multi_currency_switcher_display_sticky_widget');
+            break;
+            
+        case 'sticky_only':
+            // Only show sticky widget - remove product page widget
+            remove_action('woocommerce_single_product_summary', 'multi_currency_switcher_display_on_product_page', 25);
+            break;
+            
+        case 'none':
+            // Don't show automatically - remove both
+            remove_action('wp_footer', 'multi_currency_switcher_display_sticky_widget');
+            remove_action('woocommerce_single_product_summary', 'multi_currency_switcher_display_on_product_page', 25);
+            break;
+    }
+    
+    // Add a note about shortcode usage in the admin settings
+    if (is_admin() && isset($_GET['page']) && $_GET['page'] === 'multi-currency-switcher') {
+        add_action('admin_notices', function() {
+            echo '<div class="notice notice-info is-dismissible">';
+            echo '<p>You can use the shortcode <code>[multi_currency_switcher]</code> to add a currency switcher to any page, post, or widget area.</p>';
+            echo '<p>Additional options: <code>[multi_currency_switcher style="buttons"]</code> or <code>[multi_currency_switcher currencies="USD,EUR,GBP"]</code></p>';
+            echo '</div>';
+        });
+    }
+}
+add_action('wp', 'multi_currency_switcher_widget_display_control');

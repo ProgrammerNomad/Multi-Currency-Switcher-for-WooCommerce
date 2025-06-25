@@ -204,7 +204,48 @@ class Multi_Currency_Switcher_Currencies_Settings {
             border-bottom: 1px solid #ccd0d4 !important;
         }
         </style>
+        
         <?php
+        // Add JavaScript for dynamic currency table UI
+        echo '<script type="text/javascript">
+        jQuery(document).ready(function($) {
+            // Handle currency checkbox toggling and visual updates
+            $("input[type=\'checkbox\'][name^=\'currencies\']").on("change", function() {
+                var $row = $(this).closest("tr");
+                var isChecked = $(this).is(":checked");
+                
+                // Update row class
+                if (isChecked) {
+                    $row.removeClass("disabled-currency").addClass("enabled-currency");
+                    
+                    // Move the row below base currency but above disabled currencies
+                    var $baseCurrency = $(".base-currency");
+                    var $disabledCurrencies = $(".disabled-currency").first();
+                    
+                    if ($disabledCurrencies.length) {
+                        $row.insertBefore($disabledCurrencies);
+                    } else {
+                        // If no disabled currencies, add to the end of the table
+                        $row.appendTo($row.parent());
+                    }
+                } else {
+                    $row.removeClass("enabled-currency").addClass("disabled-currency");
+                    
+                    // Move to the disabled section (end of the table)
+                    $row.appendTo($row.parent());
+                }
+            });
+            
+            // Prevent unchecking base currency
+            $(".base-currency input[type=\'checkbox\']").on("click", function(e) {
+                if (!$(this).is(":checked")) {
+                    e.preventDefault();
+                    alert("Base currency cannot be disabled.");
+                    return false;
+                }
+            });
+        });
+        </script>';
     }
 
     /**

@@ -153,3 +153,64 @@
         padding: 10px 0;
     }
 }
+
+/* Currency table styles */
+.currency-table-container {
+    margin-top: 20px;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.base-currency {
+    background-color: #f7fcff !important;
+    border-bottom: 2px solid #bfe7ff !important;
+}
+
+.enabled-currency {
+    background-color: #fafffe !important;
+}
+
+.disabled-currency {
+    opacity: 0.85;
+}
+
+/* Improve checkbox visibility */
+.currency-table-container input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+}
+
+.currency-table-container input[type="checkbox"]:checked {
+    background-color: #2271b1;
+    border-color: #2271b1;
+}
+
+/* Make sure the table has enough space */
+.currency-table-container table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.currency-table-container th,
+.currency-table-container td {
+    padding: 10px 8px;
+    vertical-align: middle;
+}
+
+/* Style the enabled/disabled checkboxes */
+.currency-table-container input[type="checkbox"]:checked::before {
+    content: "✓";
+    font-size: 14px;
+    color: white;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Add a visual separator between enabled and disabled currencies */
+.enabled-currency:last-of-type {
+    border-bottom: 2px dashed #ccc !important;
+}

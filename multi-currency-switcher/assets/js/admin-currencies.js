@@ -113,17 +113,19 @@ jQuery(document).ready(function($) {
         var code = row.data('currency-code');
         
         console.log('Removing currency:', code);
-        console.log('Available currencies:', window.allCurrencies);
         
-        // Only proceed if we have the currency data
-        if (typeof window.allCurrencies !== 'undefined' && window.allCurrencies && window.allCurrencies[code]) {
-            var optionText = code + ' - ' + window.allCurrencies[code].name;
-            $('#add-currency-select').append($('<option></option>').attr('value', code).text(optionText));
-        } else {
-            console.log('Currency data not found for:', code);
-            // Add a fallback for when currency data isn't available
-            var currencyName = row.find('input[name^="currencies['+code+'][name]"]').val() || code;
-            $('#add-currency-select').append($('<option></option>').attr('value', code).text(code + ' - ' + currencyName));
+        // Check if this currency is already in the dropdown (to prevent duplicates)
+        if ($('#add-currency-select option[value="' + code + '"]').length === 0) {
+            // Only proceed if we have the currency data
+            if (typeof window.allCurrencies !== 'undefined' && window.allCurrencies && window.allCurrencies[code]) {
+                var optionText = code + ' - ' + window.allCurrencies[code].name;
+                $('#add-currency-select').append($('<option></option>').attr('value', code).text(optionText));
+            } else {
+                console.log('Currency data not found for:', code);
+                // Add a fallback for when currency data isn't available
+                var currencyName = row.find('input[name^="currencies['+code+'][name]"]').val() || code;
+                $('#add-currency-select').append($('<option></option>').attr('value', code).text(code + ' - ' + currencyName));
+            }
         }
         
         // Create a hidden field to track removed currencies

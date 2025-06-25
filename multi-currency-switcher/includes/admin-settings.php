@@ -369,13 +369,14 @@ class Multi_Currency_Switcher_Admin_Settings {
                         <thead>
                             <tr>
                                 <th style="width: 60px;">Enable</th>
+                                <th style="width: 180px;">Currency<br>Code</th>
                                 <th style="width: 180px;">Currency</th>
                                 <th style="width: 80px;">Symbol</th>
                                 <th style="width: 150px;">Exchange Rate<br>(1 <?php echo esc_html($base_currency); ?> =)</th>
-                                <th style="width: 100px;">Position</th>
-                                <th style="width: 80px;">Decimals</th>
-                                <th style="width: 80px;">Thousand<br>Separator</th>
-                                <th style="width: 80px;">Decimal<br>Separator</th>
+                                <th style="width: 50px;">Position</th>
+                                <th style="width: 40px;">Decimals</th>
+                                <th style="width: 40px;">Thousand<br>Separator</th>
+                                <th style="width: 40px;">Decimal<br>Separator</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -396,9 +397,8 @@ class Multi_Currency_Switcher_Admin_Settings {
                                         Enable
                                     </label>
                                 </td>
+                                <td><strong><?php echo esc_html($code); ?></strong></td>
                                 <td>
-                                    <strong><?php echo esc_html($code); ?></strong>
-                                    <br>
                                     <input type="text" name="currencies[<?php echo esc_attr($code); ?>][name]" value="<?php echo esc_attr($currency['name']); ?>" class="regular-text">
                                 </td>
                                 <td>

@@ -58,15 +58,9 @@ jQuery(document).ready(function($) {
     });
 
     // On form submit, remove all unchanged rows except base currency
-    $('form').on('submit', function(e) {
-        $('tr[data-currency-code]').each(function() {
-            var $row = $(this);
-            var isBase = $row.hasClass('base-currency');
-            var changed = $row.attr('data-changed') === '1';
-            if (!isBase && !changed) {
-                $row.remove();
-            }
-        });
+    $('#currencies-form').on('submit', function(e) {
+        // Don't remove any rows, let all currencies be submitted
+        return true;
     });
     
     // Add new currency row

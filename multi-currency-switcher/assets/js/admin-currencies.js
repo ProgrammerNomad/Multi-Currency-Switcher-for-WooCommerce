@@ -72,12 +72,16 @@ jQuery(document).ready(function($) {
     // Add new currency row
     $('#add-currency-btn').on('click', function() {
         var code = $('#add-currency-select').val();
-        if (!code || !window.allCurrencies[code]) return;
+        if (!code || !window.allCurrencies || !window.allCurrencies[code]) {
+            console.log('Unable to add currency:', code);
+            return;
+        }
         
+        console.log('Adding currency:', code);
         var currencyData = window.allCurrencies[code];
         
         // Create new row
-        var newRow = $('<tr class="enabled-currency" data-currency-code="' + code + '"></tr>');
+        var newRow = $('<tr class="enabled-currency" data-currency-code="' + code + '" data-changed="1"></tr>');
         
         // Add cells
         newRow.append('<td><button type="button" class="button remove-currency" title="Remove Currency">&times;</button>' +
@@ -114,12 +118,18 @@ jQuery(document).ready(function($) {
         var row = $(this).closest('tr');
         var code = row.data('currency-code');
         
+        console.log('Removing currency:', code);
+        console.log('Available currencies:', window.allCurrencies);
+        
         // Only proceed if we have the currency data
-        if (window.allCurrencies && window.allCurrencies[code]) {
+        if (typeof window.allCurrencies !== 'undefined' && window.allCurrencies && window.allCurrencies[code]) {
             var optionText = code + ' - ' + window.allCurrencies[code].name;
             $('#add-currency-select').append($('<option></option>').attr('value', code).text(optionText));
         } else {
-            console.log('Currency data not found for: ' + code);
+            console.log('Currency data not found for:', code);
+            // Add a fallback for when currency data isn't available
+            var currencyName = row.find('input[name^="currencies['+code+'][name]"]').val() || code;
+            $('#add-currency-select').append($('<option></option>').attr('value', code).text(code + ' - ' + currencyName));
         }
         
         // Create a hidden field to track removed currencies

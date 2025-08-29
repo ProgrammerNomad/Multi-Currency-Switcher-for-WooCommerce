@@ -1,6 +1,6 @@
-# Multi Currency Switcher for WooCommerce
+# WC Multi Currency Manager
 
-A WooCommerce plugin for multi-currency switching, designed to maximize international sales by allowing customers to view and pay in their local currency.
+A WooCommerce plugin for multi-currency management, designed to maximize international sales by allowing customers to view and pay in their local currency.
 
 ## Features
 - Add and manage multiple currencies with a clean, intuitive interface
@@ -16,14 +16,14 @@ A WooCommerce plugin for multi-currency switching, designed to maximize internat
 1. Download the plugin
 2. Upload it to your WordPress site via the Plugins menu
 3. Activate the plugin
-4. Configure settings in the "Currency Switcher" menu in the WordPress admin dashboard
+4. Configure settings in the "Currency Manager" menu in the WordPress admin dashboard
 
 ## Usage
 
 ### **Basic Configuration**
-1. Navigate to Currency Switcher > General Settings to configure default options
-2. Go to Currency Switcher > Currencies to enable currencies and set exchange rates
-3. Use Currency Switcher > Style Settings to customize the appearance
+1. Navigate to Currency Manager > General Settings to configure default options
+2. Go to Currency Manager > Currencies to enable currencies and set exchange rates
+3. Use Currency Manager > Style Settings to customize the appearance
 
 ### **Currency Management**
 - Add currencies using the dropdown menu on the Currencies tab
@@ -41,8 +41,8 @@ A WooCommerce plugin for multi-currency switching, designed to maximize internat
 - Set text colors, background colors, and border styles
 
 ### **Shortcode Usage**
-- Use `[multi_currency_switcher]` to display the currency switcher anywhere on your site
-- Additional parameters available for customization: `[multi_currency_switcher style="dropdown"]`
+- Use `[wc_multi_currency_manager]` to display the currency switcher anywhere on your site
+- Additional parameters available for customization: `[wc_multi_currency_manager style="dropdown"]`
 
 ## Troubleshooting
 - If you encounter memory issues with large currency lists, increase your PHP memory limit or reduce the number of enabled currencies

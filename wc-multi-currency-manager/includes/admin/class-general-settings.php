@@ -80,13 +80,13 @@ class wc_multi_currency_manager_General_Settings {
         settings_errors('wc_multi_currency_manager_messages');
         ?>
         <div class="wrap">
-            <h1>Multi Currency Switcher</h1>
+            <h1>WC Multi Currency Manager</h1>
             
             <?php $this->display_admin_tabs('general'); ?>
             
             <div class="card">
                 <h2>Plugin Overview</h2>
-                <p>Multi Currency Switcher allows your customers to shop in their preferred currency. Key features include:</p>
+                <p>WC Multi Currency Manager allows your customers to shop in their preferred currency. Key features include:</p>
                 <ul style="list-style-type: disc; margin-left: 20px;">
                     <li>Support for multiple currencies with automatic exchange rate updates</li>
                     <li>Geolocation-based currency detection</li>

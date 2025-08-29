@@ -1,6 +1,6 @@
 <?php
 /**
- * Helper functions for Multi Currency Switcher.
+ * Helper functions for WC Multi Currency Manager.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -184,7 +184,7 @@ function get_all_available_currencies() {
  */
 function mcs_log_error($message, $data = []) {
     if (defined('WP_DEBUG') && WP_DEBUG) {
-        $log_message = '[Multi Currency Switcher] ' . $message;
+        $log_message = '[WC Multi Currency Manager] ' . $message;
         
         if (!empty($data)) {
             $log_message .= ' | Data: ' . json_encode($data);
@@ -217,7 +217,7 @@ function wc_multi_currency_manager_with_increased_memory($callback, $context = '
         // Execute the callback
         $result = call_user_func($callback);
     } catch (Exception $e) {
-        error_log('Multi Currency Switcher memory error: ' . $e->getMessage());
+        error_log('WC Multi Currency Manager memory error: ' . $e->getMessage());
     } finally {
         // Restore original memory limit
         @ini_set('memory_limit', $current_limit);

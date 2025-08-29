@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 function get_available_currencies() {
-    $enabled_currency_codes = get_option('multi_currency_switcher_enabled_currencies', array('USD'));
+    $enabled_currency_codes = get_option('wc_multi_currency_manager_enabled_currencies', array('USD'));
     $all_currencies = get_all_available_currencies();
     
     $result = array();
@@ -46,8 +46,8 @@ function get_currency_by_country($country) {
     return $country_currency_map[$country] ?? 'USD'; // Default to USD if no match
 }
 
-function multi_currency_switcher_get_exchange_rate($currency) {
-    $exchange_rates = get_option('multi_currency_switcher_exchange_rates', array());
+function wc_multi_currency_manager_get_exchange_rate($currency) {
+    $exchange_rates = get_option('wc_multi_currency_manager_exchange_rates', array());
     
     if (isset($exchange_rates[$currency])) {
         return $exchange_rates[$currency];
@@ -65,7 +65,7 @@ function multi_currency_switcher_get_exchange_rate($currency) {
     if (isset($data['rates'][$currency])) {
         // Store the rate for future use
         $exchange_rates[$currency] = $data['rates'][$currency];
-        update_option('multi_currency_switcher_exchange_rates', $exchange_rates);
+        update_option('wc_multi_currency_manager_exchange_rates', $exchange_rates);
         return $data['rates'][$currency];
     }
     
@@ -73,10 +73,10 @@ function multi_currency_switcher_get_exchange_rate($currency) {
 }
 
 function format_price_in_currency($price, $currency = 'USD') {
-    $exchange_rate = multi_currency_switcher_get_exchange_rate($currency);
+    $exchange_rate = wc_multi_currency_manager_get_exchange_rate($currency);
     $converted_price = $price * $exchange_rate;
     
-    $currency_settings = get_option('multi_currency_switcher_currency_settings', array());
+    $currency_settings = get_option('wc_multi_currency_manager_currency_settings', array());
     $settings = isset($currency_settings[$currency]) ? $currency_settings[$currency] : array(
         'position' => 'left',
         'decimals' => 2,
@@ -112,12 +112,12 @@ function format_price_in_currency($price, $currency = 'USD') {
 /**
  * Update all exchange rates automatically from an API
  */
-function multi_currency_switcher_update_all_exchange_rates() {
+function wc_multi_currency_manager_update_all_exchange_rates() {
     // Get WooCommerce base currency
     $base_currency = get_option('woocommerce_currency', 'USD');
     
     // Get all enabled currencies
-    $enabled_currencies = get_option('multi_currency_switcher_enabled_currencies', array($base_currency));
+    $enabled_currencies = get_option('wc_multi_currency_manager_enabled_currencies', array($base_currency));
     
     // Initialize exchange rates array
     $exchange_rates = array();
@@ -144,10 +144,10 @@ function multi_currency_switcher_update_all_exchange_rates() {
             }
             
             // Save the updated exchange rates
-            update_option('multi_currency_switcher_exchange_rates', $exchange_rates);
+            update_option('wc_multi_currency_manager_exchange_rates', $exchange_rates);
             
             // Save the last update time
-            update_option('multi_currency_switcher_rates_last_updated', current_time('timestamp'));
+            update_option('wc_multi_currency_manager_rates_last_updated', current_time('timestamp'));
             
             return true;
         }
@@ -201,7 +201,7 @@ function mcs_log_error($message, $data = []) {
  * @param string $context Context for the memory limit (default, admin, etc)
  * @return mixed The result of the callback
  */
-function multi_currency_switcher_with_increased_memory($callback, $context = 'admin') {
+function wc_multi_currency_manager_with_increased_memory($callback, $context = 'admin') {
     // Save current memory limit
     $current_limit = ini_get('memory_limit');
     $result = null;

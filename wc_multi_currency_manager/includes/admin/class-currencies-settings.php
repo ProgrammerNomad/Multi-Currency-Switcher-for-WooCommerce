@@ -1,5 +1,5 @@
 <?php
-// filepath: c:\xampp\htdocs\Multi-Currency-Switcher-for-WooCommerce\multi-currency-switcher\includes\admin\class-currencies-settings.php
+// filepath: c:\xampp\htdocs\wc-multi-currency-manager-for-WooCommerce\wc-multi-currency-manager\includes\admin\class-currencies-settings.php
 /**
  * Currencies Settings Page
  */
@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
-class Multi_Currency_Switcher_Currencies_Settings {
+class wc_multi_currency_manager_Currencies_Settings {
     
     /**
      * Render the currencies settings page
@@ -16,18 +16,18 @@ class Multi_Currency_Switcher_Currencies_Settings {
     public function render_page() {
         // Handle manual update if requested
         if (isset($_POST['update_exchange_rates']) && check_admin_referer('update_exchange_rates', 'update_rates_nonce')) {
-            $updated = multi_currency_switcher_update_all_exchange_rates();
+            $updated = wc_multi_currency_manager_update_all_exchange_rates();
             
             if ($updated) {
                 add_settings_error(
-                    'multi_currency_switcher_messages',
+                    'wc_multi_currency_manager_messages',
                     'rates_updated',
                     'Exchange rates have been updated successfully.',
                     'updated'
                 );
             } else {
                 add_settings_error(
-                    'multi_currency_switcher_messages',
+                    'wc_multi_currency_manager_messages',
                     'rates_update_failed',
                     'Failed to update exchange rates. Please try again later.',
                     'error'
@@ -44,18 +44,18 @@ class Multi_Currency_Switcher_Currencies_Settings {
         $all_currencies = get_all_available_currencies();
         
         // Get currently enabled currencies (for the table)
-        $enabled_currencies = get_option('multi_currency_switcher_enabled_currencies', array(get_woocommerce_currency()));
-        $exchange_rates = get_option('multi_currency_switcher_exchange_rates', array());
-        $currency_settings = get_option('multi_currency_switcher_currency_settings', array());
+        $enabled_currencies = get_option('wc_multi_currency_manager_enabled_currencies', array(get_woocommerce_currency()));
+        $exchange_rates = get_option('wc_multi_currency_manager_exchange_rates', array());
+        $currency_settings = get_option('wc_multi_currency_manager_currency_settings', array());
 
         // Get WooCommerce base currency
         $base_currency = get_option('woocommerce_currency', 'USD');
 
         // Get last update time
-        $last_updated = get_option('multi_currency_switcher_rates_last_updated', 0);
+        $last_updated = get_option('wc_multi_currency_manager_rates_last_updated', 0);
         $last_updated_text = $last_updated ? date_i18n(get_option('date_format') . ' ' . get_option('time_format'), $last_updated) : 'Never';
 
-        settings_errors('multi_currency_switcher_messages');
+        settings_errors('wc_multi_currency_manager_messages');
         ?>
         <div class="wrap">
             <h1>Manage Currencies</h1>
@@ -300,9 +300,9 @@ class Multi_Currency_Switcher_Currencies_Settings {
         $base_currency = get_option('woocommerce_currency', 'USD');
         
         // Get existing data
-        $existing_enabled = get_option('multi_currency_switcher_enabled_currencies', array($base_currency));
-        $existing_rates = get_option('multi_currency_switcher_exchange_rates', array());
-        $existing_settings = get_option('multi_currency_switcher_currency_settings', array());
+        $existing_enabled = get_option('wc_multi_currency_manager_enabled_currencies', array($base_currency));
+        $existing_rates = get_option('wc_multi_currency_manager_exchange_rates', array());
+        $existing_settings = get_option('wc_multi_currency_manager_currency_settings', array());
         
         // Start with base currency always enabled
         $enabled_currencies = array($base_currency);
@@ -347,12 +347,12 @@ class Multi_Currency_Switcher_Currencies_Settings {
         $enabled_currencies = array_unique($enabled_currencies);
         
         // Update options
-        update_option('multi_currency_switcher_enabled_currencies', $enabled_currencies);
-        update_option('multi_currency_switcher_exchange_rates', $exchange_rates);
-        update_option('multi_currency_switcher_currency_settings', $currency_settings);
+        update_option('wc_multi_currency_manager_enabled_currencies', $enabled_currencies);
+        update_option('wc_multi_currency_manager_exchange_rates', $exchange_rates);
+        update_option('wc_multi_currency_manager_currency_settings', $currency_settings);
         
         add_settings_error(
-            'multi_currency_switcher_messages',
+            'wc_multi_currency_manager_messages',
             'currencies_updated',
             'Currencies have been updated successfully.',
             'updated'
@@ -367,19 +367,19 @@ class Multi_Currency_Switcher_Currencies_Settings {
     public function display_admin_tabs($current_tab) {
         $tabs = array(
             'general' => array(
-                'url' => 'admin.php?page=multi-currency-switcher',
+                'url' => 'admin.php?page=wc-multi-currency-manager',
                 'label' => 'General Settings'
             ),
             'currencies' => array(
-                'url' => 'admin.php?page=multi-currency-switcher-currencies',
+                'url' => 'admin.php?page=wc-multi-currency-manager-currencies',
                 'label' => 'Currencies'
             ),
             'style' => array(
-                'url' => 'admin.php?page=multi-currency-switcher-style',
+                'url' => 'admin.php?page=wc-multi-currency-manager-style',
                 'label' => 'Style Settings'
             ),
             'payment' => array(
-                'url' => 'admin.php?page=multi-currency-switcher-payment',
+                'url' => 'admin.php?page=wc-multi-currency-manager-payment',
                 'label' => 'Payment Restrictions'
             )
         );

@@ -1,5 +1,5 @@
 <?php
-// filepath: c:\xampp\htdocs\Multi-Currency-Switcher-for-WooCommerce\multi-currency-switcher\includes\admin\class-general-settings.php
+// filepath: c:\xampp\htdocs\wc-multi-currency-manager-for-WooCommerce\wc-multi-currency-manager\includes\admin\class-general-settings.php
 /**
  * General Settings Page
  */
@@ -8,22 +8,22 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
-class Multi_Currency_Switcher_General_Settings {
+class wc_multi_currency_manager_General_Settings {
 
     /**
      * Render the general settings page
      */
     public function render_page() {
         // Get current settings
-        $general_settings = get_option('multi_currency_switcher_general_settings', array(
+        $general_settings = get_option('wc_multi_currency_manager_general_settings', array(
             'auto_detect' => 'yes',
             'widget_position' => 'both',
             'default_currency' => get_woocommerce_currency(),
         ));
         
         // Get exchange rate data
-        $exchange_rates = get_option('multi_currency_switcher_exchange_rates', array());
-        $last_updated = get_option('multi_currency_switcher_rates_last_updated', 0);
+        $exchange_rates = get_option('wc_multi_currency_manager_exchange_rates', array());
+        $last_updated = get_option('wc_multi_currency_manager_rates_last_updated', 0);
         $last_updated_text = $last_updated ? date_i18n(get_option('date_format') . ' ' . get_option('time_format'), $last_updated) : 'Never';
         
         // Process form submissions
@@ -34,11 +34,11 @@ class Multi_Currency_Switcher_General_Settings {
                 'default_currency' => sanitize_text_field($_POST['general_settings']['default_currency']),
             );
             
-            update_option('multi_currency_switcher_general_settings', $general_settings);
+            update_option('wc_multi_currency_manager_general_settings', $general_settings);
             
             // Show success message
             add_settings_error(
-                'multi_currency_switcher_messages',
+                'wc_multi_currency_manager_messages',
                 'settings_updated',
                 'Settings saved successfully.',
                 'updated'
@@ -47,23 +47,23 @@ class Multi_Currency_Switcher_General_Settings {
         
         // Handle manual exchange rate update
         if (isset($_POST['update_exchange_rates']) && check_admin_referer('update_exchange_rates', 'update_rates_nonce')) {
-            $updated = multi_currency_switcher_update_all_exchange_rates();
+            $updated = wc_multi_currency_manager_update_all_exchange_rates();
             
             if ($updated) {
                 add_settings_error(
-                    'multi_currency_switcher_messages',
+                    'wc_multi_currency_manager_messages',
                     'rates_updated',
                     'Exchange rates have been updated successfully.',
                     'updated'
                 );
                 
                 // Refresh the exchange rates
-                $exchange_rates = get_option('multi_currency_switcher_exchange_rates', array());
-                $last_updated = get_option('multi_currency_switcher_rates_last_updated', 0);
+                $exchange_rates = get_option('wc_multi_currency_manager_exchange_rates', array());
+                $last_updated = get_option('wc_multi_currency_manager_rates_last_updated', 0);
                 $last_updated_text = $last_updated ? date_i18n(get_option('date_format') . ' ' . get_option('time_format'), $last_updated) : 'Never';
             } else {
                 add_settings_error(
-                    'multi_currency_switcher_messages',
+                    'wc_multi_currency_manager_messages',
                     'rates_update_failed',
                     'Failed to update exchange rates. Please try again later.',
                     'error'
@@ -72,12 +72,12 @@ class Multi_Currency_Switcher_General_Settings {
         }
         
         // Get enabled currencies
-        $enabled_currencies = get_option('multi_currency_switcher_enabled_currencies', array(get_woocommerce_currency()));
+        $enabled_currencies = get_option('wc_multi_currency_manager_enabled_currencies', array(get_woocommerce_currency()));
         $all_currencies = get_all_available_currencies();
         $base_currency = get_woocommerce_currency();
         
         // Display the settings page
-        settings_errors('multi_currency_switcher_messages');
+        settings_errors('wc_multi_currency_manager_messages');
         ?>
         <div class="wrap">
             <h1>Multi Currency Switcher</h1>
@@ -154,7 +154,7 @@ class Multi_Currency_Switcher_General_Settings {
                                     <option value="sticky_only" <?php selected('sticky_only', $general_settings['widget_position']); ?>>Show only sticky widget</option>
                                     <option value="none" <?php selected('none', $general_settings['widget_position']); ?>>Don't show automatically</option>
                                 </select>
-                                <p class="description">Control where the currency switcher appears on your site. Use the shortcode [multi_currency_switcher] to add it to specific locations.</p>
+                                <p class="description">Control where the currency switcher appears on your site. Use the shortcode [wc_multi_currency_manager] to add it to specific locations.</p>
                             </td>
                         </tr>
                         <tr>
@@ -191,15 +191,15 @@ class Multi_Currency_Switcher_General_Settings {
                     </thead>
                     <tbody>
                         <tr>
-                            <td><code>[multi_currency_switcher]</code></td>
+                            <td><code>[wc_multi_currency_manager]</code></td>
                             <td>Basic currency switcher dropdown</td>
                         </tr>
                         <tr>
-                            <td><code>[multi_currency_switcher style="buttons"]</code></td>
+                            <td><code>[wc_multi_currency_manager style="buttons"]</code></td>
                             <td>Currency switcher with button style instead of dropdown</td>
                         </tr>
                         <tr>
-                            <td><code>[multi_currency_switcher currencies="USD,EUR,GBP"]</code></td>
+                            <td><code>[wc_multi_currency_manager currencies="USD,EUR,GBP"]</code></td>
                             <td>Currency switcher with only specific currencies</td>
                         </tr>
                     </tbody>
@@ -227,19 +227,19 @@ class Multi_Currency_Switcher_General_Settings {
     public function display_admin_tabs($current_tab) {
         $tabs = array(
             'general' => array(
-                'url' => 'admin.php?page=multi-currency-switcher',
+                'url' => 'admin.php?page=wc-multi-currency-manager',
                 'label' => 'General Settings'
             ),
             'currencies' => array(
-                'url' => 'admin.php?page=multi-currency-switcher-currencies',
+                'url' => 'admin.php?page=wc-multi-currency-manager-currencies',
                 'label' => 'Currencies'
             ),
             'style' => array(
-                'url' => 'admin.php?page=multi-currency-switcher-style',
+                'url' => 'admin.php?page=wc-multi-currency-manager-style',
                 'label' => 'Style Settings'
             ),
             'payment' => array(
-                'url' => 'admin.php?page=multi-currency-switcher-payment',
+                'url' => 'admin.php?page=wc-multi-currency-manager-payment',
                 'label' => 'Payment Restrictions'
             )
         );

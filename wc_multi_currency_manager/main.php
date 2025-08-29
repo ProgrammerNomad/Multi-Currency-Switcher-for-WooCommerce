@@ -1,11 +1,13 @@
 <?php
 /**
- * Plugin Name: Multi Currency Switcher for WooCommerce
- * Description: A free WooCommerce plugin for multi-currency switching.
+ * Plugin Name: WC Multi Currency Manager
+ * Description: A professional WooCommerce plugin for multi-currency management, designed to maximize international sales by allowing customers to view and pay in their local currency.
  * Version: 1.0.0
  * Author: ProgrammerNomad
  * Author URI: https://github.com/ProgrammerNomad
  * License: MIT
+ * Text Domain: wc-multi-currency-manager
+ * Domain Path: /languages
  */
 
 defined('ABSPATH') || exit;
@@ -25,21 +27,21 @@ require_once plugin_dir_path(__FILE__) . 'includes/price-filters.php';
 require_once plugin_dir_path(__FILE__) . 'includes/currency-switcher.php';
 
 // Initialize the plugin
-function multi_currency_switcher_init() {
+function wc_multi_currency_manager_init() {
     // Add hooks and filters here
     // Check if WooCommerce is active
     if (!class_exists('WooCommerce')) {
-        add_action('admin_notices', 'multi_currency_switcher_woocommerce_notice');
+        add_action('admin_notices', 'wc_multi_currency_manager_woocommerce_notice');
         return;
     }
 }
-add_action('plugins_loaded', 'multi_currency_switcher_init');
+add_action('plugins_loaded', 'wc_multi_currency_manager_init');
 
 // Display notice if WooCommerce is not active
-function multi_currency_switcher_woocommerce_notice() {
+function wc_multi_currency_manager_woocommerce_notice() {
     ?>
     <div class="error">
-        <p><?php _e('Multi Currency Switcher for WooCommerce requires WooCommerce to be installed and active.', 'multi-currency-switcher'); ?></p>
+        <p><?php _e('WC Multi Currency Manager requires WooCommerce to be installed and active.', 'wc-multi-currency-manager'); ?></p>
     </div>
     <?php
 }
@@ -60,7 +62,7 @@ add_action('wp_ajax_nopriv_get_geolocation_currency', 'handle_geolocation_curren
 
 function handle_get_exchange_rate() {
     $currency = sanitize_text_field($_GET['currency']);
-    $rate = multi_currency_switcher_get_exchange_rate($currency);
+    $rate = wc_multi_currency_manager_get_exchange_rate($currency);
 
     if ($rate) {
         wp_send_json_success(['rate' => $rate]);
@@ -74,11 +76,11 @@ add_action('wp_ajax_nopriv_get_exchange_rate', 'handle_get_exchange_rate');
 /**
  * Force mini cart recalculation when currency changes
  */
-function multi_currency_switcher_refresh_fragments() {
+function wc_multi_currency_manager_refresh_fragments() {
     WC_AJAX::get_refreshed_fragments();
 }
-add_action('wp_ajax_multi_currency_refresh_fragments', 'multi_currency_switcher_refresh_fragments');
-add_action('wp_ajax_nopriv_multi_currency_refresh_fragments', 'multi_currency_switcher_refresh_fragments');
+add_action('wp_ajax_wc_multi_currency_refresh_fragments', 'wc_multi_currency_manager_refresh_fragments');
+add_action('wp_ajax_nopriv_wc_multi_currency_refresh_fragments', 'wc_multi_currency_manager_refresh_fragments');
 
 // Add a data attribute to store the original price
 add_filter('woocommerce_get_price_html', function($price, $product) {
@@ -87,30 +89,30 @@ add_filter('woocommerce_get_price_html', function($price, $product) {
 }, 10, 2);
 
 // Schedule daily exchange rate updates
-register_activation_hook(__FILE__, 'multi_currency_switcher_schedule_updates');
-add_action('multi_currency_switcher_daily_update', 'multi_currency_switcher_update_all_exchange_rates');
+register_activation_hook(__FILE__, 'wc_multi_currency_manager_schedule_updates');
+add_action('wc_multi_currency_manager_daily_update', 'wc_multi_currency_manager_update_all_exchange_rates');
 
 /**
  * Schedule the daily exchange rate update
  */
-function multi_currency_switcher_schedule_updates() {
-    if (!wp_next_scheduled('multi_currency_switcher_daily_update')) {
-        wp_schedule_event(time(), 'daily', 'multi_currency_switcher_daily_update');
+function wc_multi_currency_manager_schedule_updates() {
+    if (!wp_next_scheduled('wc_multi_currency_manager_daily_update')) {
+        wp_schedule_event(time(), 'daily', 'wc_multi_currency_manager_daily_update');
     }
 }
 
 /**
  * Clean up scheduled events on plugin deactivation
  */
-register_deactivation_hook(__FILE__, 'multi_currency_switcher_clear_scheduled_updates');
+register_deactivation_hook(__FILE__, 'wc_multi_currency_manager_clear_scheduled_updates');
 
-function multi_currency_switcher_clear_scheduled_updates() {
-    wp_clear_scheduled_hook('multi_currency_switcher_daily_update');
+function wc_multi_currency_manager_clear_scheduled_updates() {
+    wp_clear_scheduled_hook('wc_multi_currency_manager_daily_update');
 }
 
 // Add this function to ensure the currency is properly set during AJAX add to cart:
 
-function multi_currency_switcher_before_add_to_cart() {
+function wc_multi_currency_manager_before_add_to_cart() {
     if (isset($_COOKIE['chosen_currency']) && function_exists('WC') && WC()->session) {
         $currency = sanitize_text_field($_COOKIE['chosen_currency']);
         $available_currencies = get_available_currencies();
@@ -120,10 +122,10 @@ function multi_currency_switcher_before_add_to_cart() {
         }
     }
 }
-add_action('woocommerce_ajax_added_to_cart', 'multi_currency_switcher_before_add_to_cart', 1);
+add_action('woocommerce_ajax_added_to_cart', 'wc_multi_currency_manager_before_add_to_cart', 1);
 
 // Add this to your main.php file to load templates
-function multi_currency_switcher_template_loader($template, $template_name, $template_path) {
+function wc_multi_currency_manager_template_loader($template, $template_name, $template_path) {
     if ($template_name === 'cart/mini-cart.php') {
         // Check if our custom template exists
         $plugin_template = plugin_dir_path(__FILE__) . 'templates/mini-cart.php';
@@ -135,13 +137,13 @@ function multi_currency_switcher_template_loader($template, $template_name, $tem
     
     return $template;
 }
-add_filter('wc_get_template', 'multi_currency_switcher_template_loader', 10, 3);
+add_filter('wc_get_template', 'wc_multi_currency_manager_template_loader', 10, 3);
 
 /**
  * AJAX handler for currency switching
  * This updates the cart and mini cart when currency is changed via JavaScript
  */
-function multi_currency_switcher_handle_currency_switch() {
+function wc_multi_currency_manager_handle_currency_switch() {
     // Enable error logging for debugging
     ini_set('display_errors', 0);
     error_log('Currency switch AJAX called for currency: ' . (isset($_GET['currency']) ? $_GET['currency'] : 'none'));
@@ -195,13 +197,13 @@ function multi_currency_switcher_handle_currency_switch() {
         ]);
     }
 }
-add_action('wp_ajax_multi_currency_switch', 'multi_currency_switcher_handle_currency_switch');
-add_action('wp_ajax_nopriv_multi_currency_switch', 'multi_currency_switcher_handle_currency_switch');
+add_action('wp_ajax_wc_multi_currency_switch', 'wc_multi_currency_manager_handle_currency_switch');
+add_action('wp_ajax_nopriv_wc_multi_currency_switch', 'wc_multi_currency_manager_handle_currency_switch');
 
 // Add after the other functions
-function multi_currency_switcher_widget_display_control() {
+function wc_multi_currency_manager_widget_display_control() {
     // Get display settings
-    $general_settings = get_option('multi_currency_switcher_general_settings', array(
+    $general_settings = get_option('wc_multi_currency_manager_general_settings', array(
         'widget_position' => 'both',
     ));
     
@@ -217,4 +219,4 @@ function multi_currency_switcher_widget_display_control() {
         remove_action('woocommerce_single_product_summary', 'multi_currency_switcher_display_on_product_page', 25);
     }
 }
-add_action('wp', 'multi_currency_switcher_widget_display_control');
+add_action('wp', 'wc_multi_currency_manager_widget_display_control');

@@ -86,12 +86,12 @@ class CurrencySwitcher {
 
 new CurrencySwitcher();
 
-function multi_currency_switcher_display($atts) {
+function wc_multi_currency_manager_display($atts) {
     // Parse attributes
     $atts = shortcode_atts(array(
         'style' => 'dropdown',
         'currencies' => '',
-    ), $atts, 'multi_currency_switcher');
+    ), $atts, 'wc_multi_currency_manager');
     
     $style = $atts['style'];
     $selected_currencies = !empty($atts['currencies']) ? explode(',', $atts['currencies']) : array();
@@ -159,15 +159,15 @@ function multi_currency_switcher_display($atts) {
     
     return $output;
 }
-add_shortcode('multi_currency_switcher', 'multi_currency_switcher_display');
+add_shortcode('wc_multi_currency_manager', 'wc_multi_currency_manager_display');
 
-function multi_currency_switcher_filter_payment_gateways($available_gateways) {
+function wc_multi_currency_manager_filter_payment_gateways($available_gateways) {
     if (!WC()->session) {
         return $available_gateways; // Return default gateways if session is not initialized
     }
 
     $currency = WC()->session->get('chosen_currency', 'USD'); // Default to USD
-    $restrictions = get_option('multi_currency_switcher_payment_restrictions', []);
+    $restrictions = get_option('wc_multi_currency_manager_payment_restrictions', []);
 
     if (isset($restrictions[$currency])) {
         foreach ($restrictions[$currency] as $gateway_id) {
@@ -177,10 +177,10 @@ function multi_currency_switcher_filter_payment_gateways($available_gateways) {
 
     return $available_gateways;
 }
-add_filter('woocommerce_available_payment_gateways', 'multi_currency_switcher_filter_payment_gateways', 20); // Ensure it runs after WooCommerce initialization
+add_filter('woocommerce_available_payment_gateways', 'wc_multi_currency_manager_filter_payment_gateways', 20); // Ensure it runs after WooCommerce initialization
 
-function multi_currency_switcher_display_sticky_widget() {
-    $style_settings = get_option('multi_currency_switcher_style_settings', array(
+function wc_multi_currency_manager_display_sticky_widget() {
+    $style_settings = get_option('wc_multi_currency_manager_style_settings', array(
         'show_sticky_widget' => 'yes',
         'limit_currencies' => 'no',
         'show_flags' => 'none', // Default to no flags
@@ -212,9 +212,9 @@ function multi_currency_switcher_display_sticky_widget() {
     echo '</select>';
     echo '</div>';
 }
-add_action('wp_footer', 'multi_currency_switcher_display_sticky_widget');
+add_action('wp_footer', 'wc_multi_currency_manager_display_sticky_widget');
 
-function multi_currency_switcher_display_on_product_page() {
+function wc_multi_currency_manager_display_on_product_page() {
     $currencies = get_available_currencies();
     $current_currency = (function_exists('WC') && WC() && WC()->session) ? 
         WC()->session->get('chosen_currency', 'USD') : 'USD';
@@ -231,16 +231,16 @@ function multi_currency_switcher_display_on_product_page() {
     echo '</select>';
     echo '</div>';
 }
-add_action('woocommerce_single_product_summary', 'multi_currency_switcher_display_on_product_page', 25);
+add_action('woocommerce_single_product_summary', 'wc_multi_currency_manager_display_on_product_page', 25);
 
-function multi_currency_switcher_read_cookie() {
+function wc_multi_currency_manager_read_cookie() {
     if (!function_exists('WC') || !WC()->session) {
         return;
     }
     
     $currency_changed = false;
     $available_currencies = get_available_currencies();
-    $general_settings = get_option('multi_currency_switcher_general_settings', array(
+    $general_settings = get_option('wc_multi_currency_manager_general_settings', array(
         'auto_detect' => 'yes',
         'default_currency' => get_woocommerce_currency(),
     ));
@@ -303,11 +303,11 @@ function multi_currency_switcher_read_cookie() {
     }
 }
 // Change the hook from 'init' to 'wp_loaded' to ensure WooCommerce is ready
-remove_action('init', 'multi_currency_switcher_read_cookie', 20);
-add_action('wp_loaded', 'multi_currency_switcher_read_cookie', 20);
+remove_action('init', 'wc_multi_currency_manager_read_cookie', 20);
+add_action('wp_loaded', 'wc_multi_currency_manager_read_cookie', 20);
 
 // Add a new function to handle cart recalculation after WooCommerce is fully loaded
-function multi_currency_switcher_maybe_recalculate_cart() {
+function wc_multi_currency_manager_maybe_recalculate_cart() {
     if (!function_exists('WC') || !WC()->session || !WC()->cart) {
         return;
     }
@@ -324,10 +324,10 @@ function multi_currency_switcher_maybe_recalculate_cart() {
         WC()->session->set('currency_changed', false);
     }
 }
-add_action('woocommerce_cart_loaded_from_session', 'multi_currency_switcher_maybe_recalculate_cart', 99);
+add_action('woocommerce_cart_loaded_from_session', 'wc_multi_currency_manager_maybe_recalculate_cart', 99);
 
-function multi_currency_switcher_add_dynamic_styles() {
-    $style_settings = get_option('multi_currency_switcher_style_settings', array(
+function wc_multi_currency_manager_add_dynamic_styles() {
+    $style_settings = get_option('wc_multi_currency_manager_style_settings', array(
         'title_color' => '#333333',
         'text_color' => '#000000',
         'active_color' => '#04AE93',
@@ -375,7 +375,7 @@ function multi_currency_switcher_add_dynamic_styles() {
     
     echo $css;
 }
-add_action('wp_head', 'multi_currency_switcher_add_dynamic_styles');
+add_action('wp_head', 'wc_multi_currency_manager_add_dynamic_styles');
 
 // Helper function to get sticky position CSS
 function get_sticky_position_css($position) {
@@ -404,7 +404,7 @@ function get_country_code_for_currency($currency) {
 
 // Add this function to ensure AJAX requests use the correct currency:
 
-function multi_currency_switcher_set_ajax_currency() {
+function wc_multi_currency_manager_set_ajax_currency() {
     if (defined('DOING_AJAX') && DOING_AJAX) {
         if (isset($_COOKIE['chosen_currency'])) {
             $currency = sanitize_text_field($_COOKIE['chosen_currency']);
@@ -416,10 +416,10 @@ function multi_currency_switcher_set_ajax_currency() {
         }
     }
 }
-add_action('woocommerce_init', 'multi_currency_switcher_set_ajax_currency', 5);
+add_action('woocommerce_init', 'wc_multi_currency_manager_set_ajax_currency', 5);
 
 // Add this function to ensure the Storefront theme mini cart is updated
-function multi_currency_switcher_storefront_compatibility() {
+function wc_multi_currency_manager_storefront_compatibility() {
     // Check if Storefront theme is active
     if (function_exists('storefront_is_woocommerce_activated') && function_exists('WC') && WC()->cart) {
         // Add a filter to ensure the cart widget is properly displayed
@@ -431,5 +431,5 @@ function multi_currency_switcher_storefront_compatibility() {
         });
     }
 }
-add_action('wp_loaded', 'multi_currency_switcher_storefront_compatibility');
+add_action('wp_loaded', 'wc_multi_currency_manager_storefront_compatibility');
 ?>

@@ -1,5 +1,5 @@
 <?php
-// filepath: c:\xampp\htdocs\Multi-Currency-Switcher-for-WooCommerce\multi-currency-switcher\includes\admin\class-style-settings.php
+// filepath: c:\xampp\htdocs\wc-multi-currency-manager-for-WooCommerce\wc-multi-currency-manager\includes\admin\class-style-settings.php
 /**
  * Style Settings Page
  */
@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
-class Multi_Currency_Switcher_Style_Settings {
+class wc_multi_currency_manager_Style_Settings {
     
     /**
      * Render the style settings page
@@ -20,7 +20,7 @@ class Multi_Currency_Switcher_Style_Settings {
         }
 
         // Get saved settings with defaults
-        $style_settings = get_option('multi_currency_switcher_style_settings', array(
+        $style_settings = get_option('wc_multi_currency_manager_style_settings', array(
             'title_color' => '#333333',
             'text_color' => '#000000',
             'active_color' => '#04AE93',
@@ -35,7 +35,7 @@ class Multi_Currency_Switcher_Style_Settings {
         ));
         
         // Display any settings errors/notices
-        settings_errors('multi_currency_switcher_messages');
+        settings_errors('wc_multi_currency_manager_messages');
         
         ?>
         <div class="wrap">
@@ -195,23 +195,23 @@ class Multi_Currency_Switcher_Style_Settings {
                     </thead>
                     <tbody>
                         <tr>
-                            <td><code>[multi_currency_switcher]</code></td>
+                            <td><code>[wc_multi_currency_manager]</code></td>
                             <td>Default currency switcher using the style settings configured on this page</td>
                         </tr>
                         <tr>
-                            <td><code>[multi_currency_switcher style="buttons"]</code></td>
+                            <td><code>[wc_multi_currency_manager style="buttons"]</code></td>
                             <td>Currency switcher with button style</td>
                         </tr>
                         <tr>
-                            <td><code>[multi_currency_switcher style="links"]</code></td>
+                            <td><code>[wc_multi_currency_manager style="links"]</code></td>
                             <td>Currency switcher with text links style</td>
                         </tr>
                         <tr>
-                            <td><code>[multi_currency_switcher title="Select Your Currency"]</code></td>
+                            <td><code>[wc_multi_currency_manager title="Select Your Currency"]</code></td>
                             <td>Currency switcher with custom title</td>
                         </tr>
                         <tr>
-                            <td><code>[multi_currency_switcher currencies="USD,EUR,GBP"]</code></td>
+                            <td><code>[wc_multi_currency_manager currencies="USD,EUR,GBP"]</code></td>
                             <td>Currency switcher limited to specific currencies</td>
                         </tr>
                     </tbody>
@@ -256,10 +256,10 @@ class Multi_Currency_Switcher_Style_Settings {
             'custom_css' => sanitize_textarea_field($_POST['style_settings']['custom_css']),
         );
 
-        update_option('multi_currency_switcher_style_settings', $style_settings);
+        update_option('wc_multi_currency_manager_style_settings', $style_settings);
         
         add_settings_error(
-            'multi_currency_switcher_messages',
+            'wc_multi_currency_manager_messages',
             'style_settings_updated',
             'Style settings have been updated successfully.',
             'updated'
@@ -274,19 +274,19 @@ class Multi_Currency_Switcher_Style_Settings {
     public function display_admin_tabs($current_tab) {
         $tabs = array(
             'general' => array(
-                'url' => 'admin.php?page=multi-currency-switcher',
+                'url' => 'admin.php?page=wc-multi-currency-manager',
                 'label' => 'General Settings'
             ),
             'currencies' => array(
-                'url' => 'admin.php?page=multi-currency-switcher-currencies',
+                'url' => 'admin.php?page=wc-multi-currency-manager-currencies',
                 'label' => 'Currencies'
             ),
             'style' => array(
-                'url' => 'admin.php?page=multi-currency-switcher-style',
+                'url' => 'admin.php?page=wc-multi-currency-manager-style',
                 'label' => 'Style Settings'
             ),
             'payment' => array(
-                'url' => 'admin.php?page=multi-currency-switcher-payment',
+                'url' => 'admin.php?page=wc-multi-currency-manager-payment',
                 'label' => 'Payment Restrictions'
             )
         );

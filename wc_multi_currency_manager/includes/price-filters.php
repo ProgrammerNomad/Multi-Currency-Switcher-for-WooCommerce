@@ -10,7 +10,7 @@ if (!defined('ABSPATH')) {
 /**
  * Convert prices throughout WooCommerce
  */
-function multi_currency_switcher_apply_price_filters() {
+function wc_multi_currency_manager_apply_price_filters() {
     // Skip if WooCommerce isn't active or session not available
     if (!function_exists('WC') || !WC() || !WC()->session) {
         return;
@@ -26,54 +26,54 @@ function multi_currency_switcher_apply_price_filters() {
     }
 
     // Product prices - regular products
-    add_filter('woocommerce_product_get_price', 'multi_currency_switcher_convert_raw_price', 10, 2);
-    add_filter('woocommerce_product_get_regular_price', 'multi_currency_switcher_convert_raw_price', 10, 2);
-    add_filter('woocommerce_product_get_sale_price', 'multi_currency_switcher_convert_raw_price', 10, 2);
+    add_filter('woocommerce_product_get_price', 'wc_multi_currency_manager_convert_raw_price', 10, 2);
+    add_filter('woocommerce_product_get_regular_price', 'wc_multi_currency_manager_convert_raw_price', 10, 2);
+    add_filter('woocommerce_product_get_sale_price', 'wc_multi_currency_manager_convert_raw_price', 10, 2);
     
     // Product prices - variations
-    add_filter('woocommerce_product_variation_get_price', 'multi_currency_switcher_convert_raw_price', 10, 2);
-    add_filter('woocommerce_product_variation_get_regular_price', 'multi_currency_switcher_convert_raw_price', 10, 2);
-    add_filter('woocommerce_product_variation_get_sale_price', 'multi_currency_switcher_convert_raw_price', 10, 2);
+    add_filter('woocommerce_product_variation_get_price', 'wc_multi_currency_manager_convert_raw_price', 10, 2);
+    add_filter('woocommerce_product_variation_get_regular_price', 'wc_multi_currency_manager_convert_raw_price', 10, 2);
+    add_filter('woocommerce_product_variation_get_sale_price', 'wc_multi_currency_manager_convert_raw_price', 10, 2);
 
     // Change currency symbol and formatting
-    add_filter('woocommerce_currency', 'multi_currency_switcher_change_currency_code', 10);
-    add_filter('woocommerce_currency_symbol', 'multi_currency_switcher_change_currency_symbol', 10, 2);
-    add_filter('wc_price_args', 'multi_currency_switcher_price_format_args', 10);
+    add_filter('woocommerce_currency', 'wc_multi_currency_manager_change_currency_code', 10);
+    add_filter('woocommerce_currency_symbol', 'wc_multi_currency_manager_change_currency_symbol', 10, 2);
+    add_filter('wc_price_args', 'wc_multi_currency_manager_price_format_args', 10);
     
     // Cart, checkout, and order prices
-    add_filter('woocommerce_cart_product_subtotal', 'multi_currency_switcher_cart_product_subtotal', 10, 4);
-    add_filter('woocommerce_cart_subtotal', 'multi_currency_switcher_cart_subtotal', 10, 3);
-    add_filter('woocommerce_cart_total', 'multi_currency_switcher_price_html', 10);
-    add_filter('woocommerce_calculated_total', 'multi_currency_switcher_calculated_total', 10, 2);
+    add_filter('woocommerce_cart_product_subtotal', 'wc_multi_currency_manager_cart_product_subtotal', 10, 4);
+    add_filter('woocommerce_cart_subtotal', 'wc_multi_currency_manager_cart_subtotal', 10, 3);
+    add_filter('woocommerce_cart_total', 'wc_multi_currency_manager_price_html', 10);
+    add_filter('woocommerce_calculated_total', 'wc_multi_currency_manager_calculated_total', 10, 2);
     
     // Mini cart
-    add_filter('woocommerce_cart_item_price', 'multi_currency_switcher_cart_item_price', 10, 3);
+    add_filter('woocommerce_cart_item_price', 'wc_multi_currency_manager_cart_item_price', 10, 3);
     
     // Shipping and tax
-    add_filter('woocommerce_package_rates', 'multi_currency_switcher_adjust_shipping_cost', 10, 2);
+    add_filter('woocommerce_package_rates', 'wc_multi_currency_manager_adjust_shipping_cost', 10, 2);
     
     // Coupons
-    add_filter('woocommerce_coupon_get_amount', 'multi_currency_switcher_coupon_amount', 10, 2);
+    add_filter('woocommerce_coupon_get_amount', 'wc_multi_currency_manager_coupon_amount', 10, 2);
     
     // Product variations cache
-    add_filter('woocommerce_get_variation_prices_hash', 'multi_currency_switcher_variation_prices_hash', 10, 3);
+    add_filter('woocommerce_get_variation_prices_hash', 'wc_multi_currency_manager_variation_prices_hash', 10, 3);
 
     // Mini cart handling
-    add_filter('woocommerce_cart_contents_total', 'multi_currency_switcher_cart_contents_total', 10, 1);
+    add_filter('woocommerce_cart_contents_total', 'wc_multi_currency_manager_cart_contents_total', 10, 1);
     
     // This is critical for mini cart display
-    add_action('woocommerce_before_mini_cart', 'multi_currency_switcher_before_mini_cart');
-    add_action('woocommerce_after_mini_cart', 'multi_currency_switcher_after_mini_cart');
+    add_action('woocommerce_before_mini_cart', 'wc_multi_currency_manager_before_mini_cart');
+    add_action('woocommerce_after_mini_cart', 'wc_multi_currency_manager_after_mini_cart');
     
     // For updating mini cart totals
-    add_filter('woocommerce_cart_item_subtotal', 'multi_currency_switcher_cart_item_subtotal', 10, 3);
+    add_filter('woocommerce_cart_item_subtotal', 'wc_multi_currency_manager_cart_item_subtotal', 10, 3);
 }
-add_action('init', 'multi_currency_switcher_apply_price_filters', 20);
+add_action('init', 'wc_multi_currency_manager_apply_price_filters', 20);
 
 /**
  * Convert raw product prices
  */
-function multi_currency_switcher_convert_raw_price($price, $product) {
+function wc_multi_currency_manager_convert_raw_price($price, $product) {
     if (empty($price) || !is_numeric($price)) {
         return $price;
     }
@@ -97,14 +97,14 @@ function multi_currency_switcher_convert_raw_price($price, $product) {
     }
     
     // Otherwise, convert the price using exchange rate
-    $exchange_rate = multi_currency_switcher_get_exchange_rate($currency);
+    $exchange_rate = wc_multi_currency_manager_get_exchange_rate($currency);
     return floatval($price) * floatval($exchange_rate);
 }
 
 /**
  * Add the current currency to variation price hash to prevent caching issues
  */
-function multi_currency_switcher_variation_prices_hash($hash, $product, $for_display) {
+function wc_multi_currency_manager_variation_prices_hash($hash, $product, $for_display) {
     $currency = WC()->session->get('chosen_currency', get_woocommerce_currency());
     $hash[] = 'currency_' . $currency;
     return $hash;
@@ -113,7 +113,7 @@ function multi_currency_switcher_variation_prices_hash($hash, $product, $for_dis
 /**
  * Change the WooCommerce currency code
  */
-function multi_currency_switcher_change_currency_code($currency) {
+function wc_multi_currency_manager_change_currency_code($currency) {
     if (function_exists('WC') && WC()->session) {
         $chosen_currency = WC()->session->get('chosen_currency', '');
         if (!empty($chosen_currency)) {
@@ -126,7 +126,7 @@ function multi_currency_switcher_change_currency_code($currency) {
 /**
  * Change the currency symbol
  */
-function multi_currency_switcher_change_currency_symbol($symbol, $currency) {
+function wc_multi_currency_manager_change_currency_symbol($symbol, $currency) {
     $all_currencies = get_all_available_currencies();
     
     if (isset($all_currencies[$currency]) && isset($all_currencies[$currency]['symbol'])) {
@@ -139,9 +139,9 @@ function multi_currency_switcher_change_currency_symbol($symbol, $currency) {
 /**
  * Apply formatting for the current currency (decimal places, separators, etc.)
  */
-function multi_currency_switcher_price_format_args($args) {
+function wc_multi_currency_manager_price_format_args($args) {
     $currency = $args['currency'];
-    $currency_settings = get_option('multi_currency_switcher_currency_settings', array());
+    $currency_settings = get_option('wc_multi_currency_manager_currency_settings', array());
     
     if (isset($currency_settings[$currency])) {
         $settings = $currency_settings[$currency];
@@ -178,7 +178,7 @@ function multi_currency_switcher_price_format_args($args) {
 /**
  * Handle cart product subtotal display
  */
-function multi_currency_switcher_cart_product_subtotal($subtotal, $product, $quantity, $cart) {
+function wc_multi_currency_manager_cart_product_subtotal($subtotal, $product, $quantity, $cart) {
     // The subtotal is already formatted, we just need to ensure it uses our currency
     return $subtotal;
 }
@@ -186,7 +186,7 @@ function multi_currency_switcher_cart_product_subtotal($subtotal, $product, $qua
 /**
  * Handle price HTML (used for cart subtotal and total)
  */
-function multi_currency_switcher_price_html($html) {
+function wc_multi_currency_manager_price_html($html) {
     // The HTML is already formatted with proper currency
     return $html;
 }
@@ -194,7 +194,7 @@ function multi_currency_switcher_price_html($html) {
 /**
  * Handle cart item price
  */
-function multi_currency_switcher_cart_item_price($price, $cart_item, $cart_item_key) {
+function wc_multi_currency_manager_cart_item_price($price, $cart_item, $cart_item_key) {
     // The price is already formatted with proper currency
     return $price;
 }
@@ -202,7 +202,7 @@ function multi_currency_switcher_cart_item_price($price, $cart_item, $cart_item_
 /**
  * Convert the calculated total
  */
-function multi_currency_switcher_calculated_total($total, $cart) {
+function wc_multi_currency_manager_calculated_total($total, $cart) {
     if (empty($total)) {
         return $total;
     }
@@ -214,7 +214,7 @@ function multi_currency_switcher_calculated_total($total, $cart) {
 /**
  * Adjust shipping cost based on currency
  */
-function multi_currency_switcher_adjust_shipping_cost($package_rates, $package) {
+function wc_multi_currency_manager_adjust_shipping_cost($package_rates, $package) {
     $currency = WC()->session->get('chosen_currency', get_woocommerce_currency());
     $base_currency = get_woocommerce_currency();
     
@@ -223,7 +223,7 @@ function multi_currency_switcher_adjust_shipping_cost($package_rates, $package) 
         return $package_rates;
     }
     
-    $exchange_rate = multi_currency_switcher_get_exchange_rate($currency);
+    $exchange_rate = wc_multi_currency_manager_get_exchange_rate($currency);
     
     foreach ($package_rates as $id => $rate) {
         // Convert cost
@@ -247,7 +247,7 @@ function multi_currency_switcher_adjust_shipping_cost($package_rates, $package) 
 /**
  * Convert coupon amount
  */
-function multi_currency_switcher_coupon_amount($amount, $coupon) {
+function wc_multi_currency_manager_coupon_amount($amount, $coupon) {
     if (empty($amount)) {
         return $amount;
     }
@@ -269,14 +269,14 @@ function multi_currency_switcher_coupon_amount($amount, $coupon) {
     }
     
     // Otherwise convert using exchange rate
-    $exchange_rate = multi_currency_switcher_get_exchange_rate($currency);
+    $exchange_rate = wc_multi_currency_manager_get_exchange_rate($currency);
     return floatval($amount) * floatval($exchange_rate);
 }
 
 /**
  * Convert mini cart fragments to display correct currency
  */
-function multi_currency_switcher_mini_cart_fragments($fragments) {
+function wc_multi_currency_manager_mini_cart_fragments($fragments) {
     // Only attempt to modify fragments if cart is loaded
     if (function_exists('WC') && WC()->cart && !WC()->cart->is_empty()) {
         // Get current currency to add to fragment cache keys
@@ -309,22 +309,22 @@ function multi_currency_switcher_mini_cart_fragments($fragments) {
     
     return $fragments;
 }
-add_filter('woocommerce_add_to_cart_fragments', 'multi_currency_switcher_mini_cart_fragments', 999);
+add_filter('woocommerce_add_to_cart_fragments', 'wc_multi_currency_manager_mini_cart_fragments', 999);
 
 /**
  * Handle mini cart price display
  */
-function multi_currency_switcher_mini_cart_price_filter() {
+function wc_multi_currency_manager_mini_cart_price_filter() {
     // Filters for mini cart prices
-    add_filter('woocommerce_cart_item_price', 'multi_currency_switcher_filter_item_price', 10, 3);
-    add_filter('woocommerce_widget_cart_item_quantity', 'multi_currency_switcher_filter_widget_cart_item_quantity', 10, 3);
+    add_filter('woocommerce_cart_item_price', 'wc_multi_currency_manager_filter_item_price', 10, 3);
+    add_filter('woocommerce_widget_cart_item_quantity', 'wc_multi_currency_manager_filter_widget_cart_item_quantity', 10, 3);
 }
-add_action('wp_loaded', 'multi_currency_switcher_mini_cart_price_filter');
+add_action('wp_loaded', 'wc_multi_currency_manager_mini_cart_price_filter');
 
 /**
  * Filter mini cart item price
  */
-function multi_currency_switcher_filter_item_price($price_html, $cart_item, $cart_item_key) {
+function wc_multi_currency_manager_filter_item_price($price_html, $cart_item, $cart_item_key) {
     // Price is already converted by WooCommerce, we just need to ensure it's properly displayed
     return $price_html;
 }
@@ -332,7 +332,7 @@ function multi_currency_switcher_filter_item_price($price_html, $cart_item, $car
 /**
  * Filter mini cart item quantity text with correct currency
  */
-function multi_currency_switcher_filter_widget_cart_item_quantity($quantity_html, $cart_item, $cart_item_key) {
+function wc_multi_currency_manager_filter_widget_cart_item_quantity($quantity_html, $cart_item, $cart_item_key) {
     // Quantity already includes price that has been converted, we just need to ensure it's properly displayed
     return $quantity_html;
 }
@@ -340,7 +340,7 @@ function multi_currency_switcher_filter_widget_cart_item_quantity($quantity_html
 /**
  * Function to run before mini cart is displayed
  */
-function multi_currency_switcher_before_mini_cart() {
+function wc_multi_currency_manager_before_mini_cart() {
     // Prepare the mini cart for display with the correct currency
     WC()->cart->calculate_totals();
 }
@@ -348,14 +348,14 @@ function multi_currency_switcher_before_mini_cart() {
 /**
  * Function to run after mini cart is displayed
  */
-function multi_currency_switcher_after_mini_cart() {
+function wc_multi_currency_manager_after_mini_cart() {
     // Cleanup after mini cart display if needed
 }
 
 /**
  * Filter cart contents total
  */
-function multi_currency_switcher_cart_contents_total($total) {
+function wc_multi_currency_manager_cart_contents_total($total) {
     // Total already converted, just return it
     return $total;
 }
@@ -363,7 +363,7 @@ function multi_currency_switcher_cart_contents_total($total) {
 /**
  * Filter cart item subtotal
  */
-function multi_currency_switcher_cart_item_subtotal($subtotal, $cart_item, $cart_item_key) {
+function wc_multi_currency_manager_cart_item_subtotal($subtotal, $cart_item, $cart_item_key) {
     // Subtotal already converted, just return it
     return $subtotal;
 }
@@ -376,14 +376,14 @@ function multi_currency_switcher_cart_item_subtotal($subtotal, $cart_item, $cart
  * @param WC_Cart $cart The cart object
  * @return string The filtered cart subtotal
  */
-function multi_currency_switcher_cart_subtotal($cart_subtotal, $compound = false, $cart = null) {
+function wc_multi_currency_manager_cart_subtotal($cart_subtotal, $compound = false, $cart = null) {
     // The cart subtotal is already converted by WooCommerce core
     // We just need to make sure it's displayed correctly
     return $cart_subtotal;
 }
 
 // Add this function to ensure cart items are updated with the correct currency
-function multi_currency_switcher_update_cart_items() {
+function wc_multi_currency_manager_update_cart_items() {
     // Skip if not in a cart context or WooCommerce isn't fully loaded
     if (!function_exists('WC') || !WC()->cart || !WC()->session || !is_object(WC()->cart) || !method_exists(WC()->cart, 'get_cart')) {
         return;
@@ -436,7 +436,7 @@ function multi_currency_switcher_update_cart_items() {
                 }
             } else {
                 // Otherwise use exchange rate conversion
-                $exchange_rate = multi_currency_switcher_get_exchange_rate($currency);
+                $exchange_rate = wc_multi_currency_manager_get_exchange_rate($currency);
                 $base_price = get_post_meta($price_product_id, '_price', true);
                 
                 if (!empty($base_price) && is_numeric($base_price)) {
@@ -451,18 +451,18 @@ function multi_currency_switcher_update_cart_items() {
         }
     } catch (Exception $e) {
         // Log any errors but don't let them break the site
-        error_log('Error in multi_currency_switcher_update_cart_items: ' . $e->getMessage());
+        error_log('Error in wc_multi_currency_manager_update_cart_items: ' . $e->getMessage());
     }
 }
-remove_action('woocommerce_before_calculate_totals', 'multi_currency_switcher_update_cart_items', 20);
-add_action('woocommerce_before_calculate_totals', 'multi_currency_switcher_update_cart_items', 20);
-remove_action('woocommerce_before_mini_cart', 'multi_currency_switcher_update_cart_items', 10);
-add_action('woocommerce_before_mini_cart', 'multi_currency_switcher_update_cart_items', 10);
+remove_action('woocommerce_before_calculate_totals', 'wc_multi_currency_manager_update_cart_items', 20);
+add_action('woocommerce_before_calculate_totals', 'wc_multi_currency_manager_update_cart_items', 20);
+remove_action('woocommerce_before_mini_cart', 'wc_multi_currency_manager_update_cart_items', 10);
+add_action('woocommerce_before_mini_cart', 'wc_multi_currency_manager_update_cart_items', 10);
 
 /**
  * Ensure the correct currency is displayed on order pages
  */
-function multi_currency_switcher_order_currency($currency) {
+function wc_multi_currency_manager_order_currency($currency) {
     global $wp;
     
     // Check if we're on an order-received page
@@ -488,12 +488,12 @@ function multi_currency_switcher_order_currency($currency) {
     return $currency;
 }
 // Add this filter to ensure the function is used
-add_filter('woocommerce_currency', 'multi_currency_switcher_order_currency', 999);
+add_filter('woocommerce_currency', 'wc_multi_currency_manager_order_currency', 999);
 
 /**
  * Save the current currency with new orders
  */
-function multi_currency_switcher_update_order_currency($order_id) {
+function wc_multi_currency_manager_update_order_currency($order_id) {
     if (function_exists('WC') && WC()->session) {
         $currency = WC()->session->get('chosen_currency', get_woocommerce_currency());
         
@@ -508,12 +508,12 @@ function multi_currency_switcher_update_order_currency($order_id) {
         }
     }
 }
-add_action('woocommerce_checkout_update_order_meta', 'multi_currency_switcher_update_order_currency', 10, 1);
+add_action('woocommerce_checkout_update_order_meta', 'wc_multi_currency_manager_update_order_currency', 10, 1);
 
 /**
  * Ensure order pages use the correct currency symbol
  */
-function multi_currency_switcher_order_page_currency_symbol($symbol, $currency) {
+function wc_multi_currency_manager_order_page_currency_symbol($symbol, $currency) {
     global $wp;
     
     // Check if we're on an order-received page
@@ -545,13 +545,13 @@ function multi_currency_switcher_order_page_currency_symbol($symbol, $currency) 
 }
 
 // Replace the existing currency symbol filter with this more specific one
-remove_filter('woocommerce_currency_symbol', 'multi_currency_switcher_change_currency_symbol', 10);
-add_filter('woocommerce_currency_symbol', 'multi_currency_switcher_order_page_currency_symbol', 10, 2);
+remove_filter('woocommerce_currency_symbol', 'wc_multi_currency_manager_change_currency_symbol', 10);
+add_filter('woocommerce_currency_symbol', 'wc_multi_currency_manager_order_page_currency_symbol', 10, 2);
 
 /**
  * Apply correct formatting for order pages
  */
-function multi_currency_switcher_order_price_format($args) {
+function wc_multi_currency_manager_order_price_format($args) {
     global $wp;
     
     // Check if we're on an order-received page
@@ -565,7 +565,7 @@ function multi_currency_switcher_order_price_format($args) {
             $args['currency'] = $currency;
             
             // Get formatting settings for this currency
-            $currency_settings = get_option('multi_currency_switcher_currency_settings', array());
+            $currency_settings = get_option('wc_multi_currency_manager_currency_settings', array());
             
             if (isset($currency_settings[$currency])) {
                 $settings = $currency_settings[$currency];
@@ -598,12 +598,12 @@ function multi_currency_switcher_order_price_format($args) {
     
     return $args;
 }
-add_filter('wc_price_args', 'multi_currency_switcher_order_price_format', 999);
+add_filter('wc_price_args', 'wc_multi_currency_manager_order_price_format', 999);
 
 /**
  * Ensure price formatting is correct on thank you page
  */
-function multi_currency_switcher_thankyou_page_formatting($formatted_price, $price, $args, $unformatted_price) {
+function wc_multi_currency_manager_thankyou_page_formatting($formatted_price, $price, $args, $unformatted_price) {
     global $wp;
     
     // Check if we're on an order-received page
@@ -620,7 +620,7 @@ function multi_currency_switcher_thankyou_page_formatting($formatted_price, $pri
                 $symbol = $all_currencies[$currency]['symbol'];
                 
                 // Get formatting settings
-                $currency_settings = get_option('multi_currency_switcher_currency_settings', array());
+                $currency_settings = get_option('wc_multi_currency_manager_currency_settings', array());
                 
                 if (isset($currency_settings[$currency])) {
                     $settings = $currency_settings[$currency];
@@ -654,12 +654,12 @@ function multi_currency_switcher_thankyou_page_formatting($formatted_price, $pri
     
     return $formatted_price;
 }
-add_filter('wc_price', 'multi_currency_switcher_thankyou_page_formatting', 999, 4);
+add_filter('wc_price', 'wc_multi_currency_manager_thankyou_page_formatting', 999, 4);
 
 /**
  * Add script to prevent currency switching on order received page
  */
-function multi_currency_switcher_order_received_scripts() {
+function wc_multi_currency_manager_order_received_scripts() {
     global $wp;
     
     // Only add on order received page
@@ -685,4 +685,4 @@ function multi_currency_switcher_order_received_scripts() {
         <?php
     }
 }
-add_action('wp_footer', 'multi_currency_switcher_order_received_scripts');
+add_action('wp_footer', 'wc_multi_currency_manager_order_received_scripts');

@@ -1,5 +1,5 @@
 <?php
-// filepath: c:\xampp\htdocs\Multi-Currency-Switcher-for-WooCommerce\multi-currency-switcher\includes\admin\class-admin-settings.php
+// filepath: c:\xampp\htdocs\wc-multi-currency-manager-for-WooCommerce\wc-multi-currency-manager\includes\admin\class-admin-settings.php
 /**
  * Main Admin Settings Class
  * This class handles the admin menu registration and loads the appropriate settings page.
@@ -15,7 +15,7 @@ require_once plugin_dir_path(__FILE__) . 'class-currencies-settings.php';
 require_once plugin_dir_path(__FILE__) . 'class-style-settings.php';
 require_once plugin_dir_path(__FILE__) . 'class-payment-settings.php';
 
-class Multi_Currency_Switcher_Admin_Settings {
+class wc_multi_currency_manager_Admin_Settings {
 
     /**
      * Instance of each admin page class
@@ -35,10 +35,10 @@ class Multi_Currency_Switcher_Admin_Settings {
         }
         
         // Initialize the admin page classes
-        $this->general_settings = new Multi_Currency_Switcher_General_Settings();
-        $this->currencies_settings = new Multi_Currency_Switcher_Currencies_Settings();
-        $this->style_settings = new Multi_Currency_Switcher_Style_Settings();
-        $this->payment_settings = new Multi_Currency_Switcher_Payment_Settings();
+        $this->general_settings = new wc_multi_currency_manager_General_Settings();
+        $this->currencies_settings = new wc_multi_currency_manager_Currencies_Settings();
+        $this->style_settings = new wc_multi_currency_manager_Style_Settings();
+        $this->payment_settings = new wc_multi_currency_manager_Payment_Settings();
         
         // Add admin menu and settings
         add_action('admin_menu', array($this, 'add_admin_menu'));
@@ -55,48 +55,48 @@ class Multi_Currency_Switcher_Admin_Settings {
      */
     public function add_admin_menu() {
         add_menu_page(
-            'Multi Currency Switcher',
-            'Currency Switcher',
+            'WC Multi Currency Manager',
+            'Currency Manager',
             'manage_options',
-            'multi-currency-switcher',
+            'wc-multi-currency-manager',
             array($this->general_settings, 'render_page'),
             'dashicons-money-alt',
             58 // Position after WooCommerce
         );
 
         add_submenu_page(
-            'multi-currency-switcher',
+            'wc-multi-currency-manager',
             'General Settings',
             'General Settings',
             'manage_options',
-            'multi-currency-switcher',
+            'wc-multi-currency-manager',
             array($this->general_settings, 'render_page')
         );
         
         add_submenu_page(
-            'multi-currency-switcher',
+            'wc-multi-currency-manager',
             'Currencies',
             'Currencies',
             'manage_options',
-            'multi-currency-switcher-currencies',
+            'wc-multi-currency-manager-currencies',
             array($this->currencies_settings, 'render_page')
         );
         
         add_submenu_page(
-            'multi-currency-switcher',
+            'wc-multi-currency-manager',
             'Style Settings',
             'Style Settings',
             'manage_options',
-            'multi-currency-switcher-style',
+            'wc-multi-currency-manager-style',
             array($this->style_settings, 'render_page')
         );
         
         add_submenu_page(
-            'multi-currency-switcher',
+            'wc-multi-currency-manager',
             'Payment Restrictions',
             'Payment Restrictions',
             'manage_options',
-            'multi-currency-switcher-payment',
+            'wc-multi-currency-manager-payment',
             array($this->payment_settings, 'render_page')
         );
     }
@@ -107,20 +107,20 @@ class Multi_Currency_Switcher_Admin_Settings {
     public function register_settings() {
         // Register general settings
         register_setting(
-            'multi_currency_switcher_general_settings',
-            'multi_currency_switcher_general_settings'
+            'wc_multi_currency_manager_general_settings',
+            'wc_multi_currency_manager_general_settings'
         );
         
         // Register style settings
         register_setting(
-            'multi_currency_switcher_style_settings',
-            'multi_currency_switcher_style_settings'
+            'wc_multi_currency_manager_style_settings',
+            'wc_multi_currency_manager_style_settings'
         );
         
         // Register payment restrictions
         register_setting(
-            'multi_currency_switcher_payment_restrictions',
-            'multi_currency_switcher_payment_restrictions'
+            'wc_multi_currency_manager_payment_restrictions',
+            'wc_multi_currency_manager_payment_restrictions'
         );
     }
 
@@ -129,7 +129,7 @@ class Multi_Currency_Switcher_Admin_Settings {
      */
     public function enqueue_admin_scripts($hook) {
         // Only enqueue on our plugin's admin pages
-        if (strpos($hook, 'multi-currency-switcher') === false) {
+        if (strpos($hook, 'wc-multi-currency-manager') === false) {
             return;
         }
 
@@ -144,7 +144,7 @@ class Multi_Currency_Switcher_Admin_Settings {
         wp_enqueue_script('multi-currency-admin-scripts', plugins_url('../../assets/js/admin-scripts.js', __FILE__), array('jquery', 'wp-color-picker'), time(), true);
         
         // Enqueue specific script for currencies page
-        if (strpos($hook, 'multi-currency-switcher-currencies') !== false) {
+        if (strpos($hook, 'wc-multi-currency-manager-currencies') !== false) {
             wp_enqueue_script('multi-currency-admin-currencies', plugins_url('../../assets/js/admin-currencies.js', __FILE__), array('jquery'), time(), true);
         }
     }
@@ -175,7 +175,7 @@ class Multi_Currency_Switcher_Admin_Settings {
         $currency_prices = is_array($currency_prices) ? $currency_prices : array();
         
         // Get enabled currencies
-        $enabled_currencies = get_option('multi_currency_switcher_enabled_currencies', array(get_woocommerce_currency()));
+        $enabled_currencies = get_option('wc_multi_currency_manager_enabled_currencies', array(get_woocommerce_currency()));
         $all_currencies = get_all_available_currencies();
         $base_currency = get_woocommerce_currency();
         ?>
@@ -218,4 +218,4 @@ class Multi_Currency_Switcher_Admin_Settings {
 }
 
 // Initialize the main admin settings class
-new Multi_Currency_Switcher_Admin_Settings();
+new wc_multi_currency_manager_Admin_Settings();

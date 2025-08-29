@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 2000);
         
         // Make AJAX call with timeout
-        fetch('/wp-admin/admin-ajax.php?action=multi_currency_switch&currency=' + currency, {
+        fetch('/wp-admin/admin-ajax.php?action=wc_multi_currency_switch&currency=' + currency, {
             headers: {
                 'Cache-Control': 'no-cache, no-store, must-revalidate'
             },

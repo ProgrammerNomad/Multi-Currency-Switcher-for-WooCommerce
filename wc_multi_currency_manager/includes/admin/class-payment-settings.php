@@ -1,5 +1,5 @@
 <?php
-// filepath: c:\xampp\htdocs\Multi-Currency-Switcher-for-WooCommerce\multi-currency-switcher\includes\admin\class-payment-settings.php
+// filepath: c:\xampp\htdocs\wc-multi-currency-manager-for-WooCommerce\wc-multi-currency-manager\includes\admin\class-payment-settings.php
 /**
  * Payment Settings Page
  */
@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
-class Multi_Currency_Switcher_Payment_Settings {
+class wc_multi_currency_manager_Payment_Settings {
     
     /**
      * Render the payment settings page
@@ -20,11 +20,11 @@ class Multi_Currency_Switcher_Payment_Settings {
         }
         
         // Get current settings
-        $restrictions = get_option('multi_currency_switcher_payment_restrictions', array());
-        $currencies = get_option('multi_currency_switcher_enabled_currencies', array(get_woocommerce_currency()));
+        $restrictions = get_option('wc_multi_currency_manager_payment_restrictions', array());
+        $currencies = get_option('wc_multi_currency_manager_enabled_currencies', array(get_woocommerce_currency()));
         
         // Display any settings errors/notices
-        settings_errors('multi_currency_switcher_messages');
+        settings_errors('wc_multi_currency_manager_messages');
         
         ?>
         <div class="wrap">
@@ -151,10 +151,10 @@ class Multi_Currency_Switcher_Payment_Settings {
         }
         
         // Save the settings
-        update_option('multi_currency_switcher_payment_restrictions', $sanitized_restrictions);
+        update_option('wc_multi_currency_manager_payment_restrictions', $sanitized_restrictions);
         
         add_settings_error(
-            'multi_currency_switcher_messages',
+            'wc_multi_currency_manager_messages',
             'payment_settings_updated',
             'Payment restrictions have been updated successfully.',
             'updated'
@@ -171,8 +171,8 @@ class Multi_Currency_Switcher_Payment_Settings {
         }
 
         // Get existing data to preserve settings for currencies being disabled
-        $existing_exchange_rates = get_option('multi_currency_switcher_exchange_rates', array());
-        $existing_currency_settings = get_option('multi_currency_switcher_currency_settings', array());
+        $existing_exchange_rates = get_option('wc_multi_currency_manager_exchange_rates', array());
+        $existing_currency_settings = get_option('wc_multi_currency_manager_currency_settings', array());
         $base_currency = get_option('woocommerce_currency', 'USD');
         
         // Initialize arrays
@@ -205,12 +205,12 @@ class Multi_Currency_Switcher_Payment_Settings {
         }
         
         // Update options
-        update_option('multi_currency_switcher_enabled_currencies', $enabled_currencies);
-        update_option('multi_currency_switcher_exchange_rates', $exchange_rates);
-        update_option('multi_currency_switcher_currency_settings', $currency_settings);
+        update_option('wc_multi_currency_manager_enabled_currencies', $enabled_currencies);
+        update_option('wc_multi_currency_manager_exchange_rates', $exchange_rates);
+        update_option('wc_multi_currency_manager_currency_settings', $currency_settings);
         
         add_settings_error(
-            'multi_currency_switcher_messages',
+            'wc_multi_currency_manager_messages',
             'currencies_updated',
             'Currencies have been updated successfully.',
             'updated'
@@ -225,19 +225,19 @@ class Multi_Currency_Switcher_Payment_Settings {
     public function display_admin_tabs($current_tab) {
         $tabs = array(
             'general' => array(
-                'url' => 'admin.php?page=multi-currency-switcher',
+                'url' => 'admin.php?page=wc-multi-currency-manager',
                 'label' => 'General Settings'
             ),
             'currencies' => array(
-                'url' => 'admin.php?page=multi-currency-switcher-currencies',
+                'url' => 'admin.php?page=wc-multi-currency-manager-currencies',
                 'label' => 'Currencies'
             ),
             'style' => array(
-                'url' => 'admin.php?page=multi-currency-switcher-style',
+                'url' => 'admin.php?page=wc-multi-currency-manager-style',
                 'label' => 'Style Settings'
             ),
             'payment' => array(
-                'url' => 'admin.php?page=multi-currency-switcher-payment',
+                'url' => 'admin.php?page=wc-multi-currency-manager-payment',
                 'label' => 'Payment Restrictions'
             )
         );

@@ -22,6 +22,52 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Special handling for Nice Select (custom select styling)
+    // Listen for clicks on Nice Select options
+    document.addEventListener('click', function(e) {
+        if (e.target.matches('.nice-select .option')) {
+            console.log('Nice Select option clicked:', e.target);
+            
+            // Find the corresponding original select element
+            const niceSelectDiv = e.target.closest('.nice-select');
+            if (niceSelectDiv) {
+                const originalSelect = niceSelectDiv.previousElementSibling;
+                if (originalSelect && originalSelect.tagName === 'SELECT' && originalSelect.id.includes('currency')) {
+                    const selectedValue = e.target.getAttribute('data-value');
+                    console.log('Nice Select currency change detected:', selectedValue);
+                    
+                    // Update the original select value
+                    originalSelect.value = selectedValue;
+                    
+                    // Trigger the currency change
+                    changeCurrency(selectedValue);
+                }
+            }
+        }
+    });
+
+    // Also listen for MutationObserver to catch when Nice Select updates the original select
+    if (typeof MutationObserver !== 'undefined') {
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
+                    const target = mutation.target;
+                    if (target.tagName === 'SELECT' && target.id.includes('currency')) {
+                        console.log('Select value changed via MutationObserver:', target.value);
+                        changeCurrency(target.value);
+                    }
+                }
+            });
+        });
+
+        // Observe all currency selectors for value changes
+        currencySelectors.forEach(function(selector) {
+            if (selector) {
+                observer.observe(selector, { attributes: true, attributeFilter: ['value'] });
+            }
+        });
+    }
+
     function changeCurrency(currency) {
         console.log('changeCurrency called with:', currency);
         

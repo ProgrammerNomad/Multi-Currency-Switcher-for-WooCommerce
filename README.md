@@ -26,6 +26,28 @@ A professional WooCommerce plugin for multi-currency management, designed to max
 - **Session Management**: Persistent currency selection across user sessions
 - **Cookie-based Storage**: Remember user preferences
 
+### ✅ **Cart & Mini-Cart Features**
+- **Real-time Cart Updates**: Instant price conversion when currency changes
+- **Mini-Cart Fragments**: Proper AJAX updates for mini-cart widget
+- **Cart Page Integration**: Currency information display on cart page
+- **Theme Compatibility**: Works with Storefront and most themes
+- **Performance Optimized**: Efficient cart recalculation with caching
+
+### ✅ **Checkout & Order Management**
+- **Checkout Currency Lock**: Prevents currency switching during checkout process
+- **Order Currency Tracking**: Saves currency and exchange rate with each order
+- **Admin Order Display**: Shows currency information in order details
+- **Order History**: Correct currency display in customer order history
+- **Thank You Page**: Order summary with currency details
+- **Email Integration**: Proper currency formatting in order emails
+
+### ✅ **Enhanced User Experience**
+- **Currency Information**: Clear display of exchange rates and currency details
+- **Loading Indicators**: Visual feedback during currency switches
+- **Error Handling**: Graceful fallbacks and error messages
+- **Browser Compatibility**: Works with all modern browsers
+- **Mobile Responsive**: Touch-friendly currency switchers
+
 ### ✅ **Widget & Display Options**
 - **Sticky Widget**: Optional floating currency switcher
 - **Position Control**: Left/right positioning for sticky widget
@@ -33,11 +55,24 @@ A professional WooCommerce plugin for multi-currency management, designed to max
 - **Flag Support**: Optional country flag display
 - **Shortcode Support**: `[wc_multi_currency_manager]` with parameters
 
+### ✅ **Payment Gateway Integration**
+- **Gateway Filtering**: Show/hide payment methods per currency
+- **Currency-Specific Settings**: Configure gateways for specific currencies
+- **Checkout Validation**: Ensures payment method compatibility
+
+### ✅ **Advanced Features**
+- **HPOS Support**: Compatible with WooCommerce High-Performance Order Storage
+- **Order Columns**: Additional currency columns in admin order lists
+- **Coupon Conversion**: Automatic coupon amount conversion
+- **Shipping Conversion**: Shipping cost calculation in selected currency
+- **Tax Integration**: Proper tax calculation with currency conversion
+
 ### ✅ **Customization & Styling**
 - **Color Customization**: Titles, text, active selection, background, borders
 - **Custom CSS Support**: Advanced styling options
 - **Responsive Design**: Mobile-friendly currency switchers
 - **Theme Compatibility**: Works with most WordPress themes
+- **Nice Select Support**: Compatible with custom select styling plugins
 
 ---
 

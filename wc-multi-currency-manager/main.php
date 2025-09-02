@@ -28,6 +28,11 @@ require_once plugin_dir_path(__FILE__) . 'includes/admin/class-admin-settings.ph
 require_once plugin_dir_path(__FILE__) . 'includes/price-filters.php';
 require_once plugin_dir_path(__FILE__) . 'includes/currency-switcher.php';
 
+// Include new cart, checkout and orders classes
+require_once plugin_dir_path(__FILE__) . 'includes/class-orders.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-checkout.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-cart.php';
+
 // Initialize the plugin
 function wc_multi_currency_manager_init() {
     // Add hooks and filters here

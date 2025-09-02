@@ -115,6 +115,11 @@ class wc_multi_currency_manager_General_Settings {
                                             <input type="checkbox" name="general_settings[auto_detect]" value="yes" <?php checked('yes', isset($general_settings['auto_detect']) ? $general_settings['auto_detect'] : 'yes'); ?>>
                                             Automatically detect and set currency based on visitor's location
                                         </label>
+                                        <p class="description">
+                                            <a href="<?php echo esc_url(admin_url('admin.php?page=wc-multi-currency-manager-currencies#auto-detect-settings')); ?>" class="button button-secondary button-small">
+                                                Configure Country-Currency Mapping
+                                            </a>
+                                        </p>
                                     </td>
                                 </tr>
                                 <tr>

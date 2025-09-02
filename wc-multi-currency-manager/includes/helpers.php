@@ -22,28 +22,74 @@ function get_available_currencies() {
 }
 
 function get_user_country() {
-    if (class_exists('WC_Geolocation')) {
-        $geolocation = new WC_Geolocation();
-        $user_ip = $geolocation->get_ip_address();
-        $location = $geolocation->geolocate_ip($user_ip);
-        return $location['country'] ?? null;
+    if (!class_exists('WC_Geolocation')) {
+        return '';
     }
-    return null;
+    
+    try {
+        $location = WC_Geolocation::geolocate_ip();
+        return isset($location['country']) ? $location['country'] : '';
+    } catch (Exception $e) {
+        error_log('WC Multi Currency Manager: Geolocation error - ' . $e->getMessage());
+        return '';
+    }
 }
 
-function get_currency_by_country($country) {
-    $country_currency_map = [
-        'US' => 'USD',
-        'GB' => 'GBP',
-        'EU' => 'EUR',
-        'JP' => 'JPY',
-        'AU' => 'AUD',
-        'CA' => 'CAD',
-        'CN' => 'CNY',
-        'SE' => 'SEK',
-        'NZ' => 'NZD',
-    ];
-    return $country_currency_map[$country] ?? 'USD'; // Default to USD if no match
+function get_currency_by_country($country_code) {
+    if (empty($country_code)) {
+        return '';
+    }
+    
+    // Get enabled currencies
+    $enabled_currencies = get_option('wc_multi_currency_manager_enabled_currencies', array(get_woocommerce_currency()));
+    
+    // Get custom mappings first (higher priority)
+    $custom_mappings = get_option('wc_multi_currency_manager_country_mappings', array());
+    if (isset($custom_mappings[$country_code]) && in_array($custom_mappings[$country_code], $enabled_currencies)) {
+        return $custom_mappings[$country_code];
+    }
+    
+    // Get default mapping
+    $country_currency_mapping = get_country_currency_mapping();
+    if (isset($country_currency_mapping[$country_code])) {
+        $default_currencies = $country_currency_mapping[$country_code];
+        
+        // Find first enabled currency from the list
+        foreach ($default_currencies as $currency) {
+            if (in_array($currency, $enabled_currencies)) {
+                return $currency;
+            }
+        }
+    }
+    
+    // Fallback to WooCommerce default currency
+    return get_woocommerce_currency();
+}
+
+/**
+ * Get country-currency mapping from data file
+ */
+function get_country_currency_mapping() {
+    static $mapping = null;
+    
+    if ($mapping === null) {
+        $mapping_file = plugin_dir_path(__FILE__) . '../data/countries-currencies.php';
+        if (file_exists($mapping_file)) {
+            $mapping = include $mapping_file;
+        } else {
+            $mapping = array();
+        }
+    }
+    
+    return $mapping;
+}
+
+/**
+ * Check if auto-detection is enabled
+ */
+function is_auto_detect_enabled() {
+    $general_settings = get_option('wc_multi_currency_manager_general_settings', array('auto_detect' => 'yes'));
+    return isset($general_settings['auto_detect']) && $general_settings['auto_detect'] === 'yes';
 }
 
 function wc_multi_currency_manager_get_exchange_rate($currency) {

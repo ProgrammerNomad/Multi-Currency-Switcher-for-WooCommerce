@@ -268,7 +268,7 @@ function wc_multi_currency_manager_read_cookie() {
         }
     }
     // If no currency set yet, try geolocating (only if auto-detect is enabled)
-    else if (!WC()->session->get('chosen_currency') && $general_settings['auto_detect'] === 'yes') {
+    else if (!WC()->session->get('chosen_currency') && is_auto_detect_enabled()) {
         $country = get_user_country();
         $currency = get_currency_by_country($country);
         

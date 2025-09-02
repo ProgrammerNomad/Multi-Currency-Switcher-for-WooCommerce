@@ -134,4 +134,38 @@ jQuery(document).ready(function($) {
         // Remove row
         row.remove();
     });
+
+    // Country search functionality
+    $('#country-search').on('input', function() {
+        var searchTerm = $(this).val().toLowerCase();
+        
+        $('#country-mapping-tbody .country-row').each(function() {
+            var $row = $(this);
+            var countryName = $row.data('country').toLowerCase();
+            var countryCode = $row.data('code').toLowerCase();
+            
+            if (countryName.includes(searchTerm) || countryCode.includes(searchTerm)) {
+                $row.show();
+                if (searchTerm.length > 0) {
+                    $row.addClass('highlight');
+                } else {
+                    $row.removeClass('highlight');
+                }
+            } else {
+                $row.hide().removeClass('highlight');
+            }
+        });
+    });
+
+    // Auto-detect checkbox sync
+    $('#enable-auto-detect').on('change', function() {
+        var isEnabled = $(this).is(':checked');
+        $('input[name="auto_detect_settings[enabled]"]').prop('checked', isEnabled);
+    });
+
+    // Sync the auto-detect setting with general settings
+    $('input[name="auto_detect_settings[enabled]"]').on('change', function() {
+        var isEnabled = $(this).is(':checked');
+        $('#enable-auto-detect').prop('checked', isEnabled);
+    });
 });

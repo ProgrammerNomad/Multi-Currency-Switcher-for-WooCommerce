@@ -40,6 +40,11 @@ class wc_multi_currency_manager_Currencies_Settings {
             $this->save_currencies();
         }
 
+        // Handle saving auto-detect settings if submitted
+        if (isset($_POST['save_auto_detect_settings']) && check_admin_referer('save_auto_detect_settings', 'auto_detect_nonce')) {
+            $this->save_auto_detect_settings();
+        }
+
         // Get all available currencies (for the dropdown)
         $all_currencies = get_all_available_currencies();
         
@@ -47,6 +52,10 @@ class wc_multi_currency_manager_Currencies_Settings {
         $enabled_currencies = get_option('wc_multi_currency_manager_enabled_currencies', array(get_woocommerce_currency()));
         $exchange_rates = get_option('wc_multi_currency_manager_exchange_rates', array());
         $currency_settings = get_option('wc_multi_currency_manager_currency_settings', array());
+
+        // Get auto-detect settings
+        $general_settings = get_option('wc_multi_currency_manager_general_settings', array('auto_detect' => 'yes'));
+        $auto_detect_enabled = isset($general_settings['auto_detect']) ? $general_settings['auto_detect'] : 'yes';
 
         // Get WooCommerce base currency
         $base_currency = get_option('woocommerce_currency', 'USD');
@@ -239,6 +248,122 @@ class wc_multi_currency_manager_Currencies_Settings {
                 </div>
                 </form>
             </div>
+
+            <!-- Auto-Detect Currency Settings Section -->
+            <div class="card" id="auto-detect-settings">
+                <h2>Auto-Detect Currency Settings</h2>
+                <p>Configure currency detection based on visitor's location. Countries can use multiple currencies - the first enabled currency from the list will be selected.</p>
+                
+                <form method="post" action="" id="auto-detect-form">
+                    <?php wp_nonce_field('save_auto_detect_settings', 'auto_detect_nonce'); ?>
+                    
+                    <div class="auto-detect-main-setting">
+                        <table class="form-table">
+                            <tr>
+                                <th scope="row">Enable Auto-Detection</th>
+                                <td>
+                                    <label>
+                                        <input type="checkbox" name="auto_detect_settings[enabled]" value="yes" 
+                                               <?php checked('yes', $auto_detect_enabled); ?>>
+                                        Automatically detect and set currency based on visitor's location
+                                    </label>
+                                    <p class="description">
+                                        This setting is also available in 
+                                        <a href="<?php echo esc_url(admin_url('admin.php?page=wc-multi-currency-manager')); ?>">General Settings</a>
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="country-currency-mapping">
+                        <h3>Country-Currency Mapping</h3>
+                        <p>Customize which currency should be used for each country. Only enabled currencies will be selected.</p>
+                        
+                        <div class="mapping-search">
+                            <input type="text" id="country-search" placeholder="Search countries..." class="regular-text">
+                        </div>
+                        
+                        <div class="mapping-table-container">
+                            <table class="wp-list-table widefat fixed striped">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="manage-column">Country</th>
+                                        <th scope="col" class="manage-column">Country Code</th>
+                                        <th scope="col" class="manage-column">Default Currency</th>
+                                        <th scope="col" class="manage-column">Custom Currency</th>
+                                        <th scope="col" class="manage-column">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="country-mapping-tbody">
+                                    <?php 
+                                    $countries = WC()->countries->get_countries();
+                                    $country_currency_mapping = $this->get_country_currency_mapping();
+                                    $custom_mappings = get_option('wc_multi_currency_manager_country_mappings', array());
+                                    
+                                    foreach ($countries as $country_code => $country_name):
+                                        $default_currencies = isset($country_currency_mapping[$country_code]) ? $country_currency_mapping[$country_code] : array();
+                                        $custom_currency = isset($custom_mappings[$country_code]) ? $custom_mappings[$country_code] : '';
+                                        $has_enabled_currency = false;
+                                        
+                                        // Check if any default or custom currency is enabled
+                                        $all_currencies_for_country = array_merge($default_currencies, array($custom_currency));
+                                        foreach ($all_currencies_for_country as $currency) {
+                                            if ($currency && in_array($currency, $enabled_currencies)) {
+                                                $has_enabled_currency = true;
+                                                break;
+                                            }
+                                        }
+                                    ?>
+                                    <tr class="country-row" data-country="<?php echo esc_attr(strtolower($country_name)); ?>" data-code="<?php echo esc_attr($country_code); ?>">
+                                        <td><strong><?php echo esc_html($country_name); ?></strong></td>
+                                        <td><code><?php echo esc_html($country_code); ?></code></td>
+                                        <td>
+                                            <?php if (!empty($default_currencies)): ?>
+                                                <span class="default-currencies">
+                                                    <?php foreach ($default_currencies as $index => $currency): ?>
+                                                        <span class="currency-code <?php echo in_array($currency, $enabled_currencies) ? 'enabled' : 'disabled'; ?>">
+                                                            <?php echo esc_html($currency); ?>
+                                                        </span><?php echo ($index < count($default_currencies) - 1) ? ', ' : ''; ?>
+                                                    <?php endforeach; ?>
+                                                </span>
+                                            <?php else: ?>
+                                                <span class="no-default">No default</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
+                                            <select name="country_mappings[<?php echo esc_attr($country_code); ?>]" class="custom-currency-select">
+                                                <option value="">-- Use Default --</option>
+                                                <?php foreach ($enabled_currencies as $currency_code): ?>
+                                                    <option value="<?php echo esc_attr($currency_code); ?>" <?php selected($currency_code, $custom_currency); ?>>
+                                                        <?php echo esc_html($currency_code); ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <?php if ($has_enabled_currency): ?>
+                                                <span class="status-active">✓ Active</span>
+                                            <?php else: ?>
+                                                <span class="status-inactive">⚠ No enabled currency</span>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="auto-detect-form-actions">
+                        <p class="submit">
+                            <input type="submit" name="save_auto_detect_settings" class="button-primary" value="Save Auto-Detect Settings">
+                            <button type="button" id="reset-mappings" class="button button-secondary">Reset to Defaults</button>
+                        </p>
+                    </div>
+                </form>
+            </div>
+
             </div> <!-- Close wc-currencies-admin-container -->
         </div>
         <?php
@@ -352,5 +477,44 @@ class wc_multi_currency_manager_Currencies_Settings {
         }
         
         echo '</h2>';
+    }
+
+    /**
+     * Get the default country-currency mapping
+     */
+    private function get_country_currency_mapping() {
+        return include plugin_dir_path(__FILE__) . '../../data/country-currency-mapping.php';
+    }
+
+    /**
+     * Save auto-detect settings
+     */
+    private function save_auto_detect_settings() {
+        // Update the general settings auto-detect option
+        $general_settings = get_option('wc_multi_currency_manager_general_settings', array());
+        $general_settings['auto_detect'] = isset($_POST['auto_detect_settings']['enabled']) ? 'yes' : 'no';
+        update_option('wc_multi_currency_manager_general_settings', $general_settings);
+
+        // Save custom country mappings
+        $country_mappings = array();
+        if (isset($_POST['country_mappings']) && is_array($_POST['country_mappings'])) {
+            foreach ($_POST['country_mappings'] as $country_code => $currency_code) {
+                $country_code = sanitize_text_field($country_code);
+                $currency_code = sanitize_text_field($currency_code);
+                
+                // Only save non-empty custom mappings
+                if (!empty($currency_code)) {
+                    $country_mappings[$country_code] = $currency_code;
+                }
+            }
+        }
+        update_option('wc_multi_currency_manager_country_mappings', $country_mappings);
+
+        add_settings_error(
+            'wc_multi_currency_manager_messages',
+            'auto_detect_updated',
+            'Auto-detect settings have been saved successfully.',
+            'updated'
+        );
     }
 }

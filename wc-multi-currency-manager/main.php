@@ -23,6 +23,7 @@ if (!defined('WP_MAX_MEMORY_LIMIT')) {
 
 // Include files in the correct order
 require_once plugin_dir_path(__FILE__) . 'includes/helpers.php'; // Load helpers first
+require_once plugin_dir_path(__FILE__) . 'includes/geolocation.php'; // Load geolocation functions
 require_once plugin_dir_path(__FILE__) . 'includes/admin/class-admin-settings.php'; // <-- Use this, not admin-settings.php
 require_once plugin_dir_path(__FILE__) . 'includes/price-filters.php';
 require_once plugin_dir_path(__FILE__) . 'includes/currency-switcher.php';
@@ -92,8 +93,8 @@ function wc_multi_currency_manager_woocommerce_notice() {
 
 // AJAX handlers
 function handle_geolocation_currency() {
-    $country = get_user_country();
-    $currency = get_currency_by_country($country);
+    $country = wc_multi_currency_manager_get_user_country();
+    $currency = wc_multi_currency_manager_get_currency_by_country($country);
 
     if ($currency) {
         wp_send_json_success(['currency' => $currency]);

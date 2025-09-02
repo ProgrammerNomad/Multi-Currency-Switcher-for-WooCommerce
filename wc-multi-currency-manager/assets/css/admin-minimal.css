@@ -504,3 +504,108 @@
         width: 100%;
     }
 }
+
+/* Auto-Detect Currency Settings Styles */
+.currency-manager_page_wc-multi-currency-manager-currencies #auto-detect-settings {
+    margin-top: 20px;
+}
+
+.currency-manager_page_wc-multi-currency-manager-currencies .auto-detect-main-setting {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 4px;
+}
+
+.currency-manager_page_wc-multi-currency-manager-currencies .country-currency-mapping h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.currency-manager_page_wc-multi-currency-manager-currencies .mapping-search {
+    margin-bottom: 15px;
+}
+
+.currency-manager_page_wc-multi-currency-manager-currencies #country-search {
+    width: 300px;
+}
+
+.currency-manager_page_wc-multi-currency-manager-currencies .mapping-table-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.currency-manager_page_wc-multi-currency-manager-currencies .mapping-table-container table {
+    margin-bottom: 0;
+}
+
+.currency-manager_page_wc-multi-currency-manager-currencies .country-row {
+    transition: background-color 0.2s ease;
+}
+
+.currency-manager_page_wc-multi-currency-manager-currencies .country-row:hover {
+    background-color: #f0f0f1;
+}
+
+.currency-manager_page_wc-multi-currency-manager-currencies .currency-code {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: bold;
+    margin-right: 4px;
+}
+
+.currency-manager_page_wc-multi-currency-manager-currencies .currency-code.enabled {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.currency-manager_page_wc-multi-currency-manager-currencies .currency-code.disabled {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.currency-manager_page_wc-multi-currency-manager-currencies .no-default {
+    color: #666;
+    font-style: italic;
+}
+
+.currency-manager_page_wc-multi-currency-manager-currencies .status-active {
+    color: #155724;
+    font-weight: bold;
+}
+
+.currency-manager_page_wc-multi-currency-manager-currencies .status-inactive {
+    color: #856404;
+    font-weight: bold;
+}
+
+.currency-manager_page_wc-multi-currency-manager-currencies .custom-currency-select {
+    width: 100%;
+}
+
+/* Country search highlighting */
+.currency-manager_page_wc-multi-currency-manager-currencies .country-row.highlight {
+    background-color: #fff3cd !important;
+}
+
+/* Mobile responsiveness for country mapping table */
+@media screen and (max-width: 782px) {
+    .currency-manager_page_wc-multi-currency-manager-currencies .mapping-table-container {
+        overflow-x: auto;
+    }
+    
+    .currency-manager_page_wc-multi-currency-manager-currencies .mapping-table-container table {
+        min-width: 700px;
+    }
+    
+    .currency-manager_page_wc-multi-currency-manager-currencies #country-search {
+        width: 100%;
+        max-width: 300px;
+    }
+}

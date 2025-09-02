@@ -142,7 +142,11 @@
     margin-top: 20px;
 }
 
-.wc-multi-currency-manager_page_wc-multi-currency-manager-style .wc-style-column-left,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-style .wc-style-column-left {
+    flex: 2;
+    min-width: 0;
+}
+
 .wc-multi-currency-manager_page_wc-multi-currency-manager-style .wc-style-column-right {
     flex: 1;
     min-width: 0;
@@ -156,6 +160,8 @@
 .wc-multi-currency-manager_page_wc-multi-currency-manager-style .wc-style-form-actions {
     text-align: center;
     padding: 10px 0;
+    border-top: 1px solid #e0e0e0;
+    margin-top: 20px;
 }
 
 .wc-multi-currency-manager_page_wc-multi-currency-manager-style .wc-style-preview {
@@ -163,6 +169,7 @@
     background: #f8f9fa;
     border-radius: 4px;
     border: 1px solid #ddd;
+    margin-top: 10px;
 }
 
 .wc-multi-currency-manager_page_wc-multi-currency-manager-style .wc-currency-switcher-preview {
@@ -324,6 +331,11 @@
     .toplevel_page_wc-multi-currency-manager .wc-multi-currency-admin-container,
     .wc-multi-currency-manager_page_wc-multi-currency-manager-style .wc-style-admin-container {
         flex-direction: column;
+    }
+    
+    .wc-multi-currency-manager_page_wc-multi-currency-manager-style .wc-style-column-left,
+    .wc-multi-currency-manager_page_wc-multi-currency-manager-style .wc-style-column-right {
+        flex: 1;
     }
 }
 

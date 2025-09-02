@@ -40,14 +40,16 @@ class wc_multi_currency_manager_Style_Settings {
             
             <p>Customize the appearance of currency widgets and shortcodes used in your shop.</p>
             
-            <form method="post" action="">
-                <?php wp_nonce_field('save_style_settings', 'style_settings_nonce'); ?>
-                
-                <div class="wc-style-admin-container">
-                    <!-- Colors Section -->
-                    <div class="wc-style-column-left">
+            <div class="wc-style-admin-container">
+                <!-- Left Column: Combined Settings Form -->
+                <div class="wc-style-column-left">
+                    <form method="post" action="">
+                        <?php wp_nonce_field('save_style_settings', 'style_settings_nonce'); ?>
+                        
                         <div class="card">
-                            <h2>Widget Colors</h2>
+                            <h2>Style Settings</h2>
+                            
+                            <h3>Widget Colors</h3>
                             <p>Set the colors of all the currency widgets and switchers in your shop.</p>
                             
                             <table class="form-table">
@@ -92,28 +94,21 @@ class wc_multi_currency_manager_Style_Settings {
                                     </td>
                                 </tr>
                             </table>
-                        </div>
-                    </div>
-                    
-                    <!-- Custom CSS Section -->
-                    <div class="wc-style-column-right">
-                        <div class="card">
-                            <h2>Custom CSS</h2>
+
+                            <h3>Custom CSS</h3>
                             <p>Add custom CSS to further style the currency switcher widgets.</p>
                             
                             <table class="form-table">
                                 <tr>
                                     <th scope="row">Custom CSS</th>
                                     <td>
-                                        <textarea name="style_settings[custom_css]" rows="15" class="large-text code"><?php echo esc_textarea($style_settings['custom_css']); ?></textarea>
+                                        <textarea name="style_settings[custom_css]" rows="10" class="large-text code"><?php echo esc_textarea($style_settings['custom_css']); ?></textarea>
                                         <p class="description">Add custom CSS rules to override the default styles</p>
                                     </td>
                                 </tr>
                             </table>
-                        </div>
-                        
-                        <div class="card">
-                            <h2>Style Preview</h2>
+
+                            <h3>Style Preview</h3>
                             <p>Preview how your currency switcher will look with the selected colors:</p>
                             <div class="wc-style-preview" id="style-preview">
                                 <div class="wc-currency-switcher-preview">
@@ -125,53 +120,54 @@ class wc_multi_currency_manager_Style_Settings {
                                     </select>
                                 </div>
                             </div>
+
+                            <div class="wc-style-form-actions">
+                                <p class="submit">
+                                    <input type="submit" name="save_style_settings" class="button-primary" value="Save Style Settings">
+                                </p>
+                            </div>
                         </div>
-                    </div>
+                    </form>
                 </div>
                 
-                <div class="card">
-                    <div class="wc-style-form-actions">
-                        <p class="submit">
-                            <input type="submit" name="save_style_settings" class="button-primary" value="Save Style Settings">
-                        </p>
+                <!-- Right Column: Style Shortcode Examples -->
+                <div class="wc-style-column-right">
+                    <div class="card">
+                        <h2>Style Shortcode Examples</h2>
+                        <p>Use these shortcode examples to customize the appearance of your currency switchers:</p>
+                        
+                        <table class="widefat">
+                            <thead>
+                                <tr>
+                                    <th>Shortcode</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>[wc_multi_currency_manager]</code></td>
+                                    <td>Default currency switcher using the style settings configured on this page</td>
+                                </tr>
+                                <tr>
+                                    <td><code>[wc_multi_currency_manager style="buttons"]</code></td>
+                                    <td>Currency switcher with button style</td>
+                                </tr>
+                                <tr>
+                                    <td><code>[wc_multi_currency_manager style="links"]</code></td>
+                                    <td>Currency switcher with text links style</td>
+                                </tr>
+                                <tr>
+                                    <td><code>[wc_multi_currency_manager title="Select Your Currency"]</code></td>
+                                    <td>Currency switcher with custom title</td>
+                                </tr>
+                                <tr>
+                                    <td><code>[wc_multi_currency_manager currencies="USD,EUR,GBP"]</code></td>
+                                    <td>Currency switcher limited to specific currencies</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-            </form>
-            
-            <div class="card">
-                <h2>Style Shortcode Examples</h2>
-                <p>Use these shortcode examples to customize the appearance of your currency switchers:</p>
-                
-                <table class="widefat">
-                    <thead>
-                        <tr>
-                            <th>Shortcode</th>
-                            <th>Description</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><code>[wc_multi_currency_manager]</code></td>
-                            <td>Default currency switcher using the style settings configured on this page</td>
-                        </tr>
-                        <tr>
-                            <td><code>[wc_multi_currency_manager style="buttons"]</code></td>
-                            <td>Currency switcher with button style</td>
-                        </tr>
-                        <tr>
-                            <td><code>[wc_multi_currency_manager style="links"]</code></td>
-                            <td>Currency switcher with text links style</td>
-                        </tr>
-                        <tr>
-                            <td><code>[wc_multi_currency_manager title="Select Your Currency"]</code></td>
-                            <td>Currency switcher with custom title</td>
-                        </tr>
-                        <tr>
-                            <td><code>[wc_multi_currency_manager currencies="USD,EUR,GBP"]</code></td>
-                            <td>Currency switcher limited to specific currencies</td>
-                        </tr>
-                    </tbody>
-                </table>
             </div>
         </div>
         <?php

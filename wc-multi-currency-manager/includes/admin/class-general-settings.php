@@ -100,19 +100,7 @@ class wc_multi_currency_manager_General_Settings {
             <!-- Two-column layout container -->
             <div class="wc-multi-currency-admin-container">
                 <!-- Left Column -->
-                <div class="wc-multi-currency-column-left">
-                    <div class="card">
-                        <h2>Plugin Overview</h2>
-                        <p>WC Multi Currency Manager allows your customers to shop in their preferred currency. Key features include:</p>
-                        <ul style="list-style-type: disc; margin-left: 20px;">
-                            <li>Support for multiple currencies with automatic exchange rate updates</li>
-                            <li>Geolocation-based currency detection</li>
-                            <li>Custom currency formatting options</li>
-                            <li>Product-specific pricing for each currency</li>
-                            <li>Currency switcher widgets and shortcodes</li>
-                        </ul>
-                    </div>
-                    
+                <div class="wc-multi-currency-column-left">                    
                     <div class="card">
                         <h2>Settings Configuration</h2>
                         <form method="post" action="">
@@ -267,7 +255,7 @@ class wc_multi_currency_manager_General_Settings {
                         <h2>Shortcodes</h2>
                         <p>Use these shortcodes to add currency switchers to your site:</p>
                         
-                        <table class="widefat" style="width: 100%;">
+                        <table class="widefat">
                             <thead>
                                 <tr>
                                     <th>Shortcode</th>
@@ -293,61 +281,6 @@ class wc_multi_currency_manager_General_Settings {
                 </div>
             </div>
         </div>
-        <style>
-            .wc-multi-currency-admin-container {
-                display: flex;
-                gap: 20px;
-                margin-top: 20px;
-            }
-            
-            .wc-multi-currency-column-left,
-            .wc-multi-currency-column-right {
-                flex: 1;
-                min-width: 0;
-            }
-            
-            .wc-multi-currency-column-left .card,
-            .wc-multi-currency-column-right .card {
-                margin-bottom: 20px;
-            }
-            
-            .wc-multi-currency-form-actions {
-                text-align: center;
-                padding: 20px 0;
-                border-top: 1px solid #e0e0e0;
-                margin-top: 30px;
-            }
-            
-            .card {
-                background: #fff;
-                border: 1px solid #ccd0d4;
-                border-radius: 4px;
-                padding: 20px;
-                margin-bottom: 20px;
-                box-shadow: 0 1px 1px rgba(0,0,0,.04);
-            }
-            
-            .card h3 {
-                margin-top: 30px;
-                margin-bottom: 15px;
-                padding-top: 20px;
-                border-top: 1px solid #f0f0f0;
-                color: #23282d;
-                font-size: 16px;
-            }
-            
-            .card h3:first-of-type {
-                margin-top: 0;
-                padding-top: 0;
-                border-top: none;
-            }
-            
-            @media screen and (max-width: 1200px) {
-                .wc-multi-currency-admin-container {
-                    flex-direction: column;
-                }
-            }
-        </style>
         <?php
     }
 

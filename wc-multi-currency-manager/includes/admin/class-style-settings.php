@@ -105,7 +105,7 @@ class wc_multi_currency_manager_Style_Settings {
                                 <tr>
                                     <th scope="row">Custom CSS</th>
                                     <td>
-                                        <textarea name="style_settings[custom_css]" rows="15" class="large-text code" style="width: 100%; font-family: monospace;"><?php echo esc_textarea($style_settings['custom_css']); ?></textarea>
+                                        <textarea name="style_settings[custom_css]" rows="15" class="large-text code"><?php echo esc_textarea($style_settings['custom_css']); ?></textarea>
                                         <p class="description">Add custom CSS rules to override the default styles</p>
                                     </td>
                                 </tr>
@@ -142,7 +142,7 @@ class wc_multi_currency_manager_Style_Settings {
                 <h2>Style Shortcode Examples</h2>
                 <p>Use these shortcode examples to customize the appearance of your currency switchers:</p>
                 
-                <table class="widefat" style="width: 100%;">
+                <table class="widefat">
                     <thead>
                         <tr>
                             <th>Shortcode</th>
@@ -174,83 +174,6 @@ class wc_multi_currency_manager_Style_Settings {
                 </table>
             </div>
         </div>
-        
-        <style>
-        .wc-style-admin-container {
-            display: flex;
-            gap: 20px;
-            margin-top: 20px;
-        }
-        
-        .wc-style-column-left,
-        .wc-style-column-right {
-            flex: 1;
-            min-width: 0;
-        }
-        
-        .wc-style-column-left .card,
-        .wc-style-column-right .card {
-            margin-bottom: 20px;
-        }
-        
-        .wc-style-form-actions {
-            text-align: center;
-            padding: 10px 0;
-        }
-        
-        .wc-style-preview {
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 4px;
-            border: 1px solid #ddd;
-        }
-        
-        .wc-currency-switcher-preview {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .preview-title {
-            font-weight: 600;
-            color: var(--title-color, #333333);
-        }
-        
-        .preview-dropdown {
-            padding: 8px 12px;
-            border: 1px solid var(--border-color, #B2B2B2);
-            background: var(--background-color, #FFFFFF);
-            color: var(--text-color, #000000);
-            border-radius: 4px;
-        }
-        
-        .preview-dropdown:focus {
-            border-color: var(--active-color, #04AE93);
-            box-shadow: 0 0 0 1px var(--active-color, #04AE93);
-        }
-        
-        .card {
-            background: #fff;
-            border: 1px solid #ccd0d4;
-            border-radius: 4px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 1px 1px rgba(0,0,0,.04);
-        }
-        
-        @media screen and (max-width: 1200px) {
-            .wc-style-admin-container {
-                flex-direction: column;
-            }
-        }
-        
-        @media screen and (max-width: 768px) {
-            .wc-currency-switcher-preview {
-                flex-direction: column;
-                align-items: stretch;
-            }
-        }
-        </style>
         <?php
     }
 

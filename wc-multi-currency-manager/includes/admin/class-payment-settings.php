@@ -34,10 +34,10 @@ class wc_multi_currency_manager_Payment_Settings {
             
             <p>Control which payment methods are available for each currency. Check a payment method to disable it for that currency.</p>
             
-            <div class="card" style="margin-top: 20px;">
+            <div class="card">
                 <h2>Why Restrict Payment Methods?</h2>
                 <p>Some payment gateways may charge higher fees for processing certain currencies, or may not support all currencies. By restricting payment methods for specific currencies, you can:</p>
-                <ul style="list-style-type: disc; margin-left: 20px;">
+                <ul>
                     <li>Avoid higher processing fees for certain currency/payment method combinations</li>
                     <li>Prevent checkout errors when a payment gateway doesn't support a currency</li>
                     <li>Direct customers to preferred payment methods for each currency</li>
@@ -100,15 +100,15 @@ class wc_multi_currency_manager_Payment_Settings {
                 }
                 ?>
                 
-                <p class="submit" style="margin-top: 20px;">
+                <p class="submit">
                     <input type="submit" name="save_payment_settings" class="button-primary" value="Save Payment Restrictions">
                 </p>
             </form>
             
-            <div class="card" style="margin-top: 20px;">
+            <div class="card">
                 <h2>How It Works</h2>
                 <p>When a customer selects a currency on your site:</p>
-                <ol style="list-style-type: decimal; margin-left: 20px;">
+                <ol>
                     <li>The plugin checks the payment restrictions for that currency</li>
                     <li>Any disabled payment methods are hidden from the checkout page</li>
                     <li>The customer can only choose from the allowed payment methods</li>
@@ -116,17 +116,6 @@ class wc_multi_currency_manager_Payment_Settings {
                 <p><strong>Note:</strong> If you've disabled all payment methods for a currency, the customer will not be able to complete checkout. Make sure to leave at least one payment method available for each currency.</p>
             </div>
         </div>
-        
-        <style>
-        .card {
-            background: #fff;
-            border: 1px solid #ccd0d4;
-            border-radius: 4px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 1px 1px rgba(0,0,0,.04);
-        }
-        </style>
         <?php
     }
 

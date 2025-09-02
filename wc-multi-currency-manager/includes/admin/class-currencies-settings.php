@@ -73,7 +73,7 @@ class wc_multi_currency_manager_Currencies_Settings {
                     </div>
                     <div class="wc-currency-info-item">
                         <p><strong>Last Exchange Rate Update:</strong> <?php echo esc_html($last_updated_text); ?></p>
-                        <form method="post" action="" style="margin-top: 10px;">
+                        <form method="post" action="">
                             <?php wp_nonce_field('update_exchange_rates', 'update_rates_nonce'); ?>
                             <input type="submit" name="update_exchange_rates" class="button button-secondary" value="Update Exchange Rates Now">
                         </form>
@@ -86,19 +86,19 @@ class wc_multi_currency_manager_Currencies_Settings {
                 <p>Manage your store's currencies, exchange rates, and formatting options. The base currency is automatically included and cannot be disabled.</p>
                 <form method="post" action="" id="currencies-form">
                     <?php wp_nonce_field('save_currencies', 'currencies_nonce'); ?>
-                <div class="currency-table-container" style="max-width: 100%; overflow-x: auto;">
+                <div class="currency-table-container">
                     <table class="wp-list-table widefat fixed striped">
                         <thead>
                             <tr>
-                                <th style="width: 60px;">Action</th>
-                                <th style="width: 50px;">Currency<br>Code</th>
-                                <th style="width: 180px;">Currency</th>
-                                <th style="width: 40px;">Symbol</th>
-                                <th style="width: 70px;">Exchange Rate<br>(1 <?php echo esc_html($base_currency); ?> =)</th>
-                                <th style="width: 50px;">Position</th>
-                                <th style="width: 40px;">Decimals</th>
-                                <th style="width: 40px;">Thousand<br>Separator</th>
-                                <th style="width: 40px;">Decimal<br>Separator</th>
+                                <th>Action</th>
+                                <th>Currency<br>Code</th>
+                                <th>Currency</th>
+                                <th>Symbol</th>
+                                <th>Exchange Rate<br>(1 <?php echo esc_html($base_currency); ?> =)</th>
+                                <th>Position</th>
+                                <th>Decimals</th>
+                                <th>Thousand<br>Separator</th>
+                                <th>Decimal<br>Separator</th>
                             </tr>
                         </thead>
                         <tbody id="enabled-currencies">

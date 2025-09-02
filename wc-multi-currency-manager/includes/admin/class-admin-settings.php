@@ -133,8 +133,8 @@ class wc_multi_currency_manager_Admin_Settings {
             return;
         }
 
-        // Add our admin styles with debugging query string to avoid caching
-        wp_enqueue_style('multi-currency-admin-styles', plugins_url('../../assets/css/admin-styles.css', __FILE__), array(), time());
+        // Use minimal CSS that leverages WordPress built-in styles
+        wp_enqueue_style('wc-multi-currency-admin-minimal', plugins_url('../../assets/css/admin-minimal.css', __FILE__), array(), time());
         
         // Enqueue color picker script and style
         wp_enqueue_style('wp-color-picker');
@@ -145,7 +145,7 @@ class wc_multi_currency_manager_Admin_Settings {
         
         // Enqueue specific script for currencies page
         if (strpos($hook, 'wc-multi-currency-manager-currencies') !== false) {
-            wp_enqueue_script('multi-currency-admin-currencies', plugins_url('../../assets/js/admin-currencies.js', __FILE__), array('jquery'), time(), true);
+            wp_enqueue_script('multi-currency-admin-currencies', plugins_url('../../assets/js/admin-currencies-responsive.js', __FILE__), array('jquery'), time(), true);
         }
     }
     

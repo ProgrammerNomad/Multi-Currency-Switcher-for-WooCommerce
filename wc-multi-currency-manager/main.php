@@ -258,12 +258,13 @@ function wc_multi_currency_manager_widget_display_control() {
     
     // Remove the sticky widget if needed
     if ($position === 'products_only' || $position === 'none' || $show_sticky === 'no') {
-        remove_action('wp_footer', 'multi_currency_switcher_display_sticky_widget');
+        remove_action('wp_footer', 'wc_multi_currency_manager_display_sticky_widget');
     }
     
-    // Remove the product page widget if needed
+    // Remove the product page widget if needed - but only if it was actually added
     if ($position === 'sticky_only' || $position === 'none') {
-        remove_action('woocommerce_single_product_summary', 'multi_currency_switcher_display_on_product_page', 25);
+        remove_action('woocommerce_single_product_summary', 'wc_multi_currency_manager_display_on_product_page', 25);
+        remove_action('woocommerce_single_product_summary', 'wc_multi_currency_manager_test_product_page', 24);
     }
 }
-add_action('wp', 'wc_multi_currency_manager_widget_display_control');
+add_action('wp', 'wc_multi_currency_manager_widget_display_control', 20);

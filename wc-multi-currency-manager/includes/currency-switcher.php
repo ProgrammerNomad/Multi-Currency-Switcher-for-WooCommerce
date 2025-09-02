@@ -33,6 +33,12 @@ class CurrencySwitcher {
     public function enqueue_scripts() {
         wp_enqueue_script( 'currency-switcher', plugins_url( '../assets/js/scripts.js', __FILE__ ), array( 'jquery' ), null, true );
         wp_enqueue_style( 'currency-switcher-style', plugins_url( '../assets/css/styles.css', __FILE__ ) );
+        
+        // Localize script with AJAX URL
+        wp_localize_script( 'currency-switcher', 'currencySwitcherAjax', array(
+            'ajax_url' => admin_url( 'admin-ajax.php' ),
+            'nonce' => wp_create_nonce( 'currency_switcher_nonce' )
+        ));
     }
 
     public function switch_currency($cart_contents) {
@@ -177,7 +183,7 @@ function wc_multi_currency_manager_filter_payment_gateways($available_gateways) 
 
     return $available_gateways;
 }
-add_filter('woocommerce_available_payment_gateways', 'wc_multi_currency_manager_filter_payment_gateways', 20); // Ensure it runs after WooCommerce initialization
+add_filter('woocommerce_available_payment_gateways', 'wc_multi_currency_manager_filter_payment_gateways', 20);
 
 function wc_multi_currency_manager_display_sticky_widget() {
     $style_settings = get_option('wc_multi_currency_manager_style_settings', array(
@@ -215,9 +221,20 @@ function wc_multi_currency_manager_display_sticky_widget() {
 add_action('wp_footer', 'wc_multi_currency_manager_display_sticky_widget');
 
 function wc_multi_currency_manager_display_on_product_page() {
+    // Only display if we're on a single product page
+    if (!is_product()) {
+        return;
+    }
+    
     $currencies = get_available_currencies();
+    
+    // Check if we have any currencies
+    if (empty($currencies)) {
+        return;
+    }
+    
     $current_currency = (function_exists('WC') && WC() && WC()->session) ? 
-        WC()->session->get('chosen_currency', 'USD') : 'USD';
+        WC()->session->get('chosen_currency', get_woocommerce_currency()) : get_woocommerce_currency();
     
     echo '<div class="product-currency-switcher">';
     echo '<label for="product-currency-selector">Currency:</label>';
@@ -231,7 +248,15 @@ function wc_multi_currency_manager_display_on_product_page() {
     echo '</select>';
     echo '</div>';
 }
-add_action('woocommerce_single_product_summary', 'wc_multi_currency_manager_display_on_product_page', 25);
+
+// Register the product page currency switcher after WooCommerce is loaded
+function wc_multi_currency_manager_register_product_hooks() {
+    // Only add if WooCommerce is available
+    if (class_exists('WooCommerce')) {
+        add_action('woocommerce_single_product_summary', 'wc_multi_currency_manager_display_on_product_page', 25);
+    }
+}
+add_action('wp_loaded', 'wc_multi_currency_manager_register_product_hooks');
 
 function wc_multi_currency_manager_read_cookie() {
     if (!function_exists('WC') || !WC()->session) {
@@ -403,7 +428,6 @@ function get_country_code_for_currency($currency) {
 }
 
 // Add this function to ensure AJAX requests use the correct currency:
-
 function wc_multi_currency_manager_set_ajax_currency() {
     if (defined('DOING_AJAX') && DOING_AJAX) {
         if (isset($_COOKIE['chosen_currency'])) {
@@ -432,4 +456,3 @@ function wc_multi_currency_manager_storefront_compatibility() {
     }
 }
 add_action('wp_loaded', 'wc_multi_currency_manager_storefront_compatibility');
-?>

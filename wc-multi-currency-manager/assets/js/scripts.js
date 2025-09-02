@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Currency switcher JavaScript loaded');
+    
     // Currency selectors
     const currencySelectors = [
         document.getElementById('currency-selector'),
@@ -7,18 +9,25 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('currency-switcher')
     ];
 
+    console.log('Found currency selectors:', currencySelectors);
+
     // Add event listeners to all currency selectors that exist
     currencySelectors.forEach(function(selector) {
         if (selector) {
+            console.log('Adding event listener to:', selector.id);
             selector.addEventListener('change', function() {
+                console.log('Currency change detected:', this.value);
                 changeCurrency(this.value);
             });
         }
     });
 
     function changeCurrency(currency) {
+        console.log('changeCurrency called with:', currency);
+        
         // Create or update the cookie (30 days expiry)
         document.cookie = "chosen_currency=" + currency + "; path=/; max-age=2592000";
+        console.log('Cookie set for currency:', currency);
         
         // Show a loading indicator
         showLoadingIndicator();
@@ -29,8 +38,16 @@ document.addEventListener('DOMContentLoaded', function() {
             reloadPage(currency);
         }, 2000);
         
+        // Get AJAX URL from localized script or fallback to relative URL
+        const ajaxUrl = (typeof currencySwitcherAjax !== 'undefined' && currencySwitcherAjax.ajax_url) 
+            ? currencySwitcherAjax.ajax_url 
+            : '/wp-admin/admin-ajax.php';
+        
+        console.log('Using AJAX URL:', ajaxUrl);
+        console.log('currencySwitcherAjax object:', currencySwitcherAjax);
+        
         // Make AJAX call with timeout
-        fetch('/wp-admin/admin-ajax.php?action=wc_multi_currency_switch&currency=' + currency, {
+        fetch(ajaxUrl + '?action=wc_multi_currency_switch&currency=' + currency, {
             headers: {
                 'Cache-Control': 'no-cache, no-store, must-revalidate'
             },
@@ -94,8 +111,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Don't try to access elements that might not exist
     const currencyDisplay = document.getElementById('current-currency');
     if (currencyDisplay) {
-        // Fetch geolocation-based currency
-        fetch('/wp-admin/admin-ajax.php?action=get_geolocation_currency')
+        // Get AJAX URL from localized script or fallback to relative URL
+        const ajaxUrl = (typeof currencySwitcherAjax !== 'undefined' && currencySwitcherAjax.ajax_url) 
+            ? currencySwitcherAjax.ajax_url 
+            : '/wp-admin/admin-ajax.php';
+            
+                // Fetch geolocation-based currency
+        fetch(currencySwitcherAjax.ajax_url + '?action=get_geolocation_currency')
             .then(response => response.json())
             .then(data => {
                 if (data.success) {

@@ -278,7 +278,7 @@ function wc_multi_currency_manager_read_cookie() {
             $currency_changed = true;
         } else {
             // Use default currency
-            $default_currency = $general_settings['default_currency'];
+            $default_currency = isset($general_settings['default_currency']) ? $general_settings['default_currency'] : get_woocommerce_currency();
             if (array_key_exists($default_currency, $available_currencies)) {
                 WC()->session->set('chosen_currency', $default_currency);
                 setcookie('chosen_currency', $default_currency, time() + (86400 * 30), '/');
@@ -287,8 +287,8 @@ function wc_multi_currency_manager_read_cookie() {
         }
     }
     // If auto-detect is disabled and no currency is set, use the default
-    else if (!WC()->session->get('chosen_currency') && $general_settings['auto_detect'] !== 'yes') {
-        $default_currency = $general_settings['default_currency'];
+    else if (!WC()->session->get('chosen_currency') && (!isset($general_settings['auto_detect']) || $general_settings['auto_detect'] !== 'yes')) {
+        $default_currency = isset($general_settings['default_currency']) ? $general_settings['default_currency'] : get_woocommerce_currency();
         if (array_key_exists($default_currency, $available_currencies)) {
             WC()->session->set('chosen_currency', $default_currency);
             setcookie('chosen_currency', $default_currency, time() + (86400 * 30), '/');
@@ -362,7 +362,7 @@ function wc_multi_currency_manager_add_dynamic_styles() {
         }
         
         .sticky-currency-switcher {
-            " . get_sticky_position_css($style_settings['sticky_position']) . "
+            " . get_sticky_position_css(isset($style_settings['sticky_position']) ? $style_settings['sticky_position'] : 'left') . "
             background-color: {$style_settings['background_color']};
             border: 1px solid {$style_settings['border_color']};
             padding: 10px 15px;

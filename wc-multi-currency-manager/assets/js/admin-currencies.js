@@ -135,17 +135,28 @@ jQuery(document).ready(function($) {
         row.remove();
     });
 
-    // Country search functionality
+    // Country search functionality - improved version
     $('#country-search').on('input', function() {
-        var searchTerm = $(this).val().toLowerCase();
+        var searchTerm = $(this).val().toLowerCase().trim();
+        var totalRows = 0;
+        var visibleRows = 0;
         
-        $('#country-mapping-tbody .country-row').each(function() {
+        $('#country-mapping-tbody tr.country-row').each(function() {
             var $row = $(this);
-            var countryName = $row.data('country').toLowerCase();
-            var countryCode = $row.data('code').toLowerCase();
+            totalRows++;
             
-            if (countryName.includes(searchTerm) || countryCode.includes(searchTerm)) {
+            // Get search text from multiple sources
+            var countryName = $row.find('td:first strong').text().toLowerCase();
+            var countryCode = $row.find('td:nth-child(2) code').text().toLowerCase();
+            var searchText = countryName + ' ' + countryCode;
+            
+            var isVisible = searchTerm === '' || searchText.includes(searchTerm);
+            
+            if (isVisible) {
                 $row.show();
+                visibleRows++;
+                
+                // Add highlight if there's a search term
                 if (searchTerm.length > 0) {
                     $row.addClass('highlight');
                 } else {
@@ -155,6 +166,9 @@ jQuery(document).ready(function($) {
                 $row.hide().removeClass('highlight');
             }
         });
+        
+        // Optional: Show search result count
+        console.log('Country search: ' + visibleRows + ' of ' + totalRows + ' countries shown');
     });
 
     // Auto-detect checkbox sync

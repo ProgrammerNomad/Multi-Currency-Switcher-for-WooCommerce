@@ -64,7 +64,8 @@ class wc_multi_currency_manager_Currencies_Settings {
             
             <p>Select currencies to enable in your shop and set their exchange rates.</p>
 
-            <div class="notice notice-info">
+            <div class="card">
+                <h2>Exchange Rate Information</h2>
                 <p>
                     <strong>Base Currency:</strong> <?php echo esc_html($base_currency); ?> 
                     (set in <a href="<?php echo esc_url(admin_url('admin.php?page=wc-settings&tab=general')); ?>">WooCommerce Settings</a>)
@@ -79,8 +80,10 @@ class wc_multi_currency_manager_Currencies_Settings {
                 </form>
             </div>
 
-            <form method="post" action="" id="currencies-form">
-                <?php wp_nonce_field('save_currencies', 'currencies_nonce'); ?>
+            <div class="card" style="margin-top: 20px;">
+                <h2>Enabled Currencies</h2>
+                <form method="post" action="" id="currencies-form">
+                    <?php wp_nonce_field('save_currencies', 'currencies_nonce'); ?>
                 <div class="currency-table-container" style="max-width: 100%; overflow-x: auto;">
                     <table class="wp-list-table widefat fixed striped">
                         <thead>
@@ -226,10 +229,19 @@ class wc_multi_currency_manager_Currencies_Settings {
                 <p class="submit">
                     <input type="submit" name="save_currencies" class="button-primary" value="Save Currencies">
                 </p>
-            </form>
+                </form>
+            </div>
         </div>
         
         <style>
+        .card {
+            background: #fff;
+            border: 1px solid #ccd0d4;
+            border-radius: 4px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 1px rgba(0,0,0,.04);
+        }
         /* Styling for currency table */
         .base-currency {
             background-color: #f7fcff !important;

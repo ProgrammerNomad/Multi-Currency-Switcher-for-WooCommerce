@@ -4,7 +4,8 @@
  * Description: A professional WooCommerce plugin for multi-currency management, designed to maximize international sales by allowing customers to view and pay in their local currency.
  * Version: 1.0.0
  * Author: ProgrammerNomad
- * Author URI: https://github.com/ProgrammerNomad
+ * Author URI: https://github.com/ProgrammerNomad/WC-Multi-Currency-Manager
+ * Plugin URI: https://github.com/ProgrammerNomad/WC-Multi-Currency-Manager
  * License: MIT
  * Text Domain: wc-multi-currency-manager
  * Domain Path: /languages
@@ -34,8 +35,51 @@ function wc_multi_currency_manager_init() {
         add_action('admin_notices', 'wc_multi_currency_manager_woocommerce_notice');
         return;
     }
+    
+    // Run migration on init
+    wc_multi_currency_manager_migrate_settings();
 }
 add_action('plugins_loaded', 'wc_multi_currency_manager_init');
+
+/**
+ * Migrate style settings to general settings
+ */
+function wc_multi_currency_manager_migrate_settings() {
+    // Check if migration has already been done
+    $migration_done = get_option('wc_multi_currency_manager_migration_done', false);
+    
+    if (!$migration_done) {
+        // Get existing style settings
+        $style_settings = get_option('wc_multi_currency_manager_style_settings', array());
+        $general_settings = get_option('wc_multi_currency_manager_general_settings', array());
+        
+        // Migrate specific fields from style to general settings
+        $fields_to_migrate = array('show_sticky_widget', 'sticky_position', 'limit_currencies', 'show_flags', 'widget_style');
+        
+        foreach ($fields_to_migrate as $field) {
+            if (isset($style_settings[$field]) && !isset($general_settings[$field])) {
+                $general_settings[$field] = $style_settings[$field];
+                // Remove from style settings
+                unset($style_settings[$field]);
+            }
+        }
+        
+        // Update both settings
+        update_option('wc_multi_currency_manager_general_settings', $general_settings);
+        update_option('wc_multi_currency_manager_style_settings', $style_settings);
+        
+        // Mark migration as complete
+        update_option('wc_multi_currency_manager_migration_done', true);
+    }
+}
+
+// Add plugin action links
+function wc_multi_currency_manager_add_action_links($links) {
+    $settings_link = '<a href="' . admin_url('admin.php?page=wc-multi-currency-manager') . '">' . __('Settings', 'wc-multi-currency-manager') . '</a>';
+    array_unshift($links, $settings_link);
+    return $links;
+}
+add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'wc_multi_currency_manager_add_action_links');
 
 // Display notice if WooCommerce is not active
 function wc_multi_currency_manager_woocommerce_notice() {
@@ -202,15 +246,17 @@ add_action('wp_ajax_nopriv_wc_multi_currency_switch', 'wc_multi_currency_manager
 
 // Add after the other functions
 function wc_multi_currency_manager_widget_display_control() {
-    // Get display settings
+    // Get display settings from general settings now
     $general_settings = get_option('wc_multi_currency_manager_general_settings', array(
         'widget_position' => 'both',
+        'show_sticky_widget' => 'yes',
     ));
     
     $position = isset($general_settings['widget_position']) ? $general_settings['widget_position'] : 'both';
+    $show_sticky = isset($general_settings['show_sticky_widget']) ? $general_settings['show_sticky_widget'] : 'yes';
     
     // Remove the sticky widget if needed
-    if ($position === 'products_only' || $position === 'none') {
+    if ($position === 'products_only' || $position === 'none' || $show_sticky === 'no') {
         remove_action('wp_footer', 'multi_currency_switcher_display_sticky_widget');
     }
     

@@ -19,6 +19,11 @@ class wc_multi_currency_manager_General_Settings {
             'auto_detect' => 'yes',
             'widget_position' => 'both',
             'default_currency' => get_woocommerce_currency(),
+            'show_sticky_widget' => 'yes',
+            'sticky_position' => 'left',
+            'limit_currencies' => 'no',
+            'show_flags' => 'none',
+            'widget_style' => 'dropdown',
         ));
         
         // Get exchange rate data
@@ -32,6 +37,11 @@ class wc_multi_currency_manager_General_Settings {
                 'auto_detect' => isset($_POST['general_settings']['auto_detect']) ? 'yes' : 'no',
                 'widget_position' => sanitize_text_field($_POST['general_settings']['widget_position']),
                 'default_currency' => sanitize_text_field($_POST['general_settings']['default_currency']),
+                'show_sticky_widget' => isset($_POST['general_settings']['show_sticky_widget']) ? 'yes' : 'no',
+                'sticky_position' => sanitize_text_field($_POST['general_settings']['sticky_position']),
+                'limit_currencies' => isset($_POST['general_settings']['limit_currencies']) ? 'yes' : 'no',
+                'show_flags' => sanitize_text_field($_POST['general_settings']['show_flags']),
+                'widget_style' => sanitize_text_field($_POST['general_settings']['widget_style']),
             );
             
             update_option('wc_multi_currency_manager_general_settings', $general_settings);
@@ -171,12 +181,78 @@ class wc_multi_currency_manager_General_Settings {
                             </td>
                         </tr>
                     </table>
+                </div>
+                
+                <div class="card" style="margin-top: 20px;">
+                    <h2>Sticky Widget Settings</h2>
+                    <table class="form-table">
+                        <tr>
+                            <th scope="row">Show Sticky Currency Widget</th>
+                            <td>
+                                <label>
+                                    <input type="checkbox" name="general_settings[show_sticky_widget]" value="yes" 
+                                           <?php checked('yes', $general_settings['show_sticky_widget']); ?>>
+                                    Enable to show the sticky currency widget in your shop
+                                </label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Sticky Currency Widget Position</th>
+                            <td>
+                                <select name="general_settings[sticky_position]">
+                                    <option value="left" <?php selected('left', $general_settings['sticky_position']); ?>>Left Side</option>
+                                    <option value="right" <?php selected('right', $general_settings['sticky_position']); ?>>Right Side</option>
+                                    <option value="top" <?php selected('top', $general_settings['sticky_position']); ?>>Top</option>
+                                    <option value="bottom" <?php selected('bottom', $general_settings['sticky_position']); ?>>Bottom</option>
+                                </select>
+                                <p class="description">Choose the position of the sticky currency widget in your shop</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Limit Currencies in Sticky Widget</th>
+                            <td>
+                                <label>
+                                    <input type="checkbox" name="general_settings[limit_currencies]" value="yes" 
+                                           <?php checked('yes', $general_settings['limit_currencies']); ?>>
+                                    Choose to limit the number of currencies showing in the sticky widget
+                                </label>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div class="card" style="margin-top: 20px;">
+                    <h2>Widget Style Options</h2>
+                    <table class="form-table">
+                        <tr>
+                            <th scope="row">Default Widget Style</th>
+                            <td>
+                                <select name="general_settings[widget_style]">
+                                    <option value="dropdown" <?php selected('dropdown', $general_settings['widget_style']); ?>>Dropdown</option>
+                                    <option value="buttons" <?php selected('buttons', $general_settings['widget_style']); ?>>Buttons</option>
+                                    <option value="links" <?php selected('links', $general_settings['widget_style']); ?>>Text Links</option>
+                                </select>
+                                <p class="description">Choose the default style for currency widgets (can be overridden in shortcodes)</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Show Flags</th>
+                            <td>
+                                <select name="general_settings[show_flags]">
+                                    <option value="none" <?php selected('none', $general_settings['show_flags']); ?>>No Flags</option>
+                                    <option value="before" <?php selected('before', $general_settings['show_flags']); ?>>Before Currency Code</option>
+                                    <option value="after" <?php selected('after', $general_settings['show_flags']); ?>>After Currency Code</option>
+                                </select>
+                                <p class="description">Show country flags in currency widgets</p>
+                            </td>
+                        </tr>
+                    </table>
                     
                     <p class="submit">
                         <input type="submit" name="save_general_settings" class="button-primary" value="Save Settings">
                     </p>
-                </form>
-            </div>
+                </div>
+            </form>
             
             <div class="card" style="margin-top: 20px;">
                 <h2>Shortcodes</h2>

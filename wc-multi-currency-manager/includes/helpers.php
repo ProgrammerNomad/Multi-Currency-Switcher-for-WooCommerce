@@ -67,17 +67,42 @@ function get_currency_by_country($country_code) {
 }
 
 /**
- * Get country-currency mapping from data file
+ * Get country-currency mapping from data file and JSON
  */
 function get_country_currency_mapping() {
     static $mapping = null;
     
     if ($mapping === null) {
+        // First, load the manual mapping from countries-currencies.php
         $mapping_file = plugin_dir_path(__FILE__) . '../data/countries-currencies.php';
         if (file_exists($mapping_file)) {
             $mapping = include $mapping_file;
         } else {
             $mapping = array();
+        }
+        
+        // Then, enhance it with data from currencies.json
+        $json_file = plugin_dir_path(__FILE__) . '../data/currencies.json';
+        if (file_exists($json_file)) {
+            $json_data = file_get_contents($json_file);
+            $currencies_data = json_decode($json_data, true);
+            
+            if (json_last_error() === JSON_ERROR_NONE) {
+                // Add mappings from JSON for countries not in manual mapping
+                foreach ($currencies_data as $currency_code => $currency_info) {
+                    if (isset($currency_info['country_code'])) {
+                        $country_code = $currency_info['country_code'];
+                        
+                        // Only add if not already defined in manual mapping
+                        if (!isset($mapping[$country_code])) {
+                            $mapping[$country_code] = array($currency_code);
+                        } else if (!in_array($currency_code, $mapping[$country_code])) {
+                            // Add as secondary currency if not already listed
+                            $mapping[$country_code][] = $currency_code;
+                        }
+                    }
+                }
+            }
         }
     }
     

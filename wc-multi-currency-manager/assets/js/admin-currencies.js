@@ -1,9 +1,26 @@
 jQuery(document).ready(function($) {
     console.log('Currency admin script loaded');
     
-    // Make sure allCurrencies is properly defined
-    if (typeof window.allCurrencies === 'undefined') {
-        window.allCurrencies = {};
+    // Get currency data from WordPress localized script
+    window.allCurrencies = {};
+    if (typeof currencyManagerData !== 'undefined' && currencyManagerData.allCurrencies) {
+        window.allCurrencies = currencyManagerData.allCurrencies;
+        console.log('Currency data loaded:', window.allCurrencies);
+    } else {
+        console.warn('Currency data not found, using fallback');
+        // Fallback currency data
+        window.allCurrencies = {
+            'USD': { name: 'US Dollar', symbol: '$' },
+            'EUR': { name: 'Euro', symbol: '€' },
+            'GBP': { name: 'British Pound', symbol: '£' },
+            'JPY': { name: 'Japanese Yen', symbol: '¥' },
+            'AUD': { name: 'Australian Dollar', symbol: 'A$' },
+            'CAD': { name: 'Canadian Dollar', symbol: 'C$' },
+            'CHF': { name: 'Swiss Franc', symbol: 'CHF' },
+            'CNY': { name: 'Chinese Yuan', symbol: '¥' },
+            'SEK': { name: 'Swedish Krona', symbol: 'kr' },
+            'NZD': { name: 'New Zealand Dollar', symbol: 'NZ$' }
+        };
     }
     
     // Set row class on page load
@@ -66,13 +83,39 @@ jQuery(document).ready(function($) {
     // Add new currency row
     $('#add-currency-btn').on('click', function() {
         var code = $('#add-currency-select').val();
-        if (!code || !window.allCurrencies || !window.allCurrencies[code]) {
-            console.log('Unable to add currency:', code);
+        if (!code) {
+            alert('Please select a currency to add.');
+            return;
+        }
+        
+        // Check if currency already exists in the table
+        var exists = false;
+        $('#enabled-currencies tr[data-currency-code]').each(function() {
+            if ($(this).data('currency-code') === code) {
+                exists = true;
+                return false;
+            }
+        });
+        
+        if (exists) {
+            alert('Currency ' + code + ' is already enabled.');
             return;
         }
         
         console.log('Adding currency:', code);
-        var currencyData = window.allCurrencies[code];
+        
+        // Get currency data with fallback
+        var currencyData;
+        if (window.allCurrencies && window.allCurrencies[code]) {
+            currencyData = window.allCurrencies[code];
+        } else {
+            // Fallback currency data
+            currencyData = {
+                name: code,
+                symbol: code
+            };
+            console.log('Using fallback data for currency:', code);
+        }
         
         // Create new row
         var newRow = $('<tr class="enabled-currency" data-currency-code="' + code + '" data-changed="1"></tr>');
@@ -81,8 +124,8 @@ jQuery(document).ready(function($) {
         newRow.append('<td><button type="button" class="button remove-currency" title="Remove Currency">&times;</button>' +
             '<input type="hidden" name="currencies[' + code + '][enable]" value="1"></td>');
         newRow.append('<td><strong>' + code + '</strong></td>');
-        newRow.append('<td><input type="text" name="currencies[' + code + '][name]" value="' + currencyData.name + '" class="regular-text" readonly></td>');
-        newRow.append('<td><input type="text" name="currencies[' + code + '][symbol]" value="' + currencyData.symbol + '" class="regular-text" readonly></td>');
+        newRow.append('<td><input type="text" name="currencies[' + code + '][name]" value="' + currencyData.name + '" class="regular-text"></td>');
+        newRow.append('<td><input type="text" name="currencies[' + code + '][symbol]" value="' + currencyData.symbol + '" class="regular-text"></td>');
         newRow.append('<td><input type="text" name="currencies[' + code + '][rate]" value="1" class="regular-text"></td>');
         
         // Position dropdown
@@ -102,9 +145,17 @@ jQuery(document).ready(function($) {
         // Append to table
         $('#enabled-currencies').append(newRow);
         
+        // Add visual feedback
+        newRow.css('background-color', '#d4edda');
+        setTimeout(function() {
+            newRow.css('background-color', '');
+        }, 2000);
+        
         // Remove from dropdown
         $('#add-currency-select option[value="' + code + '"]').remove();
         $('#add-currency-select').val('');
+        
+        console.log('Successfully added currency to table:', code);
     });
     
     // Remove currency - FIX HERE - use window.allCurrencies instead of allCurrencies
@@ -116,16 +167,19 @@ jQuery(document).ready(function($) {
         
         // Check if this currency is already in the dropdown (to prevent duplicates)
         if ($('#add-currency-select option[value="' + code + '"]').length === 0) {
-            // Only proceed if we have the currency data
-            if (typeof window.allCurrencies !== 'undefined' && window.allCurrencies && window.allCurrencies[code]) {
-                var optionText = code + ' - ' + window.allCurrencies[code].name;
-                $('#add-currency-select').append($('<option></option>').attr('value', code).text(optionText));
+            var optionText;
+            // Try to get currency data from the localized data
+            if (window.allCurrencies && window.allCurrencies[code]) {
+                optionText = code + ' - ' + window.allCurrencies[code].name;
             } else {
-                console.log('Currency data not found for:', code);
-                // Add a fallback for when currency data isn't available
+                // Fallback: try to get from the removed row or use code only
                 var currencyName = row.find('input[name^="currencies['+code+'][name]"]').val() || code;
-                $('#add-currency-select').append($('<option></option>').attr('value', code).text(code + ' - ' + currencyName));
+                optionText = code + ' - ' + currencyName;
+                console.log('Using fallback currency name for:', code, '->', currencyName);
             }
+            
+            $('#add-currency-select').append($('<option></option>').attr('value', code).text(optionText));
+            console.log('Added currency to dropdown:', code, '->', optionText);
         }
         
         // Create a hidden field to track removed currencies

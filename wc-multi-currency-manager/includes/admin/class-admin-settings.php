@@ -156,7 +156,7 @@ class wc_multi_currency_manager_Admin_Settings {
         $plugin_url = plugin_dir_url(__FILE__);
         $css_url = $plugin_url . '../../assets/css/admin-minimal.css';
         $js_url = $plugin_url . '../../assets/js/admin-scripts.js';
-        $currencies_js_url = $plugin_url . '../../assets/js/admin-currencies-responsive.js';
+        $currencies_js_url = $plugin_url . '../../assets/js/admin-currencies.js';
         
         // Debug: Log the CSS URL and hook name to see if it's correct
         error_log('WC Multi Currency CSS URL: ' . $css_url);
@@ -176,7 +176,62 @@ class wc_multi_currency_manager_Admin_Settings {
         // Enqueue specific script for currencies page
         if (strpos($hook, 'wc-multi-currency-manager-currencies') !== false) {
             wp_enqueue_script('multi-currency-admin-currencies', $currencies_js_url, array('jquery'), time(), true);
+            
+            // Pass currency data to JavaScript
+            $currencies_data = $this->get_all_currencies_data();
+            wp_localize_script('multi-currency-admin-currencies', 'currencyManagerData', array(
+                'allCurrencies' => $currencies_data,
+                'nonce' => wp_create_nonce('currency_manager_nonce')
+            ));
         }
+    }
+    
+    /**
+     * Get all currencies data for JavaScript
+     */
+    private function get_all_currencies_data() {
+        // First try to get currency data from the JSON file
+        $currencies_json_file = plugin_dir_path(__FILE__) . '../../data/currencies.json';
+        
+        if (file_exists($currencies_json_file)) {
+            $json_content = file_get_contents($currencies_json_file);
+            $currencies_data = json_decode($json_content, true);
+            
+            if (is_array($currencies_data) && !empty($currencies_data)) {
+                // Convert format for JavaScript compatibility
+                $formatted_data = array();
+                foreach ($currencies_data as $code => $data) {
+                    $formatted_data[$code] = array(
+                        'name' => $data['name'],
+                        'symbol' => $data['symbol'],
+                        'country' => isset($data['country']) ? $data['country'] : '',
+                        'country_code' => isset($data['country_code']) ? $data['country_code'] : ''
+                    );
+                }
+                return $formatted_data;
+            }
+        }
+        
+        // Fallback: try to get from helpers function
+        $currencies_data = get_available_currencies();
+        
+        if (!empty($currencies_data)) {
+            return $currencies_data;
+        }
+        
+        // Last resort fallback to basic currency list
+        return array(
+            'USD' => array('name' => 'US Dollar', 'symbol' => '$', 'country' => 'United States', 'country_code' => 'US'),
+            'EUR' => array('name' => 'Euro', 'symbol' => '€', 'country' => 'European Union', 'country_code' => 'EU'),
+            'GBP' => array('name' => 'British Pound', 'symbol' => '£', 'country' => 'United Kingdom', 'country_code' => 'GB'),
+            'JPY' => array('name' => 'Japanese Yen', 'symbol' => '¥', 'country' => 'Japan', 'country_code' => 'JP'),
+            'AUD' => array('name' => 'Australian Dollar', 'symbol' => 'A$', 'country' => 'Australia', 'country_code' => 'AU'),
+            'CAD' => array('name' => 'Canadian Dollar', 'symbol' => 'C$', 'country' => 'Canada', 'country_code' => 'CA'),
+            'CHF' => array('name' => 'Swiss Franc', 'symbol' => 'CHF', 'country' => 'Switzerland', 'country_code' => 'CH'),
+            'CNY' => array('name' => 'Chinese Yuan', 'symbol' => '¥', 'country' => 'China', 'country_code' => 'CN'),
+            'SEK' => array('name' => 'Swedish Krona', 'symbol' => 'kr', 'country' => 'Sweden', 'country_code' => 'SE'),
+            'NZD' => array('name' => 'New Zealand Dollar', 'symbol' => 'NZ$', 'country' => 'New Zealand', 'country_code' => 'NZ'),
+        );
     }
     
     /**

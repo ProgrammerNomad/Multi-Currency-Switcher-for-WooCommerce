@@ -4,319 +4,365 @@
  * Scoped to WC Multi Currency Manager admin pages only
  */
 
-/* Scope all styles to our admin pages */
-.toplevel_page_wc-multi-currency-manager,
-.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies,
-.wc-multi-currency-manager_page_wc-multi-currency-manager-style,
-.wc-multi-currency-manager_page_wc-multi-currency-manager-payment {
+/* CRITICAL: Override WordPress default card max-width on our pages */
+.toplevel_page_wc-multi-currency-manager .card,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .card,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-style .card,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-payment .card {
+    max-width: none !important;
+}
 
-    /* Base currency highlight */
-    .base-currency {
-        background-color: #f0f6fc !important;
-        border-left: 4px solid #0073aa;
+/* Base currency highlight */
+.toplevel_page_wc-multi-currency-manager .base-currency,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .base-currency,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-style .base-currency,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-payment .base-currency {
+    background-color: #f0f6fc !important;
+    border-left: 4px solid #0073aa;
+}
+
+.toplevel_page_wc-multi-currency-manager .base-currency td,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .base-currency td,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-style .base-currency td,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-payment .base-currency td {
+    font-weight: 600;
+}
+
+/* Currency table responsive improvements */
+.toplevel_page_wc-multi-currency-manager .currency-table-responsive,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .currency-table-responsive,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-style .currency-table-responsive,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-payment .currency-table-responsive {
+    overflow-x: auto;
+    margin: 20px 0;
+}
+
+.toplevel_page_wc-multi-currency-manager .currency-table-responsive table,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .currency-table-responsive table,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-style .currency-table-responsive table,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-payment .currency-table-responsive table {
+    min-width: 800px;
+}
+
+/* Remove currency button styling */
+.toplevel_page_wc-multi-currency-manager .remove-currency,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .remove-currency,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-style .remove-currency,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-payment .remove-currency {
+    color: #d63638;
+    text-decoration: none;
+    border: none;
+    background: transparent;
+    padding: 0 5px;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+}
+
+.toplevel_page_wc-multi-currency-manager .remove-currency:hover,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .remove-currency:hover,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-style .remove-currency:hover,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-payment .remove-currency:hover {
+    color: #dc3232;
+}
+
+.toplevel_page_wc-multi-currency-manager .remove-currency .dashicons,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .remove-currency .dashicons,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-style .remove-currency .dashicons,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-payment .remove-currency .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+/* Color picker improvements */
+.toplevel_page_wc-multi-currency-manager .wp-picker-container,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .wp-picker-container,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-style .wp-picker-container,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-payment .wp-picker-container {
+    display: block;
+    margin-bottom: 10px;
+}
+
+/* Admin notice adjustments */
+.toplevel_page_wc-multi-currency-manager .notice.inline,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .notice.inline,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-style .notice.inline,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-payment .notice.inline {
+    margin: 10px 0;
+}
+
+/* Code styling for shortcodes */
+.toplevel_page_wc-multi-currency-manager code,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies code,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-style code,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-payment code {
+    background: #f1f1f1;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: Consolas, Monaco, monospace;
+}
+
+/* General Settings Page Layout */
+.toplevel_page_wc-multi-currency-manager .wc-multi-currency-admin-container {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.toplevel_page_wc-multi-currency-manager .wc-multi-currency-column-left,
+.toplevel_page_wc-multi-currency-manager .wc-multi-currency-column-right {
+    flex: 1;
+    min-width: 0;
+}
+
+.toplevel_page_wc-multi-currency-manager .wc-multi-currency-column-left .card,
+.toplevel_page_wc-multi-currency-manager .wc-multi-currency-column-right .card {
+    margin-bottom: 20px;
+    max-width: unset;
+}
+
+/* Special override for currencies admin container */
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .wc-currencies-admin-container .card {
+    max-width: unset !important;
+    width: 100% !important;
+}
+
+.toplevel_page_wc-multi-currency-manager .wc-multi-currency-form-actions {
+    text-align: center;
+    padding: 20px 0;
+    border-top: 1px solid #e0e0e0;
+    margin-top: 30px;
+}
+
+/* Style Settings Page Layout */
+.wc-multi-currency-manager_page_wc-multi-currency-manager-style .wc-style-admin-container {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.wc-multi-currency-manager_page_wc-multi-currency-manager-style .wc-style-column-left,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-style .wc-style-column-right {
+    flex: 1;
+    min-width: 0;
+}
+
+.wc-multi-currency-manager_page_wc-multi-currency-manager-style .wc-style-column-left .card,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-style .wc-style-column-right .card {
+    margin-bottom: 20px;
+}
+
+.wc-multi-currency-manager_page_wc-multi-currency-manager-style .wc-style-form-actions {
+    text-align: center;
+    padding: 10px 0;
+}
+
+.wc-multi-currency-manager_page_wc-multi-currency-manager-style .wc-style-preview {
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.wc-multi-currency-manager_page_wc-multi-currency-manager-style .wc-currency-switcher-preview {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.wc-multi-currency-manager_page_wc-multi-currency-manager-style .preview-title {
+    font-weight: 600;
+    color: var(--title-color, #333333);
+}
+
+.wc-multi-currency-manager_page_wc-multi-currency-manager-style .preview-dropdown {
+    padding: 8px 12px;
+    border: 1px solid var(--border-color, #B2B2B2);
+    background: var(--background-color, #FFFFFF);
+    color: var(--text-color, #000000);
+    border-radius: 4px;
+}
+
+.wc-multi-currency-manager_page_wc-multi-currency-manager-style .preview-dropdown:focus {
+    border-color: var(--active-color, #04AE93);
+    box-shadow: 0 0 0 1px var(--active-color, #04AE93);
+}
+
+/* Card styling (consistent across all our admin pages) */
+.toplevel_page_wc-multi-currency-manager .card h3,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .card h3,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-style .card h3,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-payment .card h3 {
+    margin-top: 30px;
+    margin-bottom: 15px;
+    padding-top: 20px;
+    border-top: 1px solid #f0f0f0;
+    color: #23282d;
+    font-size: 16px;
+}
+
+.toplevel_page_wc-multi-currency-manager .card h3:first-of-type,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .card h3:first-of-type,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-style .card h3:first-of-type,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-payment .card h3:first-of-type {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+}
+
+/* Currencies Page Layout */
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .wc-currencies-admin-container .card {
+    width: 100%;
+}
+
+/* Currency info grid */
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .wc-currency-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .wc-currency-info-item {
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    border-left: 4px solid #2271b1;
+}
+
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .wc-currencies-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .wc-add-currency-section {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .wc-add-currency-section select {
+    min-width: 300px;
+}
+
+/* Currency table specific styling */
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .base-currency {
+    background-color: #f7fcff !important;
+    border-bottom: 2px solid #bfe7ff !important;
+}
+
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .enabled-currency {
+    background-color: #fafffe !important;
+}
+
+/* Currency table container */
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .currency-table-container {
+    max-width: 100%;
+    overflow-x: auto;
+    margin: 20px 0;
+}
+
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .currency-table-container table {
+    width: 100%;
+    min-width: 800px;
+}
+
+/* Table column widths for currency settings */
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .currency-table-container th:nth-child(1) { width: 60px; }   /* Action */
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .currency-table-container th:nth-child(2) { width: 50px; }   /* Currency Code */
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .currency-table-container th:nth-child(3) { width: 180px; }  /* Currency Name */
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .currency-table-container th:nth-child(4) { width: 40px; }   /* Symbol */
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .currency-table-container th:nth-child(5) { width: 70px; }   /* Exchange Rate */
+
+/* List styling improvements */
+.toplevel_page_wc-multi-currency-manager .card ul,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .card ul,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-style .card ul,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-payment .card ul {
+    list-style-type: disc;
+    margin-left: 20px;
+}
+
+.toplevel_page_wc-multi-currency-manager .card ol,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .card ol,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-style .card ol,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-payment .card ol {
+    list-style-type: decimal;
+    margin-left: 20px;
+}
+
+/* Shortcode table styling */
+.toplevel_page_wc-multi-currency-manager .widefat,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .widefat,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-style .widefat,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-payment .widefat {
+    width: 100%;
+}
+
+/* Form styling */
+.wc-multi-currency-manager_page_wc-multi-currency-manager-style .large-text.code {
+    width: 100%;
+    font-family: monospace;
+}
+
+/* Submit button spacing */
+.toplevel_page_wc-multi-currency-manager .submit,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .submit,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-style .submit,
+.wc-multi-currency-manager_page_wc-multi-currency-manager-payment .submit {
+    margin-top: 20px;
+}
+
+/* Mobile responsive adjustments */
+@media screen and (max-width: 1200px) {
+    .toplevel_page_wc-multi-currency-manager .wc-multi-currency-admin-container,
+    .wc-multi-currency-manager_page_wc-multi-currency-manager-style .wc-style-admin-container {
+        flex-direction: column;
     }
+}
 
-    .base-currency td {
-        font-weight: 600;
-    }
-
-    /* Currency table responsive improvements */
-    .currency-table-responsive {
-        overflow-x: auto;
-        margin: 20px 0;
-    }
-
-    .currency-table-responsive table {
-        min-width: 800px;
-    }
-
-    /* Remove currency button styling */
-    .remove-currency {
-        color: #d63638;
-        text-decoration: none;
-        border: none;
-        background: transparent;
-        padding: 0 5px;
-        cursor: pointer;
-        font-size: 18px;
-        line-height: 1;
-    }
-
-    .remove-currency:hover {
-        color: #dc3232;
-    }
-
-    .remove-currency .dashicons {
-        font-size: 16px;
-        width: 16px;
-        height: 16px;
-    }
-
-    /* Color picker improvements */
-    .wp-picker-container {
-        display: block;
-        margin-bottom: 10px;
-    }
-
-    /* Admin notice adjustments */
-    .notice.inline {
-        margin: 10px 0;
-    }
-
-    /* Code styling for shortcodes */
-    code {
-        background: #f1f1f1;
-        padding: 2px 4px;
-        border-radius: 3px;
-        font-family: Consolas, Monaco, monospace;
-    }
-
-    /* General Settings Page Layout */
-    .wc-multi-currency-admin-container {
-        display: flex;
-        gap: 20px;
-        margin-top: 20px;
+@media screen and (max-width: 782px) {
+    .wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .currency-table-responsive {
+        font-size: 14px;
     }
     
-    .wc-multi-currency-column-left,
-    .wc-multi-currency-column-right {
-        flex: 1;
-        min-width: 0;
-    }
-    
-    .wc-multi-currency-column-left .card,
-    .wc-currencies-admin-container .card,
-    .wc-multi-currency-column-right .card {
-        max-width: unset;
-    }
-    
-    .wc-multi-currency-form-actions {
-        text-align: center;
-        padding: 20px 0;
-        border-top: 1px solid #e0e0e0;
-        margin-top: 30px;
-    }
-
-    /* Style Settings Page Layout */
-    .wc-style-admin-container {
-        display: flex;
-        gap: 20px;
-        margin-top: 20px;
-    }
-    
-    .wc-style-column-left,
-    .wc-style-column-right {
-        flex: 1;
-        min-width: 0;
-    }
-    
-    .wc-style-column-left .card,
-    .wc-style-column-right .card {
-        margin-bottom: 20px;
-    }
-    
-    .wc-style-form-actions {
-        text-align: center;
-        padding: 10px 0;
-    }
-    
-    .wc-style-preview {
-        padding: 20px;
-        background: #f8f9fa;
-        border-radius: 4px;
-        border: 1px solid #ddd;
-    }
-    
-    .wc-currency-switcher-preview {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    
-    .preview-title {
-        font-weight: 600;
-        color: var(--title-color, #333333);
-    }
-    
-    .preview-dropdown {
-        padding: 8px 12px;
-        border: 1px solid var(--border-color, #B2B2B2);
-        background: var(--background-color, #FFFFFF);
-        color: var(--text-color, #000000);
-        border-radius: 4px;
-    }
-    
-    .preview-dropdown:focus {
-        border-color: var(--active-color, #04AE93);
-        box-shadow: 0 0 0 1px var(--active-color, #04AE93);
-    }
-
-    /* Card styling (consistent across all our admin pages) */
-    .card {
-        background: #fff;
-        border: 1px solid #ccd0d4;
-        border-radius: 4px;
-        padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 1px 1px rgba(0,0,0,.04);
-    }
-    
-    .card h3 {
-        margin-top: 30px;
-        margin-bottom: 15px;
-        padding-top: 20px;
-        border-top: 1px solid #f0f0f0;
-        color: #23282d;
-        font-size: 16px;
-    }
-    
-    .card h3:first-of-type {
-        margin-top: 0;
-        padding-top: 0;
-        border-top: none;
-    }
-
-    /* Currencies Page Layout */
-    .wc-currencies-admin-container .card {
+    .wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .currency-table-responsive input[type="text"],
+    .wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .currency-table-responsive input[type="number"],
+    .wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .currency-table-responsive select {
         width: 100%;
+        max-width: 120px;
     }
 
-    /* Currency info grid */
-    .wc-currency-info-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-        margin-bottom: 20px;
+    .wc-multi-currency-manager_page_wc-multi-currency-manager-style .wc-currency-switcher-preview {
+        flex-direction: column;
+        align-items: stretch;
     }
-    
-    .wc-currency-info-item {
-        padding: 15px;
-        background: #f8f9fa;
-        border-radius: 4px;
-        border-left: 4px solid #2271b1;
-    }
-    
-    .wc-currencies-controls {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 20px;
-        padding: 15px;
-        background: #f8f9fa;
-        border-radius: 4px;
-    }
-    
-    .wc-add-currency-section {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-    }
-    
-    .wc-add-currency-section select {
-        min-width: 300px;
-    }
+}
 
-    /* Currency table specific styling */
-    .base-currency {
-        background-color: #f7fcff !important;
-        border-bottom: 2px solid #bfe7ff !important;
+@media screen and (max-width: 768px) {
+    .wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .wc-currency-info-grid {
+        grid-template-columns: 1fr;
     }
     
-    .enabled-currency {
-        background-color: #fafffe !important;
+    .wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .wc-currencies-controls {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
     }
-
-    /* Currency table container */
-    .currency-table-container {
-        max-width: 100%;
-        overflow-x: auto;
-        margin: 20px 0;
+    
+    .wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .wc-add-currency-section {
+        flex-direction: column;
+        align-items: stretch;
     }
-
-    .currency-table-container table {
+    
+    .wc-multi-currency-manager_page_wc-multi-currency-manager-currencies .wc-add-currency-section select {
+        min-width: auto;
         width: 100%;
-        min-width: 800px;
-    }
-
-    /* Table column widths for currency settings */
-    .currency-table-container th:nth-child(1) { width: 60px; }   /* Action */
-    .currency-table-container th:nth-child(2) { width: 50px; }   /* Currency Code */
-    .currency-table-container th:nth-child(3) { width: 180px; }  /* Currency Name */
-    .currency-table-container th:nth-child(4) { width: 40px; }   /* Symbol */
-    .currency-table-container th:nth-child(5) { width: 70px; }   /* Exchange Rate */
-
-    /* List styling improvements */
-    .card ul {
-        list-style-type: disc;
-        margin-left: 20px;
-    }
-
-    .card ol {
-        list-style-type: decimal;
-        margin-left: 20px;
-    }
-
-    /* Shortcode table styling */
-    .widefat {
-        width: 100%;
-    }
-
-    /* Form styling */
-    .large-text.code {
-        width: 100%;
-        font-family: monospace;
-    }
-
-    /* Submit button spacing */
-    .submit {
-        margin-top: 20px;
-    }
-
-    /* Mobile responsive adjustments */
-    @media screen and (max-width: 1200px) {
-        .wc-multi-currency-admin-container,
-        .wc-style-admin-container {
-            flex-direction: column;
-        }
-    }
-
-    @media screen and (max-width: 782px) {
-        .currency-table-responsive {
-            font-size: 14px;
-        }
-        
-        .currency-table-responsive input[type="text"],
-        .currency-table-responsive input[type="number"],
-        .currency-table-responsive select {
-            width: 100%;
-            max-width: 120px;
-        }
-
-        .wc-currency-switcher-preview {
-            flex-direction: column;
-            align-items: stretch;
-        }
-    }
-
-    @media screen and (max-width: 768px) {
-        .wc-currency-info-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .wc-currencies-controls {
-            flex-direction: column;
-            gap: 15px;
-            align-items: stretch;
-        }
-        
-        .wc-add-currency-section {
-            flex-direction: column;
-            align-items: stretch;
-        }
-        
-        .wc-add-currency-section select {
-            min-width: auto;
-            width: 100%;
-        }
     }
 }

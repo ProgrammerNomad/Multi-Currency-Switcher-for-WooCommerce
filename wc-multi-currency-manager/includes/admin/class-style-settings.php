@@ -43,79 +43,106 @@ class wc_multi_currency_manager_Style_Settings {
             <form method="post" action="">
                 <?php wp_nonce_field('save_style_settings', 'style_settings_nonce'); ?>
                 
-                <div class="card" style="margin-top: 20px;">
-                    <h2>Widget Colors</h2>
-                    <p>Set the colors of all the currency widgets and switchers in your shop.</p>
+                <div class="wc-style-admin-container">
+                    <!-- Colors Section -->
+                    <div class="wc-style-column-left">
+                        <div class="card">
+                            <h2>Widget Colors</h2>
+                            <p>Set the colors of all the currency widgets and switchers in your shop.</p>
+                            
+                            <table class="form-table">
+                                <tr>
+                                    <th scope="row">Titles</th>
+                                    <td>
+                                        <input type="text" class="color-picker" name="style_settings[title_color]" 
+                                               value="<?php echo esc_attr($style_settings['title_color']); ?>">
+                                        <p class="description">Color for widget titles</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Text</th>
+                                    <td>
+                                        <input type="text" class="color-picker" name="style_settings[text_color]" 
+                                               value="<?php echo esc_attr($style_settings['text_color']); ?>">
+                                        <p class="description">Color for widget text</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Active Selection</th>
+                                    <td>
+                                        <input type="text" class="color-picker" name="style_settings[active_color]" 
+                                               value="<?php echo esc_attr($style_settings['active_color']); ?>">
+                                        <p class="description">Color for active selection</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Background</th>
+                                    <td>
+                                        <input type="text" class="color-picker" name="style_settings[background_color]" 
+                                               value="<?php echo esc_attr($style_settings['background_color']); ?>">
+                                        <p class="description">Background color for widgets</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Borders</th>
+                                    <td>
+                                        <input type="text" class="color-picker" name="style_settings[border_color]" 
+                                               value="<?php echo esc_attr($style_settings['border_color']); ?>">
+                                        <p class="description">Border color for widgets</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
                     
-                    <table class="form-table">
-                        <tr>
-                            <th scope="row">Titles</th>
-                            <td>
-                                <input type="text" class="color-picker" name="style_settings[title_color]" 
-                                       value="<?php echo esc_attr($style_settings['title_color']); ?>">
-                                <p class="description">Color for widget titles</p>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Text</th>
-                            <td>
-                                <input type="text" class="color-picker" name="style_settings[text_color]" 
-                                       value="<?php echo esc_attr($style_settings['text_color']); ?>">
-                                <p class="description">Color for widget text</p>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Active Selection</th>
-                            <td>
-                                <input type="text" class="color-picker" name="style_settings[active_color]" 
-                                       value="<?php echo esc_attr($style_settings['active_color']); ?>">
-                                <p class="description">Color for active selection</p>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Background</th>
-                            <td>
-                                <input type="text" class="color-picker" name="style_settings[background_color]" 
-                                       value="<?php echo esc_attr($style_settings['background_color']); ?>">
-                                <p class="description">Background color for widgets</p>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Borders</th>
-                            <td>
-                                <input type="text" class="color-picker" name="style_settings[border_color]" 
-                                       value="<?php echo esc_attr($style_settings['border_color']); ?>">
-                                <p class="description">Border color for widgets</p>
-                            </td>
-                        </tr>
-                    </table>
+                    <!-- Custom CSS Section -->
+                    <div class="wc-style-column-right">
+                        <div class="card">
+                            <h2>Custom CSS</h2>
+                            <p>Add custom CSS to further style the currency switcher widgets.</p>
+                            
+                            <table class="form-table">
+                                <tr>
+                                    <th scope="row">Custom CSS</th>
+                                    <td>
+                                        <textarea name="style_settings[custom_css]" rows="15" class="large-text code" style="width: 100%; font-family: monospace;"><?php echo esc_textarea($style_settings['custom_css']); ?></textarea>
+                                        <p class="description">Add custom CSS rules to override the default styles</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <div class="card">
+                            <h2>Style Preview</h2>
+                            <p>Preview how your currency switcher will look with the selected colors:</p>
+                            <div class="wc-style-preview" id="style-preview">
+                                <div class="wc-currency-switcher-preview">
+                                    <label class="preview-title">Select Currency:</label>
+                                    <select class="preview-dropdown">
+                                        <option>USD - US Dollar</option>
+                                        <option selected>EUR - Euro</option>
+                                        <option>GBP - British Pound</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
-                <div class="card" style="margin-top: 20px;">
-                    <h2>Custom CSS</h2>
-                    <p>Add custom CSS to further style the currency switcher widgets.</p>
-                    
-                    <table class="form-table">
-                        <tr>
-                            <th scope="row">Custom CSS</th>
-                            <td>
-                                <textarea name="style_settings[custom_css]" rows="10" class="large-text code"><?php echo esc_textarea($style_settings['custom_css']); ?></textarea>
-                                <p class="description">Add custom CSS rules to override the default styles</p>
-                            </td>
-                        </tr>
-                    </table>
+                <div class="card">
+                    <div class="wc-style-form-actions">
+                        <p class="submit">
+                            <input type="submit" name="save_style_settings" class="button-primary" value="Save Style Settings">
+                        </p>
+                    </div>
                 </div>
-                
-                <p class="submit">
-                    <input type="submit" name="save_style_settings" class="button-primary" value="Save Style Settings">
-                </p>
             </form>
             
-            <div class="card" style="margin-top: 20px;">
+            <div class="card">
                 <h2>Style Shortcode Examples</h2>
                 <p>Use these shortcode examples to customize the appearance of your currency switchers:</p>
                 
-                <table class="widefat" style="max-width: 100%;">
+                <table class="widefat" style="width: 100%;">
                     <thead>
                         <tr>
                             <th>Shortcode</th>
@@ -149,6 +176,59 @@ class wc_multi_currency_manager_Style_Settings {
         </div>
         
         <style>
+        .wc-style-admin-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .wc-style-column-left,
+        .wc-style-column-right {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .wc-style-column-left .card,
+        .wc-style-column-right .card {
+            margin-bottom: 20px;
+        }
+        
+        .wc-style-form-actions {
+            text-align: center;
+            padding: 10px 0;
+        }
+        
+        .wc-style-preview {
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        
+        .wc-currency-switcher-preview {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .preview-title {
+            font-weight: 600;
+            color: var(--title-color, #333333);
+        }
+        
+        .preview-dropdown {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color, #B2B2B2);
+            background: var(--background-color, #FFFFFF);
+            color: var(--text-color, #000000);
+            border-radius: 4px;
+        }
+        
+        .preview-dropdown:focus {
+            border-color: var(--active-color, #04AE93);
+            box-shadow: 0 0 0 1px var(--active-color, #04AE93);
+        }
+        
         .card {
             background: #fff;
             border: 1px solid #ccd0d4;
@@ -156,6 +236,19 @@ class wc_multi_currency_manager_Style_Settings {
             padding: 20px;
             margin-bottom: 20px;
             box-shadow: 0 1px 1px rgba(0,0,0,.04);
+        }
+        
+        @media screen and (max-width: 1200px) {
+            .wc-style-admin-container {
+                flex-direction: column;
+            }
+        }
+        
+        @media screen and (max-width: 768px) {
+            .wc-currency-switcher-preview {
+                flex-direction: column;
+                align-items: stretch;
+            }
         }
         </style>
         <?php

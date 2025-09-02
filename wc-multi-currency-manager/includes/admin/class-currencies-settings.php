@@ -66,22 +66,24 @@ class wc_multi_currency_manager_Currencies_Settings {
 
             <div class="card">
                 <h2>Exchange Rate Information</h2>
-                <p>
-                    <strong>Base Currency:</strong> <?php echo esc_html($base_currency); ?> 
-                    (set in <a href="<?php echo esc_url(admin_url('admin.php?page=wc-settings&tab=general')); ?>">WooCommerce Settings</a>)
-                    <br>
-                    <strong>Last Exchange Rate Update:</strong> <?php echo esc_html($last_updated_text); ?>
-                </p>
-                <form method="post" action="">
-                    <?php wp_nonce_field('update_exchange_rates', 'update_rates_nonce'); ?>
-                    <p>
-                        <input type="submit" name="update_exchange_rates" class="button button-secondary" value="Update Exchange Rates Now">
-                    </p>
-                </form>
+                <div class="wc-currency-info-grid">
+                    <div class="wc-currency-info-item">
+                        <p><strong>Base Currency:</strong> <?php echo esc_html($base_currency); ?></p>
+                        <p><em>(set in <a href="<?php echo esc_url(admin_url('admin.php?page=wc-settings&tab=general')); ?>">WooCommerce Settings</a>)</em></p>
+                    </div>
+                    <div class="wc-currency-info-item">
+                        <p><strong>Last Exchange Rate Update:</strong> <?php echo esc_html($last_updated_text); ?></p>
+                        <form method="post" action="" style="margin-top: 10px;">
+                            <?php wp_nonce_field('update_exchange_rates', 'update_rates_nonce'); ?>
+                            <input type="submit" name="update_exchange_rates" class="button button-secondary" value="Update Exchange Rates Now">
+                        </form>
+                    </div>
+                </div>
             </div>
 
-            <div class="card" style="margin-top: 20px;">
+            <div class="card">
                 <h2>Enabled Currencies</h2>
+                <p>Manage your store's currencies, exchange rates, and formatting options. The base currency is automatically included and cannot be disabled.</p>
                 <form method="post" action="" id="currencies-form">
                     <?php wp_nonce_field('save_currencies', 'currencies_nonce'); ?>
                 <div class="currency-table-container" style="max-width: 100%; overflow-x: auto;">
@@ -212,28 +214,66 @@ class wc_multi_currency_manager_Currencies_Settings {
                     </table>
                 </div>
                 
-                <div style="margin-top: 15px; margin-bottom: 15px;">
-                    <select id="add-currency-select">
-                        <option value="">-- Select currency to add --</option>
-                        <?php 
-                        foreach ($all_currencies as $code => $currency):
-                            // Skip currencies that are already enabled
-                            if (in_array($code, $enabled_currencies)) continue;
-                        ?>
-                        <option value="<?php echo esc_attr($code); ?>"><?php echo esc_html($code . ' - ' . $currency['name']); ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                    <button type="button" id="add-currency-btn" class="button">Add Currency</button>
+                <div class="wc-currencies-controls">
+                    <div class="wc-add-currency-section">
+                        <select id="add-currency-select">
+                            <option value="">-- Select currency to add --</option>
+                            <?php 
+                            foreach ($all_currencies as $code => $currency):
+                                // Skip currencies that are already enabled
+                                if (in_array($code, $enabled_currencies)) continue;
+                            ?>
+                            <option value="<?php echo esc_attr($code); ?>"><?php echo esc_html($code . ' - ' . $currency['name']); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <button type="button" id="add-currency-btn" class="button">Add Currency</button>
+                    </div>
+                    
+                    <div class="wc-form-actions">
+                        <p class="submit">
+                            <input type="submit" name="save_currencies" class="button-primary" value="Save Currencies">
+                        </p>
+                    </div>
                 </div>
-                
-                <p class="submit">
-                    <input type="submit" name="save_currencies" class="button-primary" value="Save Currencies">
-                </p>
                 </form>
             </div>
         </div>
         
         <style>
+        .wc-currency-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .wc-currency-info-item {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border-left: 4px solid #2271b1;
+        }
+        
+        .wc-currencies-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .wc-add-currency-section {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .wc-add-currency-section select {
+            min-width: 300px;
+        }
+        
         .card {
             background: #fff;
             border: 1px solid #ccd0d4;
@@ -241,7 +281,20 @@ class wc_multi_currency_manager_Currencies_Settings {
             padding: 20px;
             margin-bottom: 20px;
             box-shadow: 0 1px 1px rgba(0,0,0,.04);
+            width: 100%;
         }
+        
+        .currency-table-container {
+            width: 100%;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        
+        .currency-table-container table {
+            width: 100%;
+            min-width: 800px;
+        }
+        
         /* Styling for currency table */
         .base-currency {
             background-color: #f7fcff !important;
@@ -261,6 +314,28 @@ class wc_multi_currency_manager_Currencies_Settings {
         }
         .remove-currency:hover {
             color: #dc3232;
+        }
+        
+        @media screen and (max-width: 768px) {
+            .wc-currency-info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .wc-currencies-controls {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+            
+            .wc-add-currency-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .wc-add-currency-section select {
+                min-width: auto;
+                width: 100%;
+            }
         }
         </style>
         

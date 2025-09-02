@@ -62,7 +62,9 @@ class wc_multi_currency_manager_Currencies_Settings {
             
             <?php $this->display_admin_tabs('currencies'); ?>
             
-            <p>Select currencies to enable in your shop and set their exchange rates.</p>
+            <!-- Currencies page custom wrapper -->
+            <div class="wc-currencies-admin-container">
+                <p>Select currencies to enable in your shop and set their exchange rates.</p>
 
             <div class="card">
                 <h2>Exchange Rate Information</h2>
@@ -237,142 +239,8 @@ class wc_multi_currency_manager_Currencies_Settings {
                 </div>
                 </form>
             </div>
+            </div> <!-- Close wc-currencies-admin-container -->
         </div>
-        
-        <style>
-        .wc-currency-info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .wc-currency-info-item {
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 4px;
-            border-left: 4px solid #2271b1;
-        }
-        
-        .wc-currencies-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 4px;
-        }
-        
-        .wc-add-currency-section {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        
-        .wc-add-currency-section select {
-            min-width: 300px;
-        }
-        
-        .card {
-            background: #fff;
-            border: 1px solid #ccd0d4;
-            border-radius: 4px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 1px 1px rgba(0,0,0,.04);
-            width: 100%;
-        }
-        
-        .currency-table-container {
-            width: 100%;
-            overflow-x: auto;
-            margin: 20px 0;
-        }
-        
-        .currency-table-container table {
-            width: 100%;
-            min-width: 800px;
-        }
-        
-        /* Styling for currency table */
-        .base-currency {
-            background-color: #f7fcff !important;
-            border-bottom: 2px solid #bfe7ff !important;
-        }
-        .enabled-currency {
-            background-color: #fafffe !important;
-        }
-        .remove-currency {
-            color: #a00;
-            font-size: 18px;
-            line-height: 1;
-            cursor: pointer;
-            padding: 0 5px;
-            background: transparent;
-            border: none;
-        }
-        .remove-currency:hover {
-            color: #dc3232;
-        }
-        
-        @media screen and (max-width: 768px) {
-            .wc-currency-info-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .wc-currencies-controls {
-                flex-direction: column;
-                gap: 15px;
-                align-items: stretch;
-            }
-            
-            .wc-add-currency-section {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .wc-add-currency-section select {
-                min-width: auto;
-                width: 100%;
-            }
-        }
-        </style>
-        
-        <script type="text/javascript">
-        jQuery(document).ready(function($) {
-            // Store rows in a hidden field instead of removing them
-            $(document).on('click', '.remove-currency', function(e) {
-                e.preventDefault();
-                var row = $(this).closest('tr');
-                var code = row.data('currency-code');
-                
-                // Don't actually remove the row, just hide it and mark as disabled
-                row.css('display', 'none');
-                
-                // Change the input name to indicate removal
-                row.find('input[name^="currencies['+code+'][enable]"]').val('0');
-                
-                // Add back to dropdown
-                if (window.allCurrencies && window.allCurrencies[code]) {
-                    var optionText = code + ' - ' + window.allCurrencies[code].name;
-                    $('#add-currency-select').append($('<option></option>').attr('value', code).text(optionText));
-                }
-            });
-            
-            // Prevent form submit from removing rows
-            $('#currencies-form').on('submit', function(e) {
-                // Don't manipulate the DOM before submission
-                return true;
-            });
-        });
-        </script>
-        
-        <script type="text/javascript">
-        // Ensure currency data is available globally for all scripts
-        window.allCurrencies = <?php echo json_encode($all_currencies); ?>;
-        console.log('Currency data initialized:', Object.keys(window.allCurrencies).length, 'currencies');
-        </script>
         <?php
     }
 

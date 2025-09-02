@@ -426,15 +426,36 @@ class wc_multi_currency_manager_Currencies_Settings {
         // Remove duplicates
         $enabled_currencies = array_unique($enabled_currencies);
         
+        // Check if new currencies were added (for automatic exchange rate update)
+        $new_currencies_added = array_diff($enabled_currencies, $existing_enabled);
+        $has_new_currencies = !empty($new_currencies_added);
+        
         // Update options
         update_option('wc_multi_currency_manager_enabled_currencies', $enabled_currencies);
         update_option('wc_multi_currency_manager_exchange_rates', $exchange_rates);
         update_option('wc_multi_currency_manager_currency_settings', $currency_settings);
         
+        // Automatically update exchange rates if new currencies were added
+        $auto_update_success = true;
+        if ($has_new_currencies) {
+            $auto_update_success = wc_multi_currency_manager_update_all_exchange_rates();
+        }
+        
+        // Prepare success message
+        $message = 'Currencies have been updated successfully.';
+        if ($has_new_currencies) {
+            if ($auto_update_success) {
+                $new_currency_list = implode(', ', $new_currencies_added);
+                $message .= sprintf(' New currencies added (%s) and exchange rates updated automatically.', $new_currency_list);
+            } else {
+                $message .= ' New currencies added, but automatic exchange rate update failed. Please update rates manually.';
+            }
+        }
+        
         add_settings_error(
             'wc_multi_currency_manager_messages',
             'currencies_updated',
-            'Currencies have been updated successfully.',
+            $message,
             'updated'
         );
     }

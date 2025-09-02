@@ -128,24 +128,54 @@ class wc_multi_currency_manager_Admin_Settings {
      * Enqueue admin scripts and styles
      */
     public function enqueue_admin_scripts($hook) {
+        // Debug: Always log the hook when on admin pages
+        if (is_admin()) {
+            error_log('Admin hook detected: ' . $hook);
+            if (isset($_GET['page'])) {
+                error_log('GET page parameter: ' . $_GET['page']);
+            }
+        }
+        
+        // Check if we're on any of our plugin's admin pages
+        // This covers all variations of hook names that WordPress might generate
+        $is_plugin_page = (
+            strpos($hook, 'wc-multi-currency-manager') !== false ||
+            strpos($hook, 'currency-manager') !== false ||
+            (isset($_GET['page']) && strpos($_GET['page'], 'wc-multi-currency-manager') !== false)
+        );
+        
+        // Debug: Log if this is detected as a plugin page
+        error_log('Is plugin page: ' . ($is_plugin_page ? 'YES' : 'NO'));
+        
         // Only enqueue on our plugin's admin pages
-        if (strpos($hook, 'wc-multi-currency-manager') === false) {
+        if (!$is_plugin_page) {
             return;
         }
 
+        // Get the plugin URL
+        $plugin_url = plugin_dir_url(__FILE__);
+        $css_url = $plugin_url . '../../assets/css/admin-minimal.css';
+        $js_url = $plugin_url . '../../assets/js/admin-scripts.js';
+        $currencies_js_url = $plugin_url . '../../assets/js/admin-currencies-responsive.js';
+        
+        // Debug: Log the CSS URL and hook name to see if it's correct
+        error_log('WC Multi Currency CSS URL: ' . $css_url);
+        error_log('Current admin hook: ' . $hook);
+        error_log('ENQUEUEING CSS AND JS NOW!');
+
         // Use minimal CSS that leverages WordPress built-in styles
-        wp_enqueue_style('wc-multi-currency-admin-minimal', plugins_url('../../assets/css/admin-minimal.css', __FILE__), array(), time());
+        wp_enqueue_style('wc-multi-currency-admin-minimal', $css_url, array(), time());
         
         // Enqueue color picker script and style
         wp_enqueue_style('wp-color-picker');
         wp_enqueue_script('wp-color-picker');
         
         // Add our admin scripts with debugging query string to avoid caching
-        wp_enqueue_script('multi-currency-admin-scripts', plugins_url('../../assets/js/admin-scripts.js', __FILE__), array('jquery', 'wp-color-picker'), time(), true);
+        wp_enqueue_script('multi-currency-admin-scripts', $js_url, array('jquery', 'wp-color-picker'), time(), true);
         
         // Enqueue specific script for currencies page
         if (strpos($hook, 'wc-multi-currency-manager-currencies') !== false) {
-            wp_enqueue_script('multi-currency-admin-currencies', plugins_url('../../assets/js/admin-currencies-responsive.js', __FILE__), array('jquery'), time(), true);
+            wp_enqueue_script('multi-currency-admin-currencies', $currencies_js_url, array('jquery'), time(), true);
         }
     }
     
@@ -218,4 +248,8 @@ class wc_multi_currency_manager_Admin_Settings {
 }
 
 // Initialize the main admin settings class
-new wc_multi_currency_manager_Admin_Settings();
+if (is_admin()) {
+    // Initialize immediately when this file is loaded in admin context
+    global $wc_multi_currency_admin_settings;
+    $wc_multi_currency_admin_settings = new wc_multi_currency_manager_Admin_Settings();
+}

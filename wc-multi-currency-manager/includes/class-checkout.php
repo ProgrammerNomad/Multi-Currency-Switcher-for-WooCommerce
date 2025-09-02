@@ -178,7 +178,7 @@ class WC_Multi_Currency_Manager_Checkout {
             wp_enqueue_script('wc-multi-currency-checkout', 
                 plugins_url('../assets/js/checkout.js', __FILE__), 
                 array('jquery', 'wc-checkout'), 
-                '1.0.0', 
+                '1.0.1', 
                 true
             );
             

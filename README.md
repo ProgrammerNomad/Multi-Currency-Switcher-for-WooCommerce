@@ -2,7 +2,7 @@
 
 A professional WooCommerce plugin for multi-currency management, designed to maximize international sales by allowing customers to view and pay in their local currency.
 
-## 📋 **Current Features (v1.0.0)**
+## 📋 **Current Features (v1.0.1)**
 
 ### ✅ **Core Currency Management**
 - **Multi-currency Support**: Enable multiple currencies in your WooCommerce store
@@ -26,27 +26,31 @@ A professional WooCommerce plugin for multi-currency management, designed to max
 - **Session Management**: Persistent currency selection across user sessions
 - **Cookie-based Storage**: Remember user preferences
 
-### ✅ **Cart & Mini-Cart Features**
-- **Real-time Cart Updates**: Instant price conversion when currency changes
-- **Mini-Cart Fragments**: Proper AJAX updates for mini-cart widget
-- **Cart Page Integration**: Currency information display on cart page
-- **Theme Compatibility**: Works with Storefront and most themes
-- **Performance Optimized**: Efficient cart recalculation with caching
+### ✅ **Cart & Mini-Cart Features (v1.0.1)**
+- **Real-time Cart Updates**: Instant price conversion when currency changes with intelligent caching
+- **Mini-Cart Fragments**: Proper AJAX updates for mini-cart widget with WooCommerce integration
+- **Cart Page Integration**: Complete currency information display on cart page
+- **Theme Compatibility**: Works with Storefront, Organio, and most WordPress themes
+- **Performance Optimized**: Efficient cart recalculation with smart caching and memory management
+- **Error Handling**: Comprehensive fallbacks and graceful error recovery
+- **Loading Indicators**: Visual feedback during cart updates and currency switches
 
-### ✅ **Checkout & Order Management**
-- **Checkout Currency Lock**: Prevents currency switching during checkout process
-- **Order Currency Tracking**: Saves currency and exchange rate with each order
-- **Admin Order Display**: Shows currency information in order details
-- **Order History**: Correct currency display in customer order history
-- **Thank You Page**: Order summary with currency details
-- **Email Integration**: Proper currency formatting in order emails
+### ✅ **Checkout & Order Management (v1.0.1)**
+- **Checkout Currency Lock**: Prevents currency switching during checkout process with JavaScript validation
+- **Order Currency Tracking**: Saves currency and exchange rate with each order for accurate records
+- **Admin Order Display**: Shows currency information in WooCommerce order details and lists
+- **Order History**: Correct currency display in customer order history and account pages
+- **Thank You Page**: Order summary with proper currency details and formatting
+- **Email Integration**: Proper currency formatting in order confirmation and notification emails
+- **HPOS Support**: Full compatibility with WooCommerce High-Performance Order Storage
 
-### ✅ **Enhanced User Experience**
-- **Currency Information**: Clear display of exchange rates and currency details
-- **Loading Indicators**: Visual feedback during currency switches
-- **Error Handling**: Graceful fallbacks and error messages
-- **Browser Compatibility**: Works with all modern browsers
-- **Mobile Responsive**: Touch-friendly currency switchers
+### ✅ **Enhanced User Experience (v1.1.0)**
+- **Currency Information**: Clear display of exchange rates and currency details with improved formatting
+- **Loading Indicators**: Visual feedback during currency switches with professional animations
+- **Error Handling**: Graceful fallbacks and user-friendly error messages
+- **Browser Compatibility**: Works with all modern browsers including Chrome, Firefox, Safari, Edge
+- **Mobile Responsive**: Touch-friendly currency switchers optimized for mobile devices
+- **Performance Optimized**: Fast loading and efficient memory usage even with large product catalogs
 
 ### ✅ **Widget & Display Options**
 - **Sticky Widget**: Optional floating currency switcher

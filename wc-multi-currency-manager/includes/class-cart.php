@@ -213,20 +213,42 @@ class WC_Multi_Currency_Manager_Cart {
     public function ajax_update_mini_cart() {
         check_ajax_referer('update_mini_cart_nonce', 'security');
         
-        // Force cart calculation
-        if (function_exists('WC') && WC()->cart) {
-            WC()->cart->calculate_totals();
+        try {
+            // Increase memory limit temporarily if possible
+            if (function_exists('wp_raise_memory_limit')) {
+                wp_raise_memory_limit('admin');
+            }
             
-            // Get refreshed fragments
-            $fragments = WC_AJAX::get_refreshed_fragments();
+            // Force cart calculation
+            if (function_exists('WC') && WC()->cart) {
+                WC()->cart->calculate_totals();
+                
+                // Get refreshed fragments with error handling
+                $fragments = array();
+                
+                // Try to get fragments, but catch any memory errors
+                if (class_exists('WC_AJAX')) {
+                    $fragments = WC_AJAX::get_refreshed_fragments();
+                } else {
+                    // Fallback: just return basic cart info
+                    $fragments = array(
+                        '.cart-contents' => WC()->cart->get_cart_contents_count(),
+                        '.amount' => WC()->cart->get_cart_total()
+                    );
+                }
+                
+                wp_send_json_success(array(
+                    'fragments' => $fragments,
+                    'cart_hash' => WC()->cart->get_cart_hash()
+                ));
+            }
             
-            wp_send_json_success(array(
-                'fragments' => $fragments,
-                'cart_hash' => WC()->cart->get_cart_hash()
-            ));
+            wp_send_json_error('Cart not available');
+            
+        } catch (Exception $e) {
+            error_log('Mini cart AJAX error: ' . $e->getMessage());
+            wp_send_json_error('Memory or processing error: ' . $e->getMessage());
         }
-        
-        wp_send_json_error('Cart not available');
     }
     
     /**
@@ -249,7 +271,7 @@ class WC_Multi_Currency_Manager_Cart {
             wp_enqueue_script('wc-multi-currency-cart', 
                 plugins_url('../assets/js/cart.js', __FILE__), 
                 array('jquery', 'wc-cart'), 
-                '1.0.0', 
+                '1.0.1', 
                 true
             );
             

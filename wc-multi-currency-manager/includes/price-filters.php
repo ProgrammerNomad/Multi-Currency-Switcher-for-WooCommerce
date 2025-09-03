@@ -74,7 +74,7 @@ function wc_multi_currency_manager_convert_raw_price($price, $product) {
     // Get current currency using improved detection
     $currency = wc_multi_currency_manager_get_current_currency();
     // Get the ACTUAL WooCommerce base currency, not the filtered one
-    $base_currency = get_option('woocommerce_currency', 'USD');
+    $base_currency = get_option('woocommerce_currency');
     
     // Skip if using base currency
     if ($currency === $base_currency) {
@@ -92,7 +92,7 @@ function wc_multi_currency_manager_convert_raw_price($price, $product) {
     
     // Otherwise, convert the price using exchange rate
     // Get the ACTUAL WooCommerce base currency, not the filtered one
-    $base_currency = get_option('woocommerce_currency', 'USD');
+    $base_currency = get_option('woocommerce_currency');
     $exchange_rate = wc_multi_currency_manager_get_exchange_rate($base_currency, $currency);
     $converted_price = floatval($price) * floatval($exchange_rate);
     
@@ -213,7 +213,7 @@ function wc_multi_currency_manager_calculated_total($total, $cart) {
 function wc_multi_currency_manager_adjust_shipping_cost($package_rates, $package) {
     $currency = wc_multi_currency_manager_get_current_currency();
     // Get the ACTUAL WooCommerce base currency, not the filtered one
-    $base_currency = get_option('woocommerce_currency', 'USD');
+    $base_currency = get_option('woocommerce_currency');
     
     // Skip if using base currency
     if ($currency === $base_currency) {
@@ -251,7 +251,7 @@ function wc_multi_currency_manager_coupon_amount($amount, $coupon) {
     
     $currency = wc_multi_currency_manager_get_current_currency();
     // Get the ACTUAL WooCommerce base currency, not the filtered one
-    $base_currency = get_option('woocommerce_currency', 'USD');
+    $base_currency = get_option('woocommerce_currency');
     
     // Skip if using base currency
     if ($currency === $base_currency) {
@@ -388,9 +388,9 @@ function wc_multi_currency_manager_update_cart_items() {
     }
     
     try {
-        $currency = WC()->session->get('chosen_currency', get_option('woocommerce_currency', 'USD'));
+        $currency = WC()->session->get('chosen_currency', get_option('woocommerce_currency'));
         // Get the ACTUAL WooCommerce base currency, not the filtered one
-        $base_currency = get_option('woocommerce_currency', 'USD');
+        $base_currency = get_option('woocommerce_currency');
         
         // Skip if using base currency
         if ($currency === $base_currency) {

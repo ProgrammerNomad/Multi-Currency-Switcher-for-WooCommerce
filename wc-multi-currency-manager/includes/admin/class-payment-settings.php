@@ -162,7 +162,7 @@ class wc_multi_currency_manager_Payment_Settings {
         // Get existing data to preserve settings for currencies being disabled
         $existing_exchange_rates = get_option('wc_multi_currency_manager_exchange_rates', array());
         $existing_currency_settings = get_option('wc_multi_currency_manager_currency_settings', array());
-        $base_currency = get_option('woocommerce_currency', 'USD');
+        $base_currency = get_option('woocommerce_currency');
         
         // Initialize arrays
         $enabled_currencies = array($base_currency); // Always include base currency

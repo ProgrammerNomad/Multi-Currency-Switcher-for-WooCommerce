@@ -377,7 +377,7 @@ class wc_multi_currency_manager_Currencies_Settings {
             return;
         }
 
-        $base_currency = get_option('woocommerce_currency', 'USD');
+        $base_currency = get_option('woocommerce_currency');
         
         // Get existing data
         $existing_enabled = get_option('wc_multi_currency_manager_enabled_currencies', array($base_currency));

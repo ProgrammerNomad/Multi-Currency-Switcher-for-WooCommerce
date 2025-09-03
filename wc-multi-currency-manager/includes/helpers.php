@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 function get_available_currencies() {
-    $enabled_currency_codes = get_option('wc_multi_currency_manager_enabled_currencies', array(get_option('woocommerce_currency', 'USD')));
+    $enabled_currency_codes = get_option('wc_multi_currency_manager_enabled_currencies', array(get_option('woocommerce_currency')));
     $all_currencies = get_all_available_currencies();
     
     $result = array();
@@ -113,7 +113,7 @@ function wc_multi_currency_manager_get_exchange_rate($from_currency_or_target, $
     if ($to_currency === null) {
         // Old signature: wc_multi_currency_manager_get_exchange_rate($target_currency)
         $target_currency = $from_currency_or_target;
-        $base_currency = get_option('woocommerce_currency', 'USD');
+        $base_currency = get_option('woocommerce_currency');
     } else {
         // New signature: wc_multi_currency_manager_get_exchange_rate($from_currency, $to_currency)
         $base_currency = $from_currency_or_target;
@@ -129,7 +129,7 @@ function wc_multi_currency_manager_get_exchange_rate($from_currency_or_target, $
     $exchange_rates = get_option('wc_multi_currency_manager_exchange_rates', array());
     
     // Get the actual WooCommerce base currency
-    $woo_base_currency = get_option('woocommerce_currency', 'USD');
+    $woo_base_currency = get_option('woocommerce_currency');
     
     // The stored rates are all relative to WooCommerce base currency
     if ($base_currency === $woo_base_currency) {
@@ -167,7 +167,7 @@ function wc_multi_currency_manager_get_current_currency() {
     
     // Prevent infinite loops by checking if we're already detecting
     if ($is_detecting) {
-        return get_option('woocommerce_currency', 'USD');
+        return get_option('woocommerce_currency');
     }
     
     // Return cached result if available
@@ -242,14 +242,14 @@ function wc_multi_currency_manager_get_current_currency() {
     }
     
     // Default to WooCommerce base currency
-    $current_currency = get_option('woocommerce_currency', 'USD');
+    $current_currency = get_option('woocommerce_currency');
     $is_detecting = false; // Reset flag
     return $current_currency;
 }
 
 function format_price_in_currency($price, $currency = null) {
     if ($currency === null) {
-        $currency = get_option('woocommerce_currency', 'USD');
+        $currency = get_option('woocommerce_currency');
     }
     $exchange_rate = wc_multi_currency_manager_get_exchange_rate($currency);
     $converted_price = $price * $exchange_rate;
@@ -293,7 +293,7 @@ function format_price_in_currency($price, $currency = null) {
  */
 function wc_multi_currency_manager_fetch_exchange_rates_from_api($base_currency = null) {
     if ($base_currency === null) {
-        $base_currency = get_option('woocommerce_currency', 'USD');
+        $base_currency = get_option('woocommerce_currency');
     }
     
     // Use DYNAMIC API URL based on actual base currency
@@ -326,7 +326,7 @@ function wc_multi_currency_manager_fetch_exchange_rates_from_api($base_currency 
  */
 function wc_multi_currency_manager_update_all_exchange_rates() {
     // Get WooCommerce base currency (always use option, never filtered)
-    $base_currency = get_option('woocommerce_currency', 'USD');
+    $base_currency = get_option('woocommerce_currency');
     
     // Get all enabled currencies
     $enabled_currencies = get_option('wc_multi_currency_manager_enabled_currencies', array($base_currency));
@@ -369,7 +369,7 @@ function wc_multi_currency_manager_update_all_exchange_rates() {
  */
 function wc_multi_currency_manager_fetch_single_currency_rate($target_currency, $base_currency = null) {
     if ($base_currency === null) {
-        $base_currency = get_option('woocommerce_currency', 'USD');
+        $base_currency = get_option('woocommerce_currency');
     }
     
     // Same currency
@@ -404,11 +404,32 @@ function get_all_available_currencies() {
     }
     
     // Fallback to a minimal set of currencies if JSON file not found or invalid
-    return array(
+    // Always include the WooCommerce base currency in emergency fallback
+    $base_currency = get_option('woocommerce_currency');
+    $emergency_currencies = array();
+    
+    // Add the base currency first (whatever it is)
+    if ($base_currency) {
+        $emergency_currencies[$base_currency] = array(
+            'name' => $base_currency . ' Currency', 
+            'symbol' => $base_currency
+        );
+    }
+    
+    // Add common currencies if they're not already the base
+    $common_currencies = array(
         'USD' => array('name' => 'US Dollar', 'symbol' => '$'),
         'EUR' => array('name' => 'Euro', 'symbol' => '€'),
         'GBP' => array('name' => 'British Pound', 'symbol' => '£')
     );
+    
+    foreach ($common_currencies as $code => $data) {
+        if ($code !== $base_currency) {
+            $emergency_currencies[$code] = $data;
+        }
+    }
+    
+    return $emergency_currencies;
 }
 
 /**

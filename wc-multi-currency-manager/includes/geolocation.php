@@ -37,7 +37,7 @@ function wc_multi_currency_manager_get_currency_by_country($country_code) {
     }
 
     // Get enabled currencies
-    $enabled_currencies = get_option('wc_multi_currency_manager_enabled_currencies', array(get_option('woocommerce_currency', 'USD')));
+    $enabled_currencies = get_option('wc_multi_currency_manager_enabled_currencies', array(get_option('woocommerce_currency')));
     
     // Get custom mappings first (highest priority)
     $custom_mappings = get_option('wc_multi_currency_manager_country_mappings', array());

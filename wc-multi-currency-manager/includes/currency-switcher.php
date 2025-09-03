@@ -172,7 +172,7 @@ function wc_multi_currency_manager_filter_payment_gateways($available_gateways) 
         return $available_gateways; // Return default gateways if session is not initialized
     }
 
-    $currency = WC()->session->get('chosen_currency', get_option('woocommerce_currency', 'USD')); // Default to WooCommerce base currency
+    $currency = WC()->session->get('chosen_currency', get_option('woocommerce_currency')); // Default to WooCommerce base currency
     $restrictions = get_option('wc_multi_currency_manager_payment_restrictions', []);
 
     if (isset($restrictions[$currency])) {
@@ -199,7 +199,7 @@ function wc_multi_currency_manager_display_sticky_widget() {
     
     $currencies = get_available_currencies();
     $current_currency = (function_exists('WC') && WC() && WC()->session) ? 
-        WC()->session->get('chosen_currency', get_option('woocommerce_currency', 'USD')) : get_option('woocommerce_currency', 'USD');
+        WC()->session->get('chosen_currency', get_option('woocommerce_currency')) : get_option('woocommerce_currency');
     
     echo '<div class="sticky-currency-switcher">';
     echo '<label for="sticky-currency-selector">Currency:</label>';

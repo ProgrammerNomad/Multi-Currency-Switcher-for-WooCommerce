@@ -54,7 +54,7 @@ function wc_multi_currency_manager_init() {
 // Force initial exchange rate fetching on plugin activation
 function wc_multi_currency_manager_force_initial_rates() {
     // Get the actual WooCommerce base currency (not hardcoded USD!)
-    $base_currency = get_option('woocommerce_currency', 'USD');
+    $base_currency = get_option('woocommerce_currency');
     
     // Use centralized API function instead of duplicating code
     $api_data = wc_multi_currency_manager_fetch_exchange_rates_from_api($base_currency);

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WC Multi Currency Manager
  * Description: A professional WooCommerce plugin for multi-currency management, designed to maximize international sales by allowing customers to view and pay in their local currency.
- * Version: 1.0.5
+ * Version: 1.0.2
  * Author: ProgrammerNomad
  * Author URI: https://github.com/ProgrammerNomad/WC-Multi-Currency-Manager
  * Plugin URI: https://github.com/ProgrammerNomad/WC-Multi-Currency-Manager

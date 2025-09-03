@@ -67,16 +67,23 @@ function get_currency_by_country($country_code) {
 }
 
 /**
- * Get country-currency mapping (CORRECTED - uses comprehensive PHP file)
+ * Get country-currency mapping from universal JSON file
  */
 function get_country_currency_mapping() {
     static $mapping = null;
     
     if ($mapping === null) {
-        // Load comprehensive country-currency mapping from PHP file
-        $mapping_file = plugin_dir_path(__FILE__) . '../data/countries-currencies.php';
-        if (file_exists($mapping_file)) {
-            $mapping = include $mapping_file;
+        // Load from universal JSON file
+        $json_file = plugin_dir_path(__FILE__) . '../data/universal-currencies.json';
+        if (file_exists($json_file)) {
+            $json_data = file_get_contents($json_file);
+            $data = json_decode($json_data, true);
+            
+            if (json_last_error() === JSON_ERROR_NONE && isset($data['country_mapping'])) {
+                $mapping = $data['country_mapping'];
+            } else {
+                $mapping = array();
+            }
         } else {
             $mapping = array();
         }
@@ -382,17 +389,17 @@ function wc_multi_currency_manager_fetch_single_currency_rate($target_currency, 
 }
 
 /**
- * Get all available currencies from the JSON file
+ * Get all available currencies from the universal JSON file
  */
 function get_all_available_currencies() {
-    $json_file = plugin_dir_path(dirname(__FILE__)) . 'data/currencies.json';
+    $json_file = plugin_dir_path(dirname(__FILE__)) . 'data/universal-currencies.json';
     
     if (file_exists($json_file)) {
         $json_data = file_get_contents($json_file);
-        $currencies = json_decode($json_data, true);
+        $data = json_decode($json_data, true);
         
-        if (json_last_error() === JSON_ERROR_NONE) {
-            return $currencies;
+        if (json_last_error() === JSON_ERROR_NONE && isset($data['currencies'])) {
+            return $data['currencies'];
         }
     }
     

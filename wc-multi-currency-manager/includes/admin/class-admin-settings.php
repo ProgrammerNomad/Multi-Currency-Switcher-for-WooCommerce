@@ -190,22 +190,22 @@ class wc_multi_currency_manager_Admin_Settings {
      * Get all currencies data for JavaScript
      */
     private function get_all_currencies_data() {
-        // First try to get currency data from the JSON file
-        $currencies_json_file = plugin_dir_path(__FILE__) . '../../data/currencies.json';
+        // Get currency data from the universal JSON file
+        $currencies_json_file = plugin_dir_path(__FILE__) . '../../data/universal-currencies.json';
         
         if (file_exists($currencies_json_file)) {
             $json_content = file_get_contents($currencies_json_file);
-            $currencies_data = json_decode($json_content, true);
+            $data = json_decode($json_content, true);
             
-            if (is_array($currencies_data) && !empty($currencies_data)) {
+            if (is_array($data) && isset($data['currencies']) && !empty($data['currencies'])) {
                 // Convert format for JavaScript compatibility
                 $formatted_data = array();
-                foreach ($currencies_data as $code => $data) {
+                foreach ($data['currencies'] as $code => $currency_data) {
                     $formatted_data[$code] = array(
-                        'name' => $data['name'],
-                        'symbol' => $data['symbol'],
-                        'country' => isset($data['country']) ? $data['country'] : '',
-                        'country_code' => isset($data['country_code']) ? $data['country_code'] : ''
+                        'name' => $currency_data['name'],
+                        'symbol' => $currency_data['symbol'],
+                        'countries' => isset($currency_data['countries']) ? $currency_data['countries'] : array(),
+                        'decimal_places' => isset($currency_data['decimal_places']) ? $currency_data['decimal_places'] : 2
                     );
                 }
                 return $formatted_data;

@@ -82,10 +82,10 @@ class wc_multi_currency_manager_General_Settings {
             }
         }
         
-        // Get enabled currencies
-        $enabled_currencies = get_option('wc_multi_currency_manager_enabled_currencies', array(get_woocommerce_currency()));
+        // Get enabled currencies  
+        $base_currency = get_option('woocommerce_currency');
+        $enabled_currencies = get_option('wc_multi_currency_manager_enabled_currencies', array($base_currency));
         $all_currencies = get_all_available_currencies();
-        $base_currency = get_woocommerce_currency();
         
         // Display the settings page
         settings_errors('wc_multi_currency_manager_messages');

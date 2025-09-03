@@ -58,7 +58,7 @@ class wc_multi_currency_manager_Currencies_Settings {
         $auto_detect_enabled = isset($general_settings['auto_detect']) ? $general_settings['auto_detect'] : 'yes';
 
         // Get WooCommerce base currency
-        $base_currency = get_option('woocommerce_currency', 'USD');
+        $base_currency = get_option('woocommerce_currency');
 
         // Get last update time
         $last_updated = get_option('wc_multi_currency_manager_rates_last_updated', 0);

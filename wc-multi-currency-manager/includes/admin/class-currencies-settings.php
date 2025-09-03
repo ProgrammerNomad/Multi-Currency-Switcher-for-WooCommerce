@@ -403,8 +403,20 @@ class wc_multi_currency_manager_Currencies_Settings {
                     'decimal_sep' => isset($data['decimal_sep']) ? sanitize_text_field($data['decimal_sep']) : '.',
                 );
                 
-                // Save exchange rate for all currencies in the form
-                $exchange_rates[$code] = isset($data['rate']) ? floatval($data['rate']) : 1;
+                // For new currencies, get real exchange rate first before saving
+                if ($code !== $base_currency) {
+                    if (isset($data['rate']) && floatval($data['rate']) > 0) {
+                        // User provided a manual rate
+                        $exchange_rates[$code] = floatval($data['rate']);
+                    } else {
+                        // No rate provided or rate is 0/1, fetch from API
+                        $api_rate = wc_multi_currency_manager_fetch_single_currency_rate($code, $base_currency);
+                        $exchange_rates[$code] = $api_rate > 0 ? $api_rate : 1;
+                    }
+                } else {
+                    // Base currency is always 1
+                    $exchange_rates[$code] = 1;
+                }
                 
                 // Add to enabled currencies if explicitly enabled or is base currency
                 if ($code === $base_currency || (isset($data['enable']) && $data['enable'] == 1)) {

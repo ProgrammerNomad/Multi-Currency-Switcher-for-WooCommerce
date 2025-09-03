@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WC Multi Currency Manager
  * Description: A professional WooCommerce plugin for multi-currency management, designed to maximize international sales by allowing customers to view and pay in their local currency.
- * Version: 1.0.2
+ * Version: 1.0.3
  * Author: ProgrammerNomad
  * Author URI: https://github.com/ProgrammerNomad/WC-Multi-Currency-Manager
  * Plugin URI: https://github.com/ProgrammerNomad/WC-Multi-Currency-Manager
@@ -53,28 +53,30 @@ function wc_multi_currency_manager_init() {
 
 // Force initial exchange rate fetching on plugin activation
 function wc_multi_currency_manager_force_initial_rates() {
-    // Force fetch INR rate immediately
-    $api_url = "https://api.exchangerate-api.com/v4/latest/USD";
-    $response = wp_remote_get($api_url, array('timeout' => 15));
+    // Get the actual WooCommerce base currency (not hardcoded USD!)
+    $base_currency = get_option('woocommerce_currency', 'USD');
+    
+    // Use centralized API function instead of duplicating code
+    $api_data = wc_multi_currency_manager_fetch_exchange_rates_from_api($base_currency);
 
-    if (!is_wp_error($response)) {
-        $data = json_decode(wp_remote_retrieve_body($response), true);
-        if (isset($data['rates'])) {
-            $exchange_rates = array();
-            
-            // Store common currencies including INR
-            $common_currencies = array('INR', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY');
-            
-            foreach ($common_currencies as $currency) {
-                if (isset($data['rates'][$currency])) {
-                    $exchange_rates[$currency] = $data['rates'][$currency];
-                }
+    if ($api_data && isset($api_data['rates'])) {
+        $exchange_rates = array();
+        
+        // Set base currency to 1
+        $exchange_rates[$base_currency] = 1;
+        
+        // Store common currencies
+        $common_currencies = array('USD', 'INR', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY');
+        
+        foreach ($common_currencies as $currency) {
+            if ($currency !== $base_currency && isset($api_data['rates'][$currency])) {
+                $exchange_rates[$currency] = $api_data['rates'][$currency];
             }
-            
-            if (!empty($exchange_rates)) {
-                update_option('wc_multi_currency_manager_exchange_rates', $exchange_rates);
-                update_option('wc_multi_currency_manager_rates_last_updated', current_time('timestamp'));
-            }
+        }
+        
+        if (!empty($exchange_rates)) {
+            update_option('wc_multi_currency_manager_exchange_rates', $exchange_rates);
+            update_option('wc_multi_currency_manager_rates_last_updated', current_time('timestamp'));
         }
     }
 }

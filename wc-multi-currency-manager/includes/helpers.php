@@ -117,30 +117,140 @@ function is_auto_detect_enabled() {
     return isset($general_settings['auto_detect']) && $general_settings['auto_detect'] === 'yes';
 }
 
-function wc_multi_currency_manager_get_exchange_rate($currency) {
+function wc_multi_currency_manager_get_exchange_rate($from_currency_or_target, $to_currency = null) {
+    // Support both old and new function signatures
+    if ($to_currency === null) {
+        // Old signature: wc_multi_currency_manager_get_exchange_rate($target_currency)
+        $target_currency = $from_currency_or_target;
+        $base_currency = get_option('woocommerce_currency', 'USD');
+    } else {
+        // New signature: wc_multi_currency_manager_get_exchange_rate($from_currency, $to_currency)
+        $base_currency = $from_currency_or_target;
+        $target_currency = $to_currency;
+    }
+    
+    // Same currency, rate is 1
+    if ($base_currency === $target_currency) {
+        return 1;
+    }
+    
+    // Get exchange rates saved from admin
     $exchange_rates = get_option('wc_multi_currency_manager_exchange_rates', array());
     
-    if (isset($exchange_rates[$currency])) {
-        return $exchange_rates[$currency];
+    // The stored rates are all relative to USD as base currency
+    if ($base_currency === 'USD') {
+        // Converting FROM USD TO another currency
+        if (isset($exchange_rates[$target_currency])) {
+            $rate = floatval($exchange_rates[$target_currency]);
+            return $rate;
+        }
+    } elseif ($target_currency === 'USD') {
+        // Converting FROM another currency TO USD
+        if (isset($exchange_rates[$base_currency])) {
+            $rate = 1.0 / floatval($exchange_rates[$base_currency]);
+            return $rate;
+        }
+    } else {
+        // Converting between two non-USD currencies
+        if (isset($exchange_rates[$base_currency]) && isset($exchange_rates[$target_currency])) {
+            $base_to_usd = 1.0 / floatval($exchange_rates[$base_currency]);
+            $usd_to_target = floatval($exchange_rates[$target_currency]);
+            $rate = $base_to_usd * $usd_to_target;
+            return $rate;
+        }
     }
     
-    // If no stored rate, try to fetch from API
-    $api_url = "https://api.exchangerate-api.com/v4/latest/USD";
-    $response = wp_remote_get($api_url);
+    // Fallback to 1 if currency not found
+    return 1;
+}
 
-    if (is_wp_error($response)) {
-        return 1; // Default to 1:1 if API call fails
-    }
-
-    $data = json_decode(wp_remote_retrieve_body($response), true);
-    if (isset($data['rates'][$currency])) {
-        // Store the rate for future use
-        $exchange_rates[$currency] = $data['rates'][$currency];
-        update_option('wc_multi_currency_manager_exchange_rates', $exchange_rates);
-        return $data['rates'][$currency];
+/**
+ * Get current currency with improved detection (similar to YITH approach)
+ */
+function wc_multi_currency_manager_get_current_currency() {
+    static $current_currency = null;
+    static $is_detecting = false;
+    
+    // Prevent infinite loops by checking if we're already detecting
+    if ($is_detecting) {
+        return get_option('woocommerce_currency', 'USD');
     }
     
-    return 1; // Default to 1:1 if currency not found
+    // Return cached result if available
+    if ($current_currency !== null) {
+        return $current_currency;
+    }
+    
+    // Set flag to indicate we're detecting currency
+    $is_detecting = true;
+    
+    // First, try to get from WooCommerce session if available
+    if (function_exists('WC') && WC() && WC()->session) {
+        $session_currency = WC()->session->get('chosen_currency', '');
+        if (!empty($session_currency)) {
+            $current_currency = $session_currency;
+            $is_detecting = false; // Reset flag
+            return $current_currency;
+        }
+    }
+    
+    // Try to get from AJAX request
+    if (defined('DOING_AJAX') && DOING_AJAX) {
+        if (isset($_REQUEST['currency']) && !empty($_REQUEST['currency'])) {
+            $current_currency = sanitize_text_field($_REQUEST['currency']);
+            $is_detecting = false; // Reset flag
+            return $current_currency;
+        }
+    }
+    
+    // Try to get from URL parameter (for non-AJAX currency switching)
+    if (isset($_GET['currency']) && !empty($_GET['currency'])) {
+        $currency = sanitize_text_field($_GET['currency']);
+        // Simple currency validation - just check if it's 3 letters
+        if (strlen($currency) === 3 && ctype_alpha($currency)) {
+            // Set in session if available
+            if (function_exists('WC') && WC() && WC()->session) {
+                WC()->session->set('chosen_currency', $currency);
+            }
+            $current_currency = $currency;
+            $is_detecting = false; // Reset flag
+            return $current_currency;
+        }
+    }
+    
+    // Try to get from cookie
+    if (isset($_COOKIE['chosen_currency']) && !empty($_COOKIE['chosen_currency'])) {
+        $currency = sanitize_text_field($_COOKIE['chosen_currency']);
+        // Simple currency validation - just check if it's 3 letters
+        if (strlen($currency) === 3 && ctype_alpha($currency)) {
+            // Set in session if available
+            if (function_exists('WC') && WC() && WC()->session) {
+                WC()->session->set('chosen_currency', $currency);
+            }
+            $current_currency = $currency;
+            $is_detecting = false; // Reset flag
+            return $current_currency;
+        }
+    }
+    
+    // Try user meta if user is logged in
+    if (is_user_logged_in()) {
+        $user_currency = get_user_meta(get_current_user_id(), 'chosen_currency', true);
+        if (!empty($user_currency) && strlen($user_currency) === 3 && ctype_alpha($user_currency)) {
+            // Set in session if available
+            if (function_exists('WC') && WC() && WC()->session) {
+                WC()->session->set('chosen_currency', $user_currency);
+            }
+            $current_currency = $user_currency;
+            $is_detecting = false; // Reset flag
+            return $current_currency;
+        }
+    }
+    
+    // Default to WooCommerce base currency
+    $current_currency = get_option('woocommerce_currency', 'USD');
+    $is_detecting = false; // Reset flag
+    return $current_currency;
 }
 
 function format_price_in_currency($price, $currency = 'USD') {

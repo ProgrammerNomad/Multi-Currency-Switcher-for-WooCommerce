@@ -130,12 +130,26 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function reloadPage(currency) {
+        // Get current URL without existing currency and timestamp parameters
+        let url = window.location.href.split('#')[0];
+        
+        // Remove existing currency and timestamp parameters
+        url = url.replace(/[?&]currency=[^&]*/g, '');
+        url = url.replace(/[?&]_=[^&]*/g, '');
+        
+        // Clean up any duplicate separators
+        url = url.replace(/[?&]+/g, function(match, offset) {
+            return offset === url.indexOf(match) && match.includes('?') ? '?' : '&';
+        });
+        
+        // Remove trailing ? or & if they exist
+        url = url.replace(/[?&]$/, '');
+        
+        // Add the new currency parameter
+        const separator = url.indexOf('?') !== -1 ? '&' : '?';
         const timestamp = new Date().getTime();
-        const separator = window.location.href.indexOf('?') !== -1 ? '&' : '?';
-        window.location.href = window.location.href.split('#')[0] + 
-                            separator + 
-                            'currency=' + currency + 
-                            '&_=' + timestamp;
+        
+        window.location.href = url + separator + 'currency=' + currency + '&_=' + timestamp;
     }
     
     function showLoadingIndicator() {

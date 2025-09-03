@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WC Multi Currency Manager
  * Description: A professional WooCommerce plugin for multi-currency management, designed to maximize international sales by allowing customers to view and pay in their local currency.
- * Version: 1.0.1
+ * Version: 1.0.2
  * Author: ProgrammerNomad
  * Author URI: https://github.com/ProgrammerNomad/WC-Multi-Currency-Manager
  * Plugin URI: https://github.com/ProgrammerNomad/WC-Multi-Currency-Manager
@@ -12,6 +12,11 @@
  */
 
 defined('ABSPATH') || exit;
+
+// Load textdomain early to avoid translation loading issues
+add_action('plugins_loaded', function() {
+    load_plugin_textdomain('wc-multi-currency-manager', false, dirname(plugin_basename(__FILE__)) . '/languages/');
+});
 
 // Increase memory limit for the plugin
 if (!defined('WP_MAX_MEMORY_LIMIT')) {
@@ -45,7 +50,35 @@ function wc_multi_currency_manager_init() {
     // Run migration on init
     wc_multi_currency_manager_migrate_settings();
 }
-add_action('plugins_loaded', 'wc_multi_currency_manager_init');
+
+// Force initial exchange rate fetching on plugin activation
+function wc_multi_currency_manager_force_initial_rates() {
+    // Force fetch INR rate immediately
+    $api_url = "https://api.exchangerate-api.com/v4/latest/USD";
+    $response = wp_remote_get($api_url, array('timeout' => 15));
+
+    if (!is_wp_error($response)) {
+        $data = json_decode(wp_remote_retrieve_body($response), true);
+        if (isset($data['rates'])) {
+            $exchange_rates = array();
+            
+            // Store common currencies including INR
+            $common_currencies = array('INR', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY');
+            
+            foreach ($common_currencies as $currency) {
+                if (isset($data['rates'][$currency])) {
+                    $exchange_rates[$currency] = $data['rates'][$currency];
+                }
+            }
+            
+            if (!empty($exchange_rates)) {
+                update_option('wc_multi_currency_manager_exchange_rates', $exchange_rates);
+                update_option('wc_multi_currency_manager_rates_last_updated', current_time('timestamp'));
+            }
+        }
+    }
+}
+add_action('wp_loaded', 'wc_multi_currency_manager_force_initial_rates', 5);
 
 /**
  * Migrate style settings to general settings
@@ -194,10 +227,6 @@ add_filter('wc_get_template', 'wc_multi_currency_manager_template_loader', 10, 3
  * This updates the cart and mini cart when currency is changed via JavaScript
  */
 function wc_multi_currency_manager_handle_currency_switch() {
-    // Enable error logging for debugging
-    ini_set('display_errors', 0);
-    error_log('Currency switch AJAX called for currency: ' . (isset($_GET['currency']) ? $_GET['currency'] : 'none'));
-    
     try {
         // Security checks
         if (!isset($_GET['currency']) || empty($_GET['currency'])) {
@@ -239,11 +268,8 @@ function wc_multi_currency_manager_handle_currency_switch() {
         ]);
         
     } catch (Exception $e) {
-        // Log the error for debugging
-        error_log('Currency switch error: ' . $e->getMessage());
         wp_send_json_error([
-            'message' => 'An error occurred while switching currency',
-            'error' => $e->getMessage()
+            'message' => 'An error occurred while switching currency'
         ]);
     }
 }
@@ -269,7 +295,6 @@ function wc_multi_currency_manager_widget_display_control() {
     // Remove the product page widget if needed - but only if it was actually added
     if ($position === 'sticky_only' || $position === 'none') {
         remove_action('woocommerce_single_product_summary', 'wc_multi_currency_manager_display_on_product_page', 25);
-        remove_action('woocommerce_single_product_summary', 'wc_multi_currency_manager_test_product_page', 24);
     }
 }
 add_action('wp', 'wc_multi_currency_manager_widget_display_control', 20);

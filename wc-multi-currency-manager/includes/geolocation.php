@@ -71,18 +71,8 @@ function wc_multi_currency_manager_get_currency_by_country($country_code) {
  * @return array
  */
 function wc_multi_currency_manager_get_default_country_mapping() {
-    static $mapping = null;
-    
-    if ($mapping === null) {
-        $file_path = plugin_dir_path(__FILE__) . '../data/country-currency-mapping.php';
-        if (file_exists($file_path)) {
-            $mapping = include $file_path;
-        } else {
-            $mapping = array();
-        }
-    }
-    
-    return $mapping;
+    // Use the consolidated function instead of duplicate code
+    return get_country_currency_mapping();
 }
 
 /**

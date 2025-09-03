@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WC Multi Currency Manager
  * Description: A professional WooCommerce plugin for multi-currency management, designed to maximize international sales by allowing customers to view and pay in their local currency.
- * Version: 1.0.3
+ * Version: 1.0.5
  * Author: ProgrammerNomad
  * Author URI: https://github.com/ProgrammerNomad/WC-Multi-Currency-Manager
  * Plugin URI: https://github.com/ProgrammerNomad/WC-Multi-Currency-Manager
@@ -65,8 +65,16 @@ function wc_multi_currency_manager_force_initial_rates() {
         // Set base currency to 1
         $exchange_rates[$base_currency] = 1;
         
-        // Store common currencies
-        $common_currencies = array('USD', 'INR', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY');
+        // Store common currencies (dynamically get from enabled currencies or defaults)
+        $enabled_currencies = get_option('wc_multi_currency_manager_enabled_currencies', array());
+        if (empty($enabled_currencies)) {
+            // If no currencies enabled yet, use common defaults
+            $common_currencies = array('USD', 'INR', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY');
+        } else {
+            // Use already enabled currencies plus some popular ones
+            $popular_currencies = array('USD', 'EUR', 'GBP', 'JPY', 'INR');
+            $common_currencies = array_unique(array_merge($enabled_currencies, $popular_currencies));
+        }
         
         foreach ($common_currencies as $currency) {
             if ($currency !== $base_currency && isset($api_data['rates'][$currency])) {

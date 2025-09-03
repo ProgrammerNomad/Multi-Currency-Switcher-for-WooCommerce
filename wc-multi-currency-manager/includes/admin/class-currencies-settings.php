@@ -516,7 +516,8 @@ class wc_multi_currency_manager_Currencies_Settings {
      * Get the default country-currency mapping
      */
     private function get_country_currency_mapping() {
-        return include plugin_dir_path(__FILE__) . '../../data/country-currency-mapping.php';
+        // Use the consolidated function instead of loading duplicate file
+        return get_country_currency_mapping();
     }
 
     /**

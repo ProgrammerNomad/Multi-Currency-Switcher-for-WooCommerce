@@ -267,7 +267,6 @@ function wc_multi_currency_manager_read_cookie() {
     $available_currencies = get_available_currencies();
     $general_settings = get_option('wc_multi_currency_manager_general_settings', array(
         'auto_detect' => 'yes',
-        'default_currency' => get_woocommerce_currency(),
     ));
     
     // First check for currency in the URL (for direct switching)
@@ -302,21 +301,21 @@ function wc_multi_currency_manager_read_cookie() {
             setcookie('chosen_currency', $currency, time() + (86400 * 30), '/');
             $currency_changed = true;
         } else {
-            // Use default currency
-            $default_currency = isset($general_settings['default_currency']) ? $general_settings['default_currency'] : get_woocommerce_currency();
-            if (array_key_exists($default_currency, $available_currencies)) {
-                WC()->session->set('chosen_currency', $default_currency);
-                setcookie('chosen_currency', $default_currency, time() + (86400 * 30), '/');
+            // ALWAYS use WooCommerce base currency (no manual override)
+            $woo_base_currency = get_woocommerce_currency();
+            if (array_key_exists($woo_base_currency, $available_currencies)) {
+                WC()->session->set('chosen_currency', $woo_base_currency);
+                setcookie('chosen_currency', $woo_base_currency, time() + (86400 * 30), '/');
                 $currency_changed = true;
             }
         }
     }
-    // If auto-detect is disabled and no currency is set, use the default
+    // If auto-detect is disabled and no currency is set, use WooCommerce base currency
     else if (!WC()->session->get('chosen_currency') && (!isset($general_settings['auto_detect']) || $general_settings['auto_detect'] !== 'yes')) {
-        $default_currency = isset($general_settings['default_currency']) ? $general_settings['default_currency'] : get_woocommerce_currency();
-        if (array_key_exists($default_currency, $available_currencies)) {
-            WC()->session->set('chosen_currency', $default_currency);
-            setcookie('chosen_currency', $default_currency, time() + (86400 * 30), '/');
+        $woo_base_currency = get_woocommerce_currency();
+        if (array_key_exists($woo_base_currency, $available_currencies)) {
+            WC()->session->set('chosen_currency', $woo_base_currency);
+            setcookie('chosen_currency', $woo_base_currency, time() + (86400 * 30), '/');
             $currency_changed = true;
         }
     }

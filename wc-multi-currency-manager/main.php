@@ -65,15 +65,14 @@ function wc_multi_currency_manager_force_initial_rates() {
         // Set base currency to 1
         $exchange_rates[$base_currency] = 1;
         
-        // Store common currencies (dynamically get from enabled currencies or defaults)
+        // Store currencies (dynamically get from enabled currencies or defaults)
         $enabled_currencies = get_option('wc_multi_currency_manager_enabled_currencies', array());
         if (empty($enabled_currencies)) {
-            // If no currencies enabled yet, use common defaults
-            $common_currencies = array('USD', 'INR', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY');
+            // If no currencies enabled yet, use popular defaults (always include base currency)
+            $common_currencies = array($base_currency, 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'INR');
         } else {
-            // Use already enabled currencies plus some popular ones
-            $popular_currencies = array('USD', 'EUR', 'GBP', 'JPY', 'INR');
-            $common_currencies = array_unique(array_merge($enabled_currencies, $popular_currencies));
+            // Use already enabled currencies plus base currency
+            $common_currencies = array_unique(array_merge(array($base_currency), $enabled_currencies));
         }
         
         foreach ($common_currencies as $currency) {

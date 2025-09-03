@@ -18,7 +18,6 @@ class wc_multi_currency_manager_General_Settings {
         $general_settings = get_option('wc_multi_currency_manager_general_settings', array(
             'auto_detect' => 'yes',
             'widget_position' => 'both',
-            'default_currency' => get_woocommerce_currency(),
             'show_sticky_widget' => 'yes',
             'sticky_position' => 'left',
             'limit_currencies' => 'no',
@@ -36,7 +35,6 @@ class wc_multi_currency_manager_General_Settings {
             $updated_settings = array(
                 'auto_detect' => isset($_POST['general_settings']['auto_detect']) ? 'yes' : 'no',
                 'widget_position' => sanitize_text_field($_POST['general_settings']['widget_position']),
-                'default_currency' => sanitize_text_field($_POST['general_settings']['default_currency']),
                 'show_sticky_widget' => isset($_POST['general_settings']['show_sticky_widget']) ? 'yes' : 'no',
                 'sticky_position' => sanitize_text_field($_POST['general_settings']['sticky_position']),
                 'limit_currencies' => isset($_POST['general_settings']['limit_currencies']) ? 'yes' : 'no',
@@ -132,19 +130,6 @@ class wc_multi_currency_manager_General_Settings {
                                             <option value="none" <?php selected('none', isset($general_settings['widget_position']) ? $general_settings['widget_position'] : 'both'); ?>>Don't show automatically</option>
                                         </select>
                                         <p class="description">Control where the currency switcher appears on your site. Use the shortcode [wc_multi_currency_manager] to add it to specific locations.</p>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">Default Currency</th>
-                                    <td>
-                                        <select name="general_settings[default_currency]">
-                                            <?php foreach ($enabled_currencies as $code): ?>
-                                                <option value="<?php echo esc_attr($code); ?>" <?php selected($code, isset($general_settings['default_currency']) ? $general_settings['default_currency'] : get_woocommerce_currency()); ?>>
-                                                    <?php echo esc_html($code); ?> - <?php echo isset($all_currencies[$code]['name']) ? esc_html($all_currencies[$code]['name']) : esc_html($code); ?>
-                                                </option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                        <p class="description">Default currency to use when auto-detection is disabled or fails</p>
                                     </td>
                                 </tr>
                             </table>
